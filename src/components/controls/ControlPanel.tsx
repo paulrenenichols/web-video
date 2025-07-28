@@ -9,6 +9,8 @@ import React from 'react';
 import { RecordButton } from './RecordButton';
 import { RecordingTimer } from './RecordingTimer';
 import { FileDownload } from './FileDownload';
+import { TrackingToggle } from '@/components/tracking/TrackingToggle';
+import { OverlayControls } from '@/components/overlays/OverlayControls';
 import type { CameraDevice } from '@/types/video';
 import type { RecordingResult } from '@/types/recording';
 
@@ -33,6 +35,10 @@ interface ControlPanelProps {
   onStopRecording: () => void;
   onDownloadRecording: () => void;
   onClearRecording: () => void;
+
+  // Tracking controls
+  showTracking?: boolean;
+  onToggleTracking?: (show: boolean) => void;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -56,6 +62,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onStopRecording,
   onDownloadRecording,
   onClearRecording,
+
+  // Tracking props
+  onToggleTracking,
 }) => {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
@@ -126,6 +135,26 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               onDownload={onDownloadRecording}
               onClear={onClearRecording}
             />
+          </div>
+        )}
+
+        {/* Face Tracking Controls */}
+        {isActive && (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Face Tracking
+            </h3>
+            <TrackingToggle onToggle={onToggleTracking} className="w-full" />
+          </div>
+        )}
+
+        {/* Overlay Controls */}
+        {isActive && (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Overlays
+            </h3>
+            <OverlayControls className="w-full" />
           </div>
         )}
 

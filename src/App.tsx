@@ -9,11 +9,14 @@ import React, { Suspense } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Main } from '@/components/layout/Main';
 import { Footer } from '@/components/layout/Footer';
-import { VideoPlayer } from '@/components/video/VideoPlayer';
+import { FaceTracking } from '@/components/tracking/FaceTracking';
+import { OverlaySystem } from '@/components/overlays/OverlaySystem';
 import { ControlPanel } from '@/components/controls/ControlPanel';
 import { useCamera } from '@/hooks/useCamera';
 import { useRecording } from '@/hooks/useRecording';
+import { useTrackingStore } from '@/stores/tracking-store';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { useState, useRef } from 'react';
 
 const VideoRecorderApp: React.FC = () => {
   const {
@@ -41,6 +44,10 @@ const VideoRecorderApp: React.FC = () => {
     clearError: clearRecordingError,
     reset: resetRecording,
   } = useRecording();
+
+  const { landmarks } = useTrackingStore();
+  const [showTracking, setShowTracking] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleStartCamera = async (): Promise<void> => {
     await startCamera(selectedDeviceId || undefined);
@@ -84,13 +91,31 @@ const VideoRecorderApp: React.FC = () => {
 
       <Main>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Video Player */}
+          {/* Video Player with Face Tracking */}
           <div className="lg:col-span-2">
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Camera Feed
+                Camera Feed with Face Tracking
               </h2>
-              <VideoPlayer stream={stream} className="aspect-video w-full" />
+              <div className="relative">
+                <FaceTracking
+                  stream={stream}
+                  showVisualization={showTracking}
+                  onTrackingUpdate={() => {
+                    // Tracking updates are handled by the store
+                  }}
+                  className="aspect-video w-full"
+                />
+
+                {/* Overlay System */}
+                {landmarks && (
+                  <OverlaySystem
+                    landmarks={landmarks}
+                    videoElement={videoRef.current}
+                    className="absolute inset-0"
+                  />
+                )}
+              </div>
             </div>
           </div>
 
@@ -128,6 +153,8 @@ const VideoRecorderApp: React.FC = () => {
                 onStopRecording={handleStopRecording}
                 onDownloadRecording={handleDownloadRecording}
                 onClearRecording={handleClearRecording}
+                showTracking={showTracking}
+                onToggleTracking={setShowTracking}
               />
             </div>
           </div>
