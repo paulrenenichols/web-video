@@ -104,17 +104,18 @@ const VideoRecorderApp: React.FC = () => {
                   onTrackingUpdate={() => {
                     // Tracking updates are handled by the store
                   }}
+                  onVideoRef={videoElement => {
+                    videoRef.current = videoElement;
+                  }}
                   className="aspect-video w-full"
                 />
 
                 {/* Overlay System */}
-                {landmarks && (
-                  <OverlaySystem
-                    landmarks={landmarks}
-                    videoElement={videoRef.current}
-                    className="absolute inset-0"
-                  />
-                )}
+                <OverlaySystem
+                  landmarks={landmarks}
+                  videoElement={videoRef.current}
+                  className="absolute inset-0"
+                />
               </div>
             </div>
           </div>

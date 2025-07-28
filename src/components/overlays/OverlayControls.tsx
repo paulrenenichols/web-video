@@ -7,6 +7,7 @@
 
 import React, { useState } from 'react';
 import { useOverlays } from '@/hooks/useOverlays';
+import { useOverlayStore } from '@/stores/overlay-store';
 import { GLASSES_OVERLAYS, HAT_OVERLAYS } from '@/constants/overlays';
 import type { OverlayConfig } from '@/types/overlay';
 
@@ -100,6 +101,38 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
               disabled={activeOverlays.length === 0}
             >
               Clear All
+            </button>
+            <button
+              onClick={() => {
+                const testOverlay = {
+                  id: 'test-glasses',
+                  type: 'glasses' as const,
+                  name: 'Test Glasses',
+                  imageUrl: '/overlays/glasses/sunglasses.svg',
+                  defaultPosition: {
+                    x: 100,
+                    y: 100,
+                    scale: 1,
+                    rotation: 0,
+                    opacity: 1,
+                    width: 100,
+                    height: 50,
+                  },
+                  anchorPoints: [0, 1], // Use first two landmarks for testing
+                  constraints: {
+                    minScale: 0.5,
+                    maxScale: 2,
+                    minOpacity: 0.3,
+                    maxOpacity: 1,
+                    maxRotation: 45,
+                  },
+                };
+
+                addOverlayToScene(testOverlay);
+              }}
+              className="btn btn-sm btn-secondary"
+            >
+              Add Test Overlay
             </button>
           </div>
         </div>

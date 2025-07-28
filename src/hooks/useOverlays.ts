@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { OverlayService } from '@/services/overlay.service';
 import { useOverlayStore } from '@/stores/overlay-store';
+import { useTrackingStore } from '@/stores/tracking-store';
 import type { ActiveOverlay, OverlayConfig } from '@/types/overlay';
 import type { FacialLandmarks } from '@/types/tracking';
 import { ALL_OVERLAYS } from '@/constants/overlays';
@@ -64,7 +65,9 @@ export const useOverlays = () => {
    */
   const loadOverlayImages = useCallback(async (): Promise<void> => {
     if (!overlayServiceRef.current) {
-      setError('Overlay service not initialized');
+      const error = 'Overlay service not initialized';
+      console.error(error);
+      setError(error);
       return;
     }
 
@@ -87,6 +90,16 @@ export const useOverlays = () => {
       });
 
       await Promise.all(loadPromises);
+
+      // Also load the test overlay image specifically
+      try {
+        await overlayServiceRef.current!.loadOverlayImage(
+          'test-glasses',
+          '/overlays/glasses/sunglasses.svg'
+        );
+      } catch (error) {
+        console.warn('Failed to load test overlay image:', error);
+      }
     } catch (error) {
       const errorMessage =
         error instanceof Error
@@ -103,16 +116,33 @@ export const useOverlays = () => {
    */
   const addOverlayToScene = useCallback(
     (overlayConfig: OverlayConfig): void => {
-      const activeOverlay: ActiveOverlay = {
-        id: `${overlayConfig.id}-${Date.now()}`,
-        config: overlayConfig,
-        position: overlayConfig.defaultPosition,
-        isVisible: true,
-        isLocked: false,
-      };
+      try {
+        const activeOverlay: ActiveOverlay = {
+          id: `${overlayConfig.id}-${Date.now()}`,
+          config: overlayConfig,
+          position: overlayConfig.defaultPosition,
+          isVisible: true,
+          isLocked: false,
+        };
 
-      addOverlay(activeOverlay);
-      setSelectedOverlay(activeOverlay.id);
+        addOverlay(activeOverlay);
+        setSelectedOverlay(activeOverlay.id);
+
+        // Load the image for this overlay
+        if (overlayServiceRef.current) {
+          overlayServiceRef.current
+            .loadOverlayImage(overlayConfig.id, overlayConfig.imageUrl)
+            .catch(error => {
+              console.error(
+                `Failed to load image for new overlay: ${overlayConfig.id}`,
+                error
+              );
+            });
+        }
+      } catch (error) {
+        console.error('Error in addOverlayToScene:', error);
+        throw error;
+      }
     },
     [addOverlay, setSelectedOverlay]
   );
@@ -136,7 +166,9 @@ export const useOverlays = () => {
   const startRendering = useCallback(
     (videoElement: HTMLVideoElement, landmarks: FacialLandmarks): void => {
       if (!overlayServiceRef.current || !canvasRef.current) {
-        setError('Overlay service not initialized');
+        const error = 'Overlay service not initialized';
+        console.error(error);
+        setError(error);
         return;
       }
 
@@ -154,7 +186,23 @@ export const useOverlays = () => {
         }
 
         try {
-          overlayServiceRef.current.renderOverlays(activeOverlays, landmarks);
+          // Get current overlays from the store to ensure we have the latest state
+          const currentOverlays = useOverlayStore.getState().activeOverlays;
+
+          // Get latest landmarks from the tracking store
+          const latestLandmarks = useTrackingStore.getState().landmarks;
+
+          console.log(
+            'Overlay system: Retrieved landmarks from store:',
+            latestLandmarks?.landmarks.length || 0
+          );
+
+          if (latestLandmarks) {
+            overlayServiceRef.current.renderOverlays(
+              currentOverlays,
+              latestLandmarks
+            );
+          }
         } catch (error) {
           console.error('Overlay rendering error:', error);
         }
@@ -190,18 +238,34 @@ export const useOverlays = () => {
         return;
       }
 
-      activeOverlays.forEach(overlay => {
+      // Get current overlays from the store to avoid dependency issues
+      const currentOverlays = activeOverlays;
+
+      // Only update if we have overlays
+      if (currentOverlays.length === 0) {
+        return;
+      }
+
+      // Update positions without triggering re-renders for each update
+      currentOverlays.forEach(overlay => {
         if (!overlay.isLocked) {
           const updatedOverlay =
             overlayServiceRef.current!.updateOverlayPosition(
               overlay,
               landmarks
             );
-          updateOverlay(overlay.id, updatedOverlay);
+
+          // Only update if position actually changed
+          if (
+            JSON.stringify(updatedOverlay.position) !==
+            JSON.stringify(overlay.position)
+          ) {
+            updateOverlay(overlay.id, updatedOverlay);
+          }
         }
       });
     },
-    [activeOverlays, updateOverlay]
+    [updateOverlay]
   );
 
   /**

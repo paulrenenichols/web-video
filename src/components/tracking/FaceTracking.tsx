@@ -15,6 +15,7 @@ interface FaceTrackingProps {
   onTrackingUpdate?: (landmarks: FacialLandmarks | null) => void;
   showVisualization?: boolean;
   className?: string;
+  onVideoRef?: (videoElement: HTMLVideoElement | null) => void;
 }
 
 export const FaceTracking: React.FC<FaceTrackingProps> = ({
@@ -22,6 +23,7 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
   onTrackingUpdate,
   showVisualization = false,
   className = '',
+  onVideoRef,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -96,6 +98,13 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
       console.error('Error playing video:', error);
     });
   }, [stream]);
+
+  /**
+   * @description Notify parent of video element reference
+   */
+  useEffect(() => {
+    onVideoRef?.(videoRef.current);
+  }, [onVideoRef]);
 
   /**
    * @description Notify parent component of tracking updates

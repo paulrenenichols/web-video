@@ -56,6 +56,7 @@ export class TrackingService {
       throw new Error('Tracking service not initialized');
     }
 
+    console.log('TrackingService: Starting tracking...');
     this.videoElement = videoElement;
     this.performanceMetrics.frameCount = 0;
     this.performanceMetrics.lastFrameTime = performance.now();
@@ -101,6 +102,12 @@ export class TrackingService {
 
       if (success) {
         landmarks = this.generateMockLandmarks();
+        console.log(
+          'TrackingService: Generated landmarks:',
+          landmarks.landmarks.length
+        );
+      } else {
+        console.log('TrackingService: No face detected (random failure)');
       }
 
       const result: FaceDetectionResult = {

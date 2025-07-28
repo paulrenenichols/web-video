@@ -59,17 +59,33 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
    * @description Start/stop rendering when landmarks or video element changes
    */
   useEffect(() => {
-    if (!isInitialized || !landmarks || !videoElement || !canvasRef.current) {
+    if (!isInitialized || !canvasRef.current) {
       if (isRendering) {
         stopRendering();
       }
       return;
     }
 
+    // Start rendering even without video element for testing
     if (!isRendering) {
-      startRendering(videoElement, landmarks);
-    } else {
-      updateOverlayPositions(landmarks);
+      const mockVideoElement =
+        videoElement ||
+        ({
+          videoWidth: 640,
+          videoHeight: 480,
+          clientWidth: 640,
+          clientHeight: 480,
+        } as HTMLVideoElement);
+
+      startRendering(
+        mockVideoElement,
+        landmarks || {
+          landmarks: [],
+          faceInViewConfidence: 0,
+          faceBoundingBox: { x: 0, y: 0, width: 0, height: 0 },
+          rotation: { x: 0, y: 0, z: 0 },
+        }
+      );
     }
   }, [
     isInitialized,
@@ -78,8 +94,16 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
     isRendering,
     startRendering,
     stopRendering,
-    updateOverlayPositions,
   ]);
+
+  /**
+   * @description Update overlay positions when landmarks change
+   */
+  useEffect(() => {
+    if (isRendering && landmarks && activeOverlays.length > 0) {
+      updateOverlayPositions(landmarks);
+    }
+  }, [landmarks, isRendering, activeOverlays.length]);
 
   /**
    * @description Update canvas size to match video element
@@ -115,9 +139,8 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
     };
   }, [isRendering, stopRendering]);
 
-  if (!landmarks) {
-    return null;
-  }
+  // Don't return null if no landmarks - still render the canvas for overlays
+  // that don't require facial tracking
 
   return (
     <div className={`absolute inset-0 pointer-events-none ${className}`}>
@@ -130,6 +153,15 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
           <p className="text-sm font-medium">Overlay Error: {error}</p>
         </div>
       )}
+
+      {/* Debug Information */}
+      <div className="absolute top-4 left-4 bg-black/50 text-white px-2 py-1 rounded text-xs">
+        <div>Landmarks: {landmarks ? 'Yes' : 'No'}</div>
+        <div>Video: {videoElement ? 'Yes' : 'No'}</div>
+        <div>Overlays: {activeOverlays.length}</div>
+        <div>Rendering: {isRendering ? 'Yes' : 'No'}</div>
+        {error && <div>Error: {error}</div>}
+      </div>
 
       {/* Overlay Count Indicator */}
       {activeOverlays.length > 0 && (

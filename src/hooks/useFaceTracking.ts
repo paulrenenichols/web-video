@@ -124,11 +124,16 @@ export const useFaceTracking = () => {
   const handleTrackingResult = useCallback(
     (result: FaceDetectionResult): void => {
       if (result.success && result.landmarks) {
+        console.log(
+          'Tracking hook: Updating store with landmarks:',
+          result.landmarks.landmarks.length
+        );
         setDetected(true);
         setLandmarks(result.landmarks);
         setConfidence(result.landmarks.faceInViewConfidence);
         setError(null);
       } else {
+        console.log('Tracking hook: No landmarks detected');
         setDetected(false);
         setLandmarks(null);
         setConfidence(0);

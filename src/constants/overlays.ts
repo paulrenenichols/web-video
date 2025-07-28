@@ -22,17 +22,13 @@ export const GLASSES_OVERLAYS: OverlayConfig[] = [
       scale: 1,
       opacity: 1,
     },
-    anchorPoints: [
-      33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161,
-      246, 362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385,
-      384, 398,
-    ],
+    anchorPoints: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
     constraints: {
       minScale: 0.8,
       maxScale: 1.2,
       minOpacity: 0.7,
       maxOpacity: 1,
-      maxRotation: 15,
+      maxRotation: 5, // Reduced rotation for less jitter
     },
   },
   {
@@ -49,17 +45,13 @@ export const GLASSES_OVERLAYS: OverlayConfig[] = [
       scale: 1,
       opacity: 1,
     },
-    anchorPoints: [
-      33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161,
-      246, 362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385,
-      384, 398,
-    ],
+    anchorPoints: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
     constraints: {
       minScale: 0.8,
       maxScale: 1.2,
       minOpacity: 0.7,
       maxOpacity: 1,
-      maxRotation: 10,
+      maxRotation: 5, // Reduced rotation for less jitter
     },
   },
   {
@@ -76,17 +68,13 @@ export const GLASSES_OVERLAYS: OverlayConfig[] = [
       scale: 1,
       opacity: 1,
     },
-    anchorPoints: [
-      33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161,
-      246, 362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385,
-      384, 398,
-    ],
+    anchorPoints: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
     constraints: {
       minScale: 0.7,
       maxScale: 1.3,
       minOpacity: 0.8,
       maxOpacity: 1,
-      maxRotation: 20,
+      maxRotation: 5, // Reduced rotation for less jitter
     },
   },
 ];
