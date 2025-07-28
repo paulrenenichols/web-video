@@ -16,7 +16,7 @@ export const Footer: React.FC = () => {
           </div>
 
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            Development Phase 1
+            Development Phase 2
           </div>
         </div>
       </div>

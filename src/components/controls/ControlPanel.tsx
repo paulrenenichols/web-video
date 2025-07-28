@@ -1,14 +1,19 @@
 /**
- * @fileoverview Control panel component for camera controls.
+ * @fileoverview Enhanced control panel component for camera and recording controls.
  *
- * Provides controls for camera start/stop and device selection.
- * This is a placeholder component that will be enhanced in later phases.
+ * Provides comprehensive controls for camera management and video recording.
+ * Integrates recording functionality with camera controls.
  */
 
 import React from 'react';
+import { RecordButton } from './RecordButton';
+import { RecordingTimer } from './RecordingTimer';
+import { FileDownload } from './FileDownload';
 import type { CameraDevice } from '@/types/video';
+import type { RecordingResult } from '@/types/recording';
 
 interface ControlPanelProps {
+  // Camera controls
   isActive: boolean;
   isLoading: boolean;
   devices: CameraDevice[];
@@ -18,9 +23,20 @@ interface ControlPanelProps {
   onSwitchCamera: (deviceId: string) => void;
   error: string | null;
   onClearError: () => void;
+
+  // Recording controls
+  isRecording: boolean;
+  isProcessing: boolean;
+  elapsedTime: number;
+  recordingResult: RecordingResult | null;
+  onStartRecording: () => void;
+  onStopRecording: () => void;
+  onDownloadRecording: () => void;
+  onClearRecording: () => void;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
+  // Camera props
   isActive,
   isLoading,
   devices,
@@ -30,29 +46,88 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onSwitchCamera,
   error,
   onClearError,
+
+  // Recording props
+  isRecording,
+  isProcessing,
+  elapsedTime,
+  recordingResult,
+  onStartRecording,
+  onStopRecording,
+  onDownloadRecording,
+  onClearRecording,
 }) => {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* Camera Controls */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <button
-            onClick={isActive ? onStopCamera : onStartCamera}
-            disabled={isLoading}
-            className="btn btn-primary flex-1"
-          >
-            {isLoading ? (
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Loading...</span>
-              </div>
-            ) : isActive ? (
-              'Stop Camera'
-            ) : (
-              'Start Camera'
-            )}
-          </button>
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Camera Controls
+          </h3>
+
+          <div className="flex flex-col sm:flex-row gap-4">
+            <button
+              onClick={isActive ? onStopCamera : onStartCamera}
+              disabled={isLoading}
+              className="btn btn-primary flex-1"
+            >
+              {isLoading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Loading...</span>
+                </div>
+              ) : isActive ? (
+                'Stop Camera'
+              ) : (
+                'Start Camera'
+              )}
+            </button>
+          </div>
         </div>
+
+        {/* Recording Controls */}
+        {isActive && (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Recording Controls
+            </h3>
+
+            <div className="space-y-4">
+              <RecordButton
+                isRecording={isRecording}
+                isProcessing={isProcessing}
+                onStartRecording={onStartRecording}
+                onStopRecording={onStopRecording}
+                disabled={!isActive}
+                className="w-full"
+              />
+
+              {isRecording && (
+                <RecordingTimer
+                  elapsedTime={elapsedTime}
+                  isRecording={isRecording}
+                  className="justify-center"
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* File Download */}
+        {recordingResult && (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Recording Results
+            </h3>
+
+            <FileDownload
+              recordingResult={recordingResult}
+              onDownload={onDownloadRecording}
+              onClear={onClearRecording}
+            />
+          </div>
+        )}
 
         {/* Camera Selection */}
         {devices.length > 1 && (
