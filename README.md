@@ -14,12 +14,23 @@ This application allows users to record videos from their browser with advanced 
 
 ## ✨ Features
 
-### Phase 1: Basic Video Recording
+### Phase 1: Basic Video Recording ✅
 
 - Camera access and live video feed
 - Start/stop recording functionality
 - File download with custom naming
 - Basic error handling and user guidance
+
+### Phase 2: Video Recording MVP ✅
+
+- **Core video recording** with MediaRecorder API
+- **Real-time recording timer** with elapsed time display
+- **File download system** with custom filename support
+- **Recording controls** with visual feedback and animations
+- **Keyboard shortcuts** (Spacebar for start/stop recording)
+- **Multiple format support** (WebM, MP4, OGG) with browser detection
+- **Quality settings** with configurable bitrate and resolution
+- **Enhanced error handling** with user-friendly messages
 
 ### Phase 2: Facial Tracking
 
@@ -54,7 +65,8 @@ This application allows users to record videos from their browser with advanced 
 ### Video Processing
 
 - **Web APIs** (MediaDevices, MediaRecorder, Canvas)
-- **MediaPipe Face Detection** for facial tracking
+- **MediaRecorder API** for video recording and file generation
+- **MediaPipe Face Detection** for facial tracking (Phase 3)
 - **WebAssembly** for performance optimization
 
 ### State Management
@@ -98,10 +110,12 @@ web-video/
 ### Key Components
 
 - **VideoPlayer**: Camera feed display and video element management
-- **RecordButton**: Main recording control with state changes
-- **FaceTracking**: MediaPipe integration for facial detection
-- **OverlaySystem**: Overlay positioning and rendering
-- **ControlPanel**: User interface for all controls
+- **RecordButton**: Main recording control with visual feedback and keyboard shortcuts
+- **RecordingTimer**: Real-time elapsed time display during recording
+- **FileDownload**: File download interface with custom naming
+- **ControlPanel**: Comprehensive control interface for camera and recording
+- **FaceTracking**: MediaPipe integration for facial detection (Phase 3)
+- **OverlaySystem**: Overlay positioning and rendering (Phase 3)
 
 ## 🚀 Getting Started
 

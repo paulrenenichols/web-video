@@ -12,6 +12,7 @@ import { Footer } from '@/components/layout/Footer';
 import { VideoPlayer } from '@/components/video/VideoPlayer';
 import { ControlPanel } from '@/components/controls/ControlPanel';
 import { useCamera } from '@/hooks/useCamera';
+import { useRecording } from '@/hooks/useRecording';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 const VideoRecorderApp: React.FC = () => {
@@ -28,6 +29,19 @@ const VideoRecorderApp: React.FC = () => {
     clearError,
   } = useCamera();
 
+  const {
+    isRecording,
+    isProcessing,
+    elapsedTime,
+    recordingBlob,
+    error: recordingError,
+    startRecording,
+    stopRecording,
+    downloadRecording,
+    clearError: clearRecordingError,
+    reset: resetRecording,
+  } = useRecording();
+
   const handleStartCamera = async (): Promise<void> => {
     await startCamera(selectedDeviceId || undefined);
   };
@@ -38,6 +52,30 @@ const VideoRecorderApp: React.FC = () => {
 
   const handleSwitchCamera = async (deviceId: string): Promise<void> => {
     await switchCamera(deviceId);
+  };
+
+  const handleStartRecording = async (): Promise<void> => {
+    if (stream) {
+      await startRecording(stream);
+    }
+  };
+
+  const handleStopRecording = async (): Promise<void> => {
+    await stopRecording();
+  };
+
+  const handleDownloadRecording = async (): Promise<void> => {
+    await downloadRecording();
+  };
+
+  const handleClearRecording = (): void => {
+    resetRecording();
+  };
+
+  const currentError = error || recordingError;
+  const handleClearError = (): void => {
+    clearError();
+    clearRecordingError();
   };
 
   return (
@@ -70,8 +108,26 @@ const VideoRecorderApp: React.FC = () => {
                 onStartCamera={handleStartCamera}
                 onStopCamera={handleStopCamera}
                 onSwitchCamera={handleSwitchCamera}
-                error={error}
-                onClearError={clearError}
+                error={currentError}
+                onClearError={handleClearError}
+                isRecording={isRecording}
+                isProcessing={isProcessing}
+                elapsedTime={elapsedTime}
+                recordingResult={
+                  recordingBlob
+                    ? {
+                        success: true,
+                        blob: recordingBlob,
+                        filename: `recording-${Date.now()}.webm`,
+                        duration: elapsedTime,
+                        size: recordingBlob.size,
+                      }
+                    : null
+                }
+                onStartRecording={handleStartRecording}
+                onStopRecording={handleStopRecording}
+                onDownloadRecording={handleDownloadRecording}
+                onClearRecording={handleClearRecording}
               />
             </div>
           </div>
