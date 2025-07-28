@@ -149,13 +149,13 @@ web-video/
 
 ```bash
 # Build and start containers
-docker-compose up -d
+pnpm docker:dev
 
 # View logs
-docker-compose logs -f
+pnpm docker:logs
 
 # Stop containers
-docker-compose down
+pnpm docker:stop
 ```
 
 ## 📖 Development Conventions
@@ -360,3 +360,56 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **Built with ❤️ using modern web technologies for an exceptional user experience.**
+
+# Running the Project
+
+There are several ways to run this project depending on your workflow and environment:
+
+## 1. Local Development (Recommended)
+
+Start the Vite development server with hot reloading:
+
+```bash
+pnpm install
+pnpm dev
+```
+
+- Open [http://localhost:5173](http://localhost:5173) in your browser.
+- Fastest feedback for development.
+
+## 2. Production Build
+
+Build the app for production and preview the output:
+
+```bash
+pnpm build
+pnpm preview
+```
+
+- The production build is output to the `dist/` directory.
+- Preview server runs at [http://localhost:4173](http://localhost:4173) by default.
+
+## 3. Docker (Development)
+
+Run the app in a Docker container for a consistent environment:
+
+```bash
+docker-compose up -d
+```
+
+- Access at [http://localhost:5173](http://localhost:5173)
+- Useful for team environments or CI/CD.
+
+To stop:
+
+```bash
+docker-compose down
+```
+
+## 4. Linting, Formatting, and Type Checking
+
+- Lint: `pnpm lint`
+- Format: `pnpm format`
+- Type check: `pnpm type-check`
+
+---
