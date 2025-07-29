@@ -293,6 +293,10 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                           console.log('🔄 Current opacity before toggle:', glasses.rendering.opacity);
                           console.log('🔄 All overlays before toggle:', JSON.stringify(activeOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled }))));
                           toggleOverlay(glasses.config.id);
+                          // Add a timeout to check the state after the toggle
+                          setTimeout(() => {
+                            console.log('🔄 After toggle - All overlays:', JSON.stringify(activeOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled }))));
+                          }, 100);
                         }}
                         className={`text-xs px-2 py-1 rounded ${
                           glasses.enabled
