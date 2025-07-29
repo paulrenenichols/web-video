@@ -84,13 +84,18 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
         );
 
         if (existingOverlay) {
-          // Update existing overlay
+          // Update existing overlay but preserve rendering properties
           set(state => ({
             activeOverlays: state.activeOverlays.map(overlay =>
               overlay.config.id === config.id
                 ? {
                     ...overlay,
                     config,
+                    // Preserve existing rendering properties (opacity, etc.)
+                    rendering: {
+                      ...config.defaultRendering,
+                      ...overlay.rendering,
+                    },
                     lastUpdate: Date.now(),
                   }
                 : overlay
@@ -148,8 +153,9 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
        * Update overlay rendering
        */
       updateOverlayRendering: (overlayId: string, rendering: Partial<OverlayRendering>) => {
-        set(state => ({
-          activeOverlays: state.activeOverlays.map(overlay =>
+        console.log('🔄 Store: Updating rendering for overlay:', overlayId, 'with:', rendering);
+        set(state => {
+          const updatedOverlays = state.activeOverlays.map(overlay =>
             overlay.config.id === overlayId
               ? {
                   ...overlay,
@@ -157,17 +163,22 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
                   lastUpdate: Date.now(),
                 }
               : overlay
-          ),
-          lastUpdate: Date.now(),
-        }));
+          );
+          console.log('🔄 Store: Updated overlays:', updatedOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled })));
+          return {
+            activeOverlays: updatedOverlays,
+            lastUpdate: Date.now(),
+          };
+        });
       },
 
       /**
        * Enable/disable overlay
        */
       toggleOverlay: (overlayId: string, enabled?: boolean) => {
-        set(state => ({
-          activeOverlays: state.activeOverlays.map(overlay =>
+        console.log('🔄 Store: Toggling overlay:', overlayId, 'enabled:', enabled);
+        set(state => {
+          const updatedOverlays = state.activeOverlays.map(overlay =>
             overlay.config.id === overlayId
               ? {
                   ...overlay,
@@ -175,9 +186,14 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
                   lastUpdate: Date.now(),
                 }
               : overlay
-          ),
-          lastUpdate: Date.now(),
-        }));
+          );
+          const toggledOverlay = updatedOverlays.find(o => o.config.id === overlayId);
+          console.log('🔄 Store: Toggled overlay:', toggledOverlay ? { id: toggledOverlay.config.id, enabled: toggledOverlay.enabled, opacity: toggledOverlay.rendering.opacity } : 'not found');
+          return {
+            activeOverlays: updatedOverlays,
+            lastUpdate: Date.now(),
+          };
+        });
       },
 
       /**
