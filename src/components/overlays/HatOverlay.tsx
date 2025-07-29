@@ -44,6 +44,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
   console.log('🔍 HatOverlay - hatOverlays count:', hatOverlays.length);
   console.log('🔍 HatOverlay - status:', status);
   console.log('🔍 HatOverlay - facialLandmarks:', !!facialLandmarks);
+  console.log('🔍 HatOverlay - faceDetection:', !!faceDetection);
 
   /**
    * Update canvas size to match video

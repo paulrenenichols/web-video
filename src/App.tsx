@@ -300,9 +300,7 @@ const VideoRecorderApp: React.FC = () => {
                         setGlassesOverlaySystemEnabled
                       }
                       hatOverlaySystemEnabled={hatOverlaySystemEnabled}
-                      onToggleHatOverlaySystem={
-                        setHatOverlaySystemEnabled
-                      }
+                      onToggleHatOverlaySystem={setHatOverlaySystemEnabled}
                     />
                   </div>
                 )}
