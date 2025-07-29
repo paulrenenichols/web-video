@@ -56,6 +56,17 @@ const VideoRecorderApp: React.FC = () => {
   const [showOverlays, setShowOverlays] = React.useState(false);
   const [showDebugControls, setShowDebugControls] = React.useState(false);
 
+  // Initialize overlay system when component mounts
+  React.useEffect(() => {
+    // Enable overlay system by default
+    useOverlayStore.getState().setEnabled(true);
+  }, []);
+
+  // Sync showOverlays state with overlay store state
+  React.useEffect(() => {
+    setShowOverlays(overlayState.isEnabled);
+  }, [overlayState.isEnabled]);
+
 
 
   // Unified visualization logic
@@ -177,14 +188,14 @@ const VideoRecorderApp: React.FC = () => {
 
                 {/* Overlay system */}
                 <OverlaySystem
-                  isVisible={showOverlays}
+                  isVisible={overlayState.isEnabled}
                   videoRef={videoRef}
                   className="aspect-video w-full"
                 />
 
                 {/* Glasses overlay */}
                 <GlassesOverlay
-                  isVisible={showOverlays}
+                  isVisible={overlayState.isEnabled}
                   videoRef={videoRef}
                   className="aspect-video w-full"
                 />
@@ -291,10 +302,8 @@ const VideoRecorderApp: React.FC = () => {
                       onToggleEnhancedTracking={setShowEnhancedTracking}
                       onToggleOverlays={(enabled) => {
                         setShowOverlays(enabled);
+                        // Sync with overlay store state
                         useOverlayStore.getState().setEnabled(enabled);
-                        if (enabled) {
-                          useOverlayStore.getState().clearOverlays();
-                        }
                       }}
                       isTrackingInitialized={trackingState.isInitialized}
                       isTracking={trackingState.isTracking}
