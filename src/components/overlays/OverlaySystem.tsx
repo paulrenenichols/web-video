@@ -151,6 +151,13 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
         const canvasWidth_px = positionResult.position.width * canvasWidth;
         const canvasHeight_px = positionResult.position.height * canvasHeight;
 
+        console.log('🎨 Rendering overlay:', {
+          name: overlay.config.name,
+          canvasCoords: { x: canvasX.toFixed(1), y: canvasY.toFixed(1) },
+          dimensions: { width: canvasWidth_px.toFixed(1), height: canvasHeight_px.toFixed(1) },
+          canvasSize: { width: canvasWidth, height: canvasHeight }
+        });
+
         // Set rendering properties
         ctx.globalAlpha = overlay.rendering.opacity;
         ctx.globalCompositeOperation = overlay.rendering.blendMode;
