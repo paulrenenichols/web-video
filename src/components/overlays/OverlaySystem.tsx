@@ -268,6 +268,11 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
         ctx.strokeStyle = '#00ff00';
         ctx.lineWidth = 2;
         ctx.strokeRect(-canvasWidth_px / 2, -canvasHeight_px / 2, canvasWidth_px, canvasHeight_px);
+        
+        console.log('🎨 Rectangle drawing - Center position:', canvasX.toFixed(1), canvasY.toFixed(1));
+        console.log('🎨 Rectangle drawing - Translation offset:', (canvasWidth_px / 2).toFixed(1), (canvasHeight_px / 2).toFixed(1));
+        console.log('🎨 Rectangle drawing - Final center:', (canvasX + canvasWidth_px / 2).toFixed(1), (canvasY + canvasHeight_px / 2).toFixed(1));
+        console.log('🎨 Rectangle drawing - Rectangle bounds:', (-canvasWidth_px / 2).toFixed(1), (-canvasHeight_px / 2).toFixed(1), canvasWidth_px.toFixed(1), canvasHeight_px.toFixed(1));
 
         // Draw overlay label
         ctx.fillStyle = '#00ff00';
