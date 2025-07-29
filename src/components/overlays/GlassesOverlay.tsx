@@ -15,7 +15,7 @@ interface GlassesOverlayProps {
   /** Whether glasses overlay is visible */
   isVisible: boolean;
   /** Video element reference */
-  videoRef: React.RefObject<HTMLVideoElement>;
+  videoRef: React.RefObject<HTMLVideoElement | null>;
   /** Container className */
   className?: string;
 }

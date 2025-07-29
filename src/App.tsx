@@ -19,7 +19,7 @@ import { TrackingToggle } from '@/components/tracking/TrackingToggle';
 import { TrackingStatusIndicator } from '@/components/tracking/TrackingStatus';
 import { FaceTracking } from '@/components/tracking/FaceTracking';
 import { TrackingVisualization } from '@/components/tracking/TrackingVisualization';
-import { OverlaySystem } from '@/components/overlays/OverlaySystem';
+import { DebugGlassesOverlay } from '@/components/overlays/DebugGlassesOverlay';
 import { GlassesOverlay } from '@/components/overlays/GlassesOverlay';
 import { OverlayControls } from '@/components/overlays/OverlayControls';
 import { useOverlayStore } from '@/stores/overlay-store';
@@ -58,8 +58,9 @@ const VideoRecorderApp: React.FC = () => {
   const [showDebugControls, setShowDebugControls] = React.useState(false);
 
   // Separate state for debug controls overlay system (independent of overlay controls)
-  const [debugOverlaySystemEnabled, setDebugOverlaySystemEnabled] =
+  const [debugGlassesOverlayEnabled, setDebugGlassesOverlayEnabled] =
     React.useState(false);
+  const [glassesOverlaySystemEnabled, setGlassesOverlaySystemEnabled] = React.useState(false);
 
   // Initialize overlay system when component mounts
   React.useEffect(() => {
@@ -189,16 +190,16 @@ const VideoRecorderApp: React.FC = () => {
                   className="aspect-video w-full"
                 />
 
-                {/* Overlay system */}
-                <OverlaySystem
-                  isVisible={debugOverlaySystemEnabled}
+                {/* Debug glasses overlay */}
+                <DebugGlassesOverlay
+                  isVisible={debugGlassesOverlayEnabled}
                   videoRef={videoRef}
                   className="aspect-video w-full"
                 />
 
                 {/* Glasses overlay */}
                 <GlassesOverlay
-                  isVisible={debugOverlaySystemEnabled}
+                  isVisible={glassesOverlaySystemEnabled}
                   videoRef={videoRef}
                   className="aspect-video w-full"
                 />
@@ -245,7 +246,11 @@ const VideoRecorderApp: React.FC = () => {
               />
 
               {/* Overlay Controls - Always Visible */}
-              <OverlayControls className="w-full" />
+              <OverlayControls 
+                className="w-full"
+                glassesOverlaySystemEnabled={glassesOverlaySystemEnabled}
+                onToggleGlassesOverlaySystem={setGlassesOverlaySystemEnabled}
+              />
 
               {/* Debug Controls - Collapsible */}
               <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
@@ -313,11 +318,11 @@ const VideoRecorderApp: React.FC = () => {
                       onToggleVisualization={setIsVisualizationEnabled}
                       showTracking={showTracking}
                       showEnhancedTracking={showEnhancedTracking}
-                      showOverlays={debugOverlaySystemEnabled}
+                      showOverlays={debugGlassesOverlayEnabled}
                       onToggleTracking={setShowTracking}
                       onToggleEnhancedTracking={setShowEnhancedTracking}
                       onToggleOverlays={enabled => {
-                        setDebugOverlaySystemEnabled(enabled);
+                        setDebugGlassesOverlayEnabled(enabled);
                       }}
                       isTrackingInitialized={trackingState.isInitialized}
                       isTracking={trackingState.isTracking}

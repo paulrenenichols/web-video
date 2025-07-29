@@ -108,10 +108,16 @@ const GLASSES_OPTIONS: OverlayConfig[] = [
 interface OverlayControlsProps {
   /** Container className */
   className?: string;
+  /** Whether glasses overlay system is enabled */
+  glassesOverlaySystemEnabled?: boolean;
+  /** Callback to toggle glasses overlay system */
+  onToggleGlassesOverlaySystem?: (enabled: boolean) => void;
 }
 
 export const OverlayControls: React.FC<OverlayControlsProps> = ({
   className = '',
+  glassesOverlaySystemEnabled = false,
+  onToggleGlassesOverlaySystem,
 }) => {
   const [selectedGlasses, setSelectedGlasses] = useState<string | null>(null);
 
@@ -129,7 +135,6 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
   // Local state for overlay controls - independent of overlay system visibility
   const [isOverlayControlsEnabled, setIsOverlayControlsEnabled] =
     useState(true);
-  const [isOverlaySystemVisible, setIsOverlaySystemVisible] = useState(false);
 
   // Get active glasses overlays
   const activeGlasses = activeOverlays.filter(
@@ -188,10 +193,12 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
   };
 
   /**
-   * Toggle overlay system visibility (local state only)
+   * Toggle glasses overlay system visibility
    */
-  const handleToggleOverlaySystem = () => {
-    setIsOverlaySystemVisible(!isOverlaySystemVisible);
+  const handleToggleGlassesOverlaySystem = () => {
+    if (onToggleGlassesOverlaySystem) {
+      onToggleGlassesOverlaySystem(!glassesOverlaySystemEnabled);
+    }
   };
 
   /**
@@ -224,14 +231,14 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
               {isOverlayControlsEnabled ? 'Active' : 'Inactive'}
             </button>
             <button
-              onClick={handleToggleOverlaySystem}
+              onClick={handleToggleGlassesOverlaySystem}
               className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                isOverlaySystemVisible
+                glassesOverlaySystemEnabled
                   ? 'bg-green-500 text-white hover:bg-green-600'
                   : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
               }`}
             >
-              {isOverlaySystemVisible ? 'Visible' : 'Hidden'}
+              {glassesOverlaySystemEnabled ? 'Visible' : 'Hidden'}
             </button>
             <button
               onClick={handleClearOverlays}
@@ -383,11 +390,11 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <span>Controls System:</span>
+              <span>Glasses System:</span>
               <span
-                className={`font-medium ${isOverlaySystemVisible ? 'text-green-600' : 'text-gray-400'}`}
+                className={`font-medium ${glassesOverlaySystemEnabled ? 'text-green-600' : 'text-gray-400'}`}
               >
-                {isOverlaySystemVisible ? 'Visible' : 'Hidden'}
+                {glassesOverlaySystemEnabled ? 'Visible' : 'Hidden'}
               </span>
             </div>
             <div className="flex items-center space-x-2">

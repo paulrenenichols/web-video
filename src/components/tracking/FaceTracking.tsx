@@ -14,7 +14,7 @@ interface FaceTrackingProps {
   /** Whether tracking visualization is visible */
   isVisible: boolean;
   /** Video element reference */
-  videoRef: React.RefObject<HTMLVideoElement>;
+  videoRef: React.RefObject<HTMLVideoElement | null>;
   /** Container className */
   className?: string;
   /** Video stream for fallback dimensions */

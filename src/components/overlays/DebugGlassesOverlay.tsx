@@ -1,7 +1,7 @@
 /**
- * @fileoverview Basic overlay system component.
+ * @fileoverview Debug glasses overlay component.
  *
- * Provides foundation for overlay positioning, rendering, and management.
+ * Provides debug visualization for overlay positioning, rendering, and management.
  * Handles canvas setup and basic rendering logic for facial overlays.
  */
 
@@ -11,16 +11,16 @@ import { useTrackingStore } from '@/stores/tracking-store';
 import { OverlayService } from '@/services/overlay.service';
 import { calculateFaceOrientation } from '@/utils/tracking';
 
-interface OverlaySystemProps {
-  /** Whether overlay system is visible */
+interface DebugGlassesOverlayProps {
+  /** Whether debug glasses overlay is visible */
   isVisible: boolean;
   /** Video element reference */
-  videoRef: React.RefObject<HTMLVideoElement>;
+  videoRef: React.RefObject<HTMLVideoElement | null>;
   /** Container className */
   className?: string;
 }
 
-export const OverlaySystem: React.FC<OverlaySystemProps> = ({
+export const DebugGlassesOverlay: React.FC<DebugGlassesOverlayProps> = ({
   isVisible,
   videoRef,
   className = '',
