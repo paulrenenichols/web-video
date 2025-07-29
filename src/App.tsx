@@ -21,6 +21,7 @@ import { FaceTracking } from '@/components/tracking/FaceTracking';
 import { TrackingVisualization } from '@/components/tracking/TrackingVisualization';
 import { OverlaySystem } from '@/components/overlays/OverlaySystem';
 import { useOverlayStore } from '@/stores/overlay-store';
+import { VisualizationControls } from '@/components/controls/VisualizationControls';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 const VideoRecorderApp: React.FC = () => {
@@ -46,11 +47,10 @@ const VideoRecorderApp: React.FC = () => {
   // Get overlay state for Step 6 testing
   const overlayState = useOverlayStore();
 
-  // Step 3: Tracking visualization state
+  // Unified visualization state
+  const [isVisualizationEnabled, setIsVisualizationEnabled] = React.useState(false);
   const [showTracking, setShowTracking] = React.useState(false);
   const [showEnhancedTracking, setShowEnhancedTracking] = React.useState(false);
-
-  // Step 6: Overlay system state
   const [showOverlays, setShowOverlays] = React.useState(false);
 
   // Add test overlay when overlay system is enabled
@@ -92,6 +92,15 @@ const VideoRecorderApp: React.FC = () => {
     }
   }, [showOverlays, overlayState.activeOverlays.length]);
 
+  // Unified visualization logic
+  React.useEffect(() => {
+    if (!isVisualizationEnabled) {
+      setShowTracking(false);
+      setShowEnhancedTracking(false);
+      setShowOverlays(false);
+    }
+  }, [isVisualizationEnabled]);
+
   // Auto-hide enhanced tracking when basic tracking is disabled
   React.useEffect(() => {
     if (!showTracking) {
@@ -99,17 +108,10 @@ const VideoRecorderApp: React.FC = () => {
     }
   }, [showTracking]);
 
-  // Auto-hide enhanced visualization when overlays are enabled
+  // Auto-hide enhanced tracking when overlays are on
   React.useEffect(() => {
     if (showOverlays) {
       setShowEnhancedTracking(false);
-    }
-  }, [showOverlays]);
-
-  // Auto-hide basic tracking when overlays are enabled
-  React.useEffect(() => {
-    if (showOverlays) {
-      setShowTracking(false);
     }
   }, [showOverlays]);
 
@@ -211,14 +213,14 @@ const VideoRecorderApp: React.FC = () => {
                   stream={stream}
                 />
 
-                {/* Step 5: Enhanced tracking visualization */}
+                {/* Enhanced tracking visualization */}
                 <TrackingVisualization
                   isVisible={showEnhancedTracking}
                   videoRef={videoRef}
                   className="aspect-video w-full"
                 />
 
-                {/* Step 6: Overlay system */}
+                {/* Overlay system */}
                 <OverlaySystem
                   isVisible={showOverlays}
                   videoRef={videoRef}
@@ -235,153 +237,7 @@ const VideoRecorderApp: React.FC = () => {
                 Controls
               </h2>
 
-              {/* Step 2: Tracking State Display */}
-              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-4">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                  Tracking State (Step 2)
-                </h3>
-                <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                  <div>
-                    Status:{' '}
-                    <span className="font-mono">{trackingState.status}</span>
-                  </div>
-                  <div>
-                    Face Count:{' '}
-                    <span className="font-mono">{trackingState.faceCount}</span>
-                  </div>
-                  <div>
-                    Confidence:{' '}
-                    <span className="font-mono">
-                      {(trackingState.confidence * 100).toFixed(1)}%
-                    </span>
-                  </div>
-                  <div>
-                    Tracking:{' '}
-                    <span className="font-mono">
-                      {trackingState.isTracking ? 'Yes' : 'No'}
-                    </span>
-                  </div>
-                  <div>
-                    Initialized:{' '}
-                    <span className="font-mono">
-                      {trackingState.isInitialized ? 'Yes' : 'No'}
-                    </span>
-                  </div>
-                  {trackingState.error && (
-                    <div className="text-red-500">
-                      Error: {trackingState.error}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Step 3: Tracking Controls */}
-              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-4">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-                  Tracking Visualization (Step 3)
-                </h3>
-                <div className="space-y-3">
-                  <TrackingToggle
-                    isVisible={showTracking}
-                    isTracking={trackingState.isTracking}
-                    onToggle={setShowTracking}
-                    disabled={!trackingState.isInitialized}
-                  />
-                  <TrackingStatusIndicator
-                    status={trackingState.status}
-                    confidence={trackingState.confidence}
-                    faceCount={trackingState.faceCount}
-                    isTracking={trackingState.isTracking}
-                    error={trackingState.error}
-                  />
-                </div>
-              </div>
-
-              {/* Step 5: Enhanced Tracking Controls */}
-              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-4">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-                  Enhanced Visualization (Step 5)
-                </h3>
-                <div className="space-y-3">
-                  <button
-                    onClick={() => setShowEnhancedTracking(!showEnhancedTracking)}
-                    disabled={!trackingState.isInitialized || !showTracking}
-                    className={`w-full px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                      showEnhancedTracking
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                        : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-                    } ${
-                      !trackingState.isInitialized || !showTracking
-                        ? 'opacity-50 cursor-not-allowed'
-                        : ''
-                    }`}
-                  >
-                    {showEnhancedTracking ? 'Hide Enhanced' : 'Show Enhanced'}
-                  </button>
-                  <div className="text-xs text-gray-600 dark:text-gray-400">
-                    {showEnhancedTracking ? (
-                      <div>
-                        <div>• Feature outlines with labels</div>
-                        <div>• Accuracy indicator</div>
-                        <div>• Face orientation data</div>
-                        <div>• Stability indicator</div>
-                      </div>
-                    ) : (
-                      <div>Enhanced visualization with feature outlines, accuracy indicators, and orientation data</div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Step 6: Overlay System Controls */}
-              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-4">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-                  Overlay System (Step 6)
-                </h3>
-                <div className="space-y-3">
-                  <button
-                    onClick={() => {
-                      const newShowOverlays = !showOverlays;
-                      setShowOverlays(newShowOverlays);
-                      useOverlayStore.getState().setEnabled(newShowOverlays);
-                      
-                      // Clear existing overlays when toggling
-                      if (newShowOverlays) {
-                        useOverlayStore.getState().clearOverlays();
-                      }
-                    }}
-                    disabled={!trackingState.isInitialized || !showTracking}
-                    className={`w-full px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                      showOverlays
-                        ? 'bg-purple-600 text-white hover:bg-purple-700'
-                        : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-                    } ${
-                      !trackingState.isInitialized || !showTracking
-                        ? 'opacity-50 cursor-not-allowed'
-                        : ''
-                    }`}
-                  >
-                    {showOverlays ? 'Hide Overlays' : 'Show Overlays'}
-                  </button>
-                  <div className="text-xs text-gray-600 dark:text-gray-400">
-                    {showOverlays ? (
-                      <div>
-                        <div>• Overlay system enabled</div>
-                        <div>• Position calculation active</div>
-                        <div>• Canvas rendering ready</div>
-                        <div>• Active overlays: {overlayState.activeOverlays.length}</div>
-                      </div>
-                    ) : (
-                      <div>Basic overlay system with positioning calculations and canvas rendering foundation</div>
-                    )}
-                  </div>
-                  {overlayState.error && (
-                    <div className="text-red-500 text-xs">
-                      Error: {overlayState.error}
-                    </div>
-                  )}
-                </div>
-              </div>
+              {/* Camera Controls - Top */}
               <ControlPanel
                 isActive={isActive}
                 isLoading={isLoading}
@@ -410,6 +266,61 @@ const VideoRecorderApp: React.FC = () => {
                 onStopRecording={handleStopRecording}
                 onDownloadRecording={handleDownloadRecording}
                 onClearRecording={handleClearRecording}
+              />
+
+              {/* Tracking State - Below Camera Controls */}
+              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                  Tracking State
+                </h3>
+                <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                  <div>
+                    Status: <span className="font-mono">{trackingState.status}</span>
+                  </div>
+                  <div>
+                    Face Count: <span className="font-mono">{trackingState.faceCount}</span>
+                  </div>
+                  <div>
+                    Confidence: <span className="font-mono">{(trackingState.confidence * 100).toFixed(1)}%</span>
+                  </div>
+                  <div>
+                    Tracking: <span className="font-mono">{trackingState.isTracking ? 'Yes' : 'No'}</span>
+                  </div>
+                  <div>
+                    Initialized: <span className="font-mono">{trackingState.isInitialized ? 'Yes' : 'No'}</span>
+                  </div>
+                  {trackingState.error && (
+                    <div className="text-red-500">
+                      Error: {trackingState.error}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Unified Visualization Controls - Below Tracking State */}
+              <VisualizationControls
+                isVisualizationEnabled={isVisualizationEnabled}
+                onToggleVisualization={setIsVisualizationEnabled}
+                showTracking={showTracking}
+                showEnhancedTracking={showEnhancedTracking}
+                showOverlays={showOverlays}
+                onToggleTracking={setShowTracking}
+                onToggleEnhancedTracking={setShowEnhancedTracking}
+                onToggleOverlays={(enabled) => {
+                  setShowOverlays(enabled);
+                  useOverlayStore.getState().setEnabled(enabled);
+                  if (enabled) {
+                    useOverlayStore.getState().clearOverlays();
+                  }
+                }}
+                isTrackingInitialized={trackingState.isInitialized}
+                isTracking={trackingState.isTracking}
+                trackingStatus={trackingState.status}
+                trackingConfidence={trackingState.confidence}
+                faceCount={trackingState.faceCount}
+                trackingError={trackingState.error}
+                activeOverlaysCount={overlayState.activeOverlays.length}
+                overlayError={overlayState.error}
               />
             </div>
           </div>
