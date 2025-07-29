@@ -63,7 +63,7 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
    * Process video element with MediaPipe
    */
   const processVideo = useCallback(async (videoElement: HTMLVideoElement): Promise<void> => {
-    if (!mediaPipeRef.current || !isInitialized) {
+    if (!mediaPipeRef.current) {
       console.warn('MediaPipe not initialized, initializing now...');
       await initialize();
     }
