@@ -5,7 +5,7 @@
  * Handles error boundaries and loading states.
  */
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useRef } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Main } from '@/components/layout/Main';
 import { Footer } from '@/components/layout/Footer';
@@ -15,6 +15,9 @@ import { useCamera } from '@/hooks/useCamera';
 import { useRecording } from '@/hooks/useRecording';
 import { useMediaPipe } from '@/hooks/useMediaPipe';
 import { useTrackingStore } from '@/stores/tracking-store';
+import { TrackingToggle } from '@/components/tracking/TrackingToggle';
+import { TrackingStatusIndicator } from '@/components/tracking/TrackingStatus';
+import { FaceTracking } from '@/components/tracking/FaceTracking';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 const VideoRecorderApp: React.FC = () => {
@@ -36,6 +39,10 @@ const VideoRecorderApp: React.FC = () => {
   
   // Get tracking state for Step 2 testing
   const trackingState = useTrackingStore();
+  
+  // Step 3: Tracking visualization state
+  const [showTracking, setShowTracking] = React.useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const {
     isRecording,
@@ -117,11 +124,19 @@ const VideoRecorderApp: React.FC = () => {
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Camera Feed
               </h2>
-              <VideoPlayer 
-                stream={stream} 
-                className="aspect-video w-full" 
-                onVideoProcess={handleVideoProcess}
-              />
+              <div className="relative">
+                <VideoPlayer 
+                  stream={stream} 
+                  className="aspect-video w-full" 
+                  onVideoProcess={handleVideoProcess}
+                  ref={videoRef}
+                />
+                <FaceTracking
+                  isVisible={showTracking}
+                  videoRef={videoRef}
+                  className="aspect-video w-full"
+                />
+              </div>
             </div>
           </div>
 
@@ -146,6 +161,28 @@ const VideoRecorderApp: React.FC = () => {
                   {trackingState.error && (
                     <div className="text-red-500">Error: {trackingState.error}</div>
                   )}
+                </div>
+              </div>
+              
+              {/* Step 3: Tracking Controls */}
+              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-4">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                  Tracking Visualization (Step 3)
+                </h3>
+                <div className="space-y-3">
+                  <TrackingToggle
+                    isVisible={showTracking}
+                    isTracking={trackingState.isTracking}
+                    onToggle={setShowTracking}
+                    disabled={!trackingState.isInitialized}
+                  />
+                  <TrackingStatusIndicator
+                    status={trackingState.status}
+                    confidence={trackingState.confidence}
+                    faceCount={trackingState.faceCount}
+                    isTracking={trackingState.isTracking}
+                    error={trackingState.error}
+                  />
                 </div>
               </div>
               <ControlPanel

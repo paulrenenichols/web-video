@@ -5,7 +5,7 @@
  * This is a foundational component that will be enhanced in later phases.
  */
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 
 interface VideoPlayerProps {
   stream: MediaStream | null;
@@ -16,15 +16,18 @@ interface VideoPlayerProps {
   onVideoProcess?: (videoElement: HTMLVideoElement) => Promise<void>;
 }
 
-export const VideoPlayer: React.FC<VideoPlayerProps> = ({
+export const VideoPlayer = forwardRef<HTMLVideoElement, VideoPlayerProps>(({
   stream,
   className = '',
   autoPlay = true,
   muted = true,
   playsInline = true,
   onVideoProcess,
-}) => {
+}, ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  
+  // Expose video element to parent
+  useImperativeHandle(ref, () => videoRef.current!, []);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -121,4 +124,4 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       />
     </div>
   );
-};
+});
