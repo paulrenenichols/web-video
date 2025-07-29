@@ -68,9 +68,19 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
    * Process video element with MediaPipe
    */
   const processVideo = useCallback(async (videoElement: HTMLVideoElement): Promise<void> => {
-    if (!mediaPipeRef.current) {
+    if (!mediaPipeRef.current || !isInitialized) {
       console.warn('MediaPipe not initialized, initializing now...');
-      await initialize();
+      try {
+        await initialize();
+      } catch (error) {
+        console.error('Failed to initialize MediaPipe for video processing:', error);
+        return;
+      }
+    }
+
+    if (!mediaPipeRef.current) {
+      console.warn('MediaPipe still not available after initialization');
+      return;
     }
 
     try {
@@ -78,7 +88,7 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
     } catch (error) {
       console.error('Error processing video with MediaPipe:', error);
     }
-  }, [initialize]);
+  }, [initialize, isInitialized]);
 
   /**
    * Start continuous processing
@@ -86,7 +96,17 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
   const startProcessing = useCallback(async (videoElement: HTMLVideoElement): Promise<void> => {
     if (!mediaPipeRef.current || !isInitialized) {
       console.warn('MediaPipe not initialized, initializing now...');
-      await initialize();
+      try {
+        await initialize();
+      } catch (error) {
+        console.error('Failed to initialize MediaPipe for processing:', error);
+        return;
+      }
+    }
+
+    if (!mediaPipeRef.current) {
+      console.warn('MediaPipe still not available after initialization');
+      return;
     }
 
     try {
@@ -95,7 +115,7 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
     } catch (error) {
       console.error('Error starting MediaPipe processing:', error);
     }
-  }, [initialize]);
+  }, [initialize, isInitialized]);
 
   /**
    * Get current MediaPipe state

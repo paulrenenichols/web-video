@@ -60,7 +60,8 @@ const VideoRecorderApp: React.FC = () => {
   // Separate state for debug controls overlay system (independent of overlay controls)
   const [debugGlassesOverlayEnabled, setDebugGlassesOverlayEnabled] =
     React.useState(false);
-  const [glassesOverlaySystemEnabled, setGlassesOverlaySystemEnabled] = React.useState(false);
+  const [glassesOverlaySystemEnabled, setGlassesOverlaySystemEnabled] =
+    React.useState(false);
 
   // Initialize overlay system when component mounts
   React.useEffect(() => {
@@ -118,10 +119,12 @@ const VideoRecorderApp: React.FC = () => {
   const handleVideoProcess = async (
     videoElement: HTMLVideoElement
   ): Promise<void> => {
-    if (isActive) {
+    if (isActive && isInitialized) {
       await processVideo(videoElement);
-    } else {
+    } else if (!isActive) {
       console.log('⚠️ Skipping video processing - camera not active');
+    } else if (!isInitialized) {
+      console.log('⚠️ Skipping video processing - MediaPipe not initialized');
     }
   };
 
@@ -246,7 +249,7 @@ const VideoRecorderApp: React.FC = () => {
               />
 
               {/* Overlay Controls - Always Visible */}
-              <OverlayControls 
+              <OverlayControls
                 className="w-full"
                 glassesOverlaySystemEnabled={glassesOverlaySystemEnabled}
                 onToggleGlassesOverlaySystem={setGlassesOverlaySystemEnabled}
