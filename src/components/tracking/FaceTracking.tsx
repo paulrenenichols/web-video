@@ -16,12 +16,15 @@ interface FaceTrackingProps {
   videoRef: React.RefObject<HTMLVideoElement>;
   /** Container className */
   className?: string;
+  /** Video stream for fallback dimensions */
+  stream?: MediaStream | null;
 }
 
 export const FaceTracking: React.FC<FaceTrackingProps> = ({
   isVisible,
   videoRef,
   className = '',
+  stream,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number>();
@@ -170,34 +173,55 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
       return false;
     }
 
-    // Wait for video to be ready
-    if (video.videoWidth === 0 || video.videoHeight === 0) {
-      console.log('⏳ Video not ready yet, waiting...');
-      return false;
+    // Try to get dimensions from video element first
+    let videoWidth = video.videoWidth;
+    let videoHeight = video.videoHeight;
+    
+    // If video dimensions are zero, try to get from stream
+    if ((videoWidth === 0 || videoHeight === 0) && stream) {
+      const videoTrack = stream.getVideoTracks()[0];
+      if (videoTrack) {
+        const settings = videoTrack.getSettings();
+        videoWidth = settings.width || 640;
+        videoHeight = settings.height || 480;
+        console.log('📹 Using stream dimensions:', { videoWidth, videoHeight });
+      }
+    }
+
+    // If still no dimensions, use fallback
+    if (videoWidth === 0 || videoHeight === 0) {
+      console.log('⏳ Video not ready yet, using fallback dimensions');
+      videoWidth = 640;
+      videoHeight = 480;
     }
 
     // Get video display size
     const rect = video.getBoundingClientRect();
     
-    // Check if we have valid display dimensions
-    if (rect.width === 0 || rect.height === 0) {
-      console.log('⏳ Video display not ready yet, waiting...');
-      return false;
+    // If display rect is zero, use video dimensions
+    let displayWidth = rect.width;
+    let displayHeight = rect.height;
+    
+    if (displayWidth === 0 || displayHeight === 0) {
+      console.log('📐 Using video dimensions as display size');
+      displayWidth = videoWidth;
+      displayHeight = videoHeight;
     }
     
-    canvas.width = rect.width;
-    canvas.height = rect.height;
+    canvas.width = displayWidth;
+    canvas.height = displayHeight;
     
     console.log('📏 Canvas size updated:', {
       canvasWidth: canvas.width,
       canvasHeight: canvas.height,
       videoRect: rect,
       videoVideoWidth: video.videoWidth,
-      videoVideoHeight: video.videoHeight
+      videoVideoHeight: video.videoHeight,
+      streamDimensions: { videoWidth, videoHeight }
     });
     
     return true;
-  }, [videoRef]);
+  }, [videoRef, stream]);
 
   /**
    * Render tracking visualization
@@ -264,6 +288,14 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
 
     const handleVideoReady = () => {
       console.log('🎥 Video ready event fired');
+      console.log('🎥 Video state:', {
+        videoWidth: video.videoWidth,
+        videoHeight: video.videoHeight,
+        readyState: video.readyState,
+        currentTime: video.currentTime,
+        duration: video.duration,
+        rect: video.getBoundingClientRect()
+      });
       updateCanvasSize();
     };
 

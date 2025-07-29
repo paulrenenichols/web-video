@@ -135,6 +135,7 @@ const VideoRecorderApp: React.FC = () => {
                   isVisible={showTracking}
                   videoRef={videoRef}
                   className="aspect-video w-full"
+                  stream={stream}
                 />
               </div>
             </div>
