@@ -56,6 +56,8 @@ const VideoRecorderApp: React.FC = () => {
   const [showEnhancedTracking, setShowEnhancedTracking] = React.useState(false);
   const [showOverlays, setShowOverlays] = React.useState(false);
   const [showDebugControls, setShowDebugControls] = React.useState(false);
+  const [showCameraControls, setShowCameraControls] = React.useState(true);
+  const [showOverlayControls, setShowOverlayControls] = React.useState(true);
 
   // Separate state for debug controls overlay system (independent of overlay controls)
   const [debugGlassesOverlayEnabled, setDebugGlassesOverlayEnabled] =
@@ -217,43 +219,79 @@ const VideoRecorderApp: React.FC = () => {
                 Controls
               </h2>
 
-              {/* Camera Controls - Top */}
-              <ControlPanel
-                isActive={isActive}
-                isLoading={isLoading}
-                devices={devices}
-                selectedDeviceId={selectedDeviceId}
-                onStartCamera={handleStartCamera}
-                onStopCamera={handleStopCamera}
-                onSwitchCamera={handleSwitchCamera}
-                error={currentError}
-                onClearError={handleClearError}
-                isRecording={isRecording}
-                isProcessing={isProcessing}
-                elapsedTime={elapsedTime}
-                recordingResult={
-                  recordingBlob
-                    ? {
-                        success: true,
-                        blob: recordingBlob,
-                        filename: `recording-${Date.now()}.webm`,
-                        duration: elapsedTime,
-                        size: recordingBlob.size,
-                      }
-                    : null
-                }
-                onStartRecording={handleStartRecording}
-                onStopRecording={handleStopRecording}
-                onDownloadRecording={handleDownloadRecording}
-                onClearRecording={handleClearRecording}
-              />
+              {/* Camera Controls - Collapsible */}
+              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+                <button
+                  onClick={() => setShowCameraControls(!showCameraControls)}
+                  className="flex items-center justify-between w-full text-left"
+                >
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                    Camera Controls
+                  </h3>
+                  <span className="text-gray-500">
+                    {showCameraControls ? '▼' : '▶'}
+                  </span>
+                </button>
 
-              {/* Overlay Controls - Always Visible */}
-              <OverlayControls
-                className="w-full"
-                glassesOverlaySystemEnabled={glassesOverlaySystemEnabled}
-                onToggleGlassesOverlaySystem={setGlassesOverlaySystemEnabled}
-              />
+                {showCameraControls && (
+                  <div className="mt-4">
+                    <ControlPanel
+                      isActive={isActive}
+                      isLoading={isLoading}
+                      devices={devices}
+                      selectedDeviceId={selectedDeviceId}
+                      onStartCamera={handleStartCamera}
+                      onStopCamera={handleStopCamera}
+                      onSwitchCamera={handleSwitchCamera}
+                      error={currentError}
+                      onClearError={handleClearError}
+                      isRecording={isRecording}
+                      isProcessing={isProcessing}
+                      elapsedTime={elapsedTime}
+                      recordingResult={
+                        recordingBlob
+                          ? {
+                              success: true,
+                              blob: recordingBlob,
+                              filename: `recording-${Date.now()}.webm`,
+                              duration: elapsedTime,
+                              size: recordingBlob.size,
+                            }
+                          : null
+                      }
+                      onStartRecording={handleStartRecording}
+                      onStopRecording={handleStopRecording}
+                      onDownloadRecording={handleDownloadRecording}
+                      onClearRecording={handleClearRecording}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Overlay Controls - Collapsible */}
+              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+                <button
+                  onClick={() => setShowOverlayControls(!showOverlayControls)}
+                  className="flex items-center justify-between w-full text-left"
+                >
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                    Overlay Controls
+                  </h3>
+                  <span className="text-gray-500">
+                    {showOverlayControls ? '▼' : '▶'}
+                  </span>
+                </button>
+
+                {showOverlayControls && (
+                  <div className="mt-4">
+                    <OverlayControls
+                      className="w-full"
+                      glassesOverlaySystemEnabled={glassesOverlaySystemEnabled}
+                      onToggleGlassesOverlaySystem={setGlassesOverlaySystemEnabled}
+                    />
+                  </div>
+                )}
+              </div>
 
               {/* Debug Controls - Collapsible */}
               <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
