@@ -152,7 +152,8 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
         const canvasHeight_px = positionResult.position.height * canvasHeight;
 
         console.log('🎨 Rendering overlay - Name:', overlay.config.name);
-        console.log('🎨 Rendering overlay - Position:', canvasX.toFixed(1), canvasY.toFixed(1));
+        console.log('🎨 Rendering overlay - Normalized position:', positionResult.position.x.toFixed(3), positionResult.position.y.toFixed(3));
+        console.log('🎨 Rendering overlay - Canvas position:', canvasX.toFixed(1), canvasY.toFixed(1));
         console.log('🎨 Rendering overlay - Size:', canvasWidth_px.toFixed(1), 'x', canvasHeight_px.toFixed(1));
         console.log('🎨 Rendering overlay - Canvas:', canvasWidth, 'x', canvasHeight);
 

@@ -60,10 +60,13 @@ export class OverlayService {
       const width = config.defaultPosition.width * scale;
       const height = config.defaultPosition.height * scale;
 
+      // Create initial position
+      const initialPosition = { x: baseX, y: baseY, width, height, rotation, scale, zIndex: config.defaultPosition.zIndex };
+
       // Adjust position for overlay type
       const adjustedPosition = this.adjustPositionForType(
         config.type,
-        { x: baseX, y: baseY, width, height, rotation, scale, zIndex: config.defaultPosition.zIndex },
+        initialPosition,
         context
       );
 
