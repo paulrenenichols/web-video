@@ -168,12 +168,10 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
         // Apply transformations
         ctx.save();
         
-        // Apply mirroring to match video if needed
-        if (isMirrored) {
-          ctx.scale(-1, 1);
-          ctx.translate(-canvasWidth, 0);
-        }
+        // Note: MediaPipe landmarks are already in the correct coordinate system for mirrored video
+        // No additional canvas mirroring needed
         
+        // Apply overlay transformations
         ctx.translate(canvasX + canvasWidth_px / 2, canvasY + canvasHeight_px / 2);
         ctx.rotate((positionResult.position.rotation * Math.PI) / 180);
         ctx.scale(positionResult.position.scale, positionResult.position.scale);
