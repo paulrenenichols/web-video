@@ -79,11 +79,19 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
          canvasRect: canvas.getBoundingClientRect(),
        });
 
-      // Convert normalized coordinates (0-1) to canvas coordinates
-      const x = detection.boundingBox.x * canvasWidth;
-      const y = detection.boundingBox.y * canvasHeight;
-      const width = detection.boundingBox.width * canvasWidth;
-      const height = detection.boundingBox.height * canvasHeight;
+             // Convert normalized coordinates (0-1) to canvas coordinates
+       // Check if video is mirrored (front-facing camera)
+       const isMirrored = video.style.transform?.includes('scaleX(-1)') || false;
+       
+       let x = detection.boundingBox.x * canvasWidth;
+       const y = detection.boundingBox.y * canvasHeight;
+       const width = detection.boundingBox.width * canvasWidth;
+       const height = detection.boundingBox.height * canvasHeight;
+       
+       // Mirror the x coordinate if video is mirrored
+       if (isMirrored) {
+         x = canvasWidth - x;
+       }
 
       console.log('🎨 Drawing box at:', { x, y, width, height });
 
@@ -123,27 +131,44 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
       const canvasWidth = canvas.width;
       const canvasHeight = canvas.height;
 
-             // Draw key landmarks (simplified for Step 3)
-       const keyLandmarks = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // Basic face outline
+             // Draw key landmarks for better facial tracking visualization
+       const keyLandmarks = [
+         10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10,  // Face outline
+         33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 33,  // Right eyebrow
+         362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398, 362,  // Left eyebrow
+         61, 84, 17, 314, 405, 320, 307, 375, 321, 308, 324, 318, 78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 61,  // Right eye
+         291, 409, 270, 269, 267, 0, 37, 39, 40, 185, 61, 146, 91, 181, 84, 17, 314, 405, 320, 307, 375, 321, 308, 324, 318, 78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 291,  // Left eye
+         78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308, 324, 318, 78,  // Nose
+         0, 267, 37, 39, 40, 185, 61, 146, 91, 181, 84, 17, 314, 405, 320, 307, 375, 321, 308, 324, 318, 78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 0,  // Mouth outer
+         78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 78,  // Mouth inner
+       ];
 
        ctx.fillStyle = '#ff0000';
        ctx.strokeStyle = '#ff0000';
        ctx.lineWidth = 2;
 
-       keyLandmarks.forEach(index => {
-         const landmark = landmarks[index];
-         if (landmark) {
-           // Convert normalized coordinates (0-1) to canvas coordinates
-           const x = landmark.x * canvasWidth;
-           const y = landmark.y * canvasHeight;
+                keyLandmarks.forEach(index => {
+           const landmark = landmarks[index];
+           if (landmark) {
+             // Convert normalized coordinates (0-1) to canvas coordinates
+             // Check if video is mirrored (front-facing camera)
+             const isMirrored = video.style.transform?.includes('scaleX(-1)') || false;
+             
+             let x = landmark.x * canvasWidth;
+             const y = landmark.y * canvasHeight;
+             
+             // Mirror the x coordinate if video is mirrored
+             if (isMirrored) {
+               x = canvasWidth - x;
+             }
 
-           console.log(`📍 Drawing landmark ${index}:`, { x, y, visibility: landmark.visibility });
+             console.log(`📍 Drawing landmark ${index}:`, { x, y, visibility: landmark.visibility, isMirrored });
 
-           ctx.beginPath();
-           ctx.arc(x, y, 4, 0, 2 * Math.PI); // Larger dots (4px radius)
-           ctx.fill();
-         }
-       });
+             ctx.beginPath();
+             ctx.arc(x, y, 4, 0, 2 * Math.PI); // Larger dots (4px radius)
+             ctx.fill();
+           }
+         });
     },
     [videoRef]
   );
