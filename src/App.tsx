@@ -56,16 +56,19 @@ const VideoRecorderApp: React.FC = () => {
   const [showOverlays, setShowOverlays] = React.useState(false);
   const [showDebugControls, setShowDebugControls] = React.useState(false);
 
+  // Separate state for debug controls overlay system (independent of overlay controls)
+  const [debugOverlaySystemEnabled, setDebugOverlaySystemEnabled] = React.useState(false);
+
   // Initialize overlay system when component mounts
   React.useEffect(() => {
     // Enable overlay system by default
     useOverlayStore.getState().setEnabled(true);
   }, []);
 
-  // Sync showOverlays state with overlay store state
+  // Control overlay system visibility based on debug controls checkbox
   React.useEffect(() => {
-    setShowOverlays(overlayState.isEnabled);
-  }, [overlayState.isEnabled]);
+    useOverlayStore.getState().setEnabled(debugOverlaySystemEnabled);
+  }, [debugOverlaySystemEnabled]);
 
 
 
@@ -188,14 +191,14 @@ const VideoRecorderApp: React.FC = () => {
 
                 {/* Overlay system */}
                 <OverlaySystem
-                  isVisible={overlayState.isEnabled}
+                  isVisible={debugOverlaySystemEnabled}
                   videoRef={videoRef}
                   className="aspect-video w-full"
                 />
 
                 {/* Glasses overlay */}
                 <GlassesOverlay
-                  isVisible={overlayState.isEnabled}
+                  isVisible={debugOverlaySystemEnabled}
                   videoRef={videoRef}
                   className="aspect-video w-full"
                 />
@@ -297,13 +300,11 @@ const VideoRecorderApp: React.FC = () => {
                       onToggleVisualization={setIsVisualizationEnabled}
                       showTracking={showTracking}
                       showEnhancedTracking={showEnhancedTracking}
-                      showOverlays={showOverlays}
+                      showOverlays={debugOverlaySystemEnabled}
                       onToggleTracking={setShowTracking}
                       onToggleEnhancedTracking={setShowEnhancedTracking}
                       onToggleOverlays={(enabled) => {
-                        setShowOverlays(enabled);
-                        // Sync with overlay store state
-                        useOverlayStore.getState().setEnabled(enabled);
+                        setDebugOverlaySystemEnabled(enabled);
                       }}
                       isTrackingInitialized={trackingState.isInitialized}
                       isTracking={trackingState.isTracking}

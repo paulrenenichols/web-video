@@ -128,6 +128,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
 
   // Local state for overlay controls - independent of overlay system visibility
   const [isOverlayControlsEnabled, setIsOverlayControlsEnabled] = useState(true);
+  const [isOverlaySystemVisible, setIsOverlaySystemVisible] = useState(false);
 
   // Get active glasses overlays
   const activeGlasses = activeOverlays.filter(
@@ -186,10 +187,10 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
   };
 
   /**
-   * Toggle overlay system visibility
+   * Toggle overlay system visibility (local state only)
    */
   const handleToggleOverlaySystem = () => {
-    setEnabled(!isEnabled);
+    setIsOverlaySystemVisible(!isOverlaySystemVisible);
   };
 
   /**
@@ -222,12 +223,12 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
             <button
               onClick={handleToggleOverlaySystem}
               className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                isEnabled
+                isOverlaySystemVisible
                   ? 'bg-green-500 text-white hover:bg-green-600'
                   : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
               }`}
             >
-              {isEnabled ? 'Visible' : 'Hidden'}
+              {isOverlaySystemVisible ? 'Visible' : 'Hidden'}
             </button>
             <button
               onClick={handleClearOverlays}
@@ -363,7 +364,13 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <span>System:</span>
+              <span>Controls System:</span>
+              <span className={`font-medium ${isOverlaySystemVisible ? 'text-green-600' : 'text-gray-400'}`}>
+                {isOverlaySystemVisible ? 'Visible' : 'Hidden'}
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span>Debug System:</span>
               <span className={`font-medium ${isEnabled ? 'text-green-600' : 'text-gray-400'}`}>
                 {isEnabled ? 'Visible' : 'Hidden'}
               </span>
