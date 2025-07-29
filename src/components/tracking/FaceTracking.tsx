@@ -148,27 +148,23 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
        ctx.lineWidth = 2;
 
                 // Debug: Check visibility of first few landmarks
-         console.log('🔍 Landmark visibility check:', {
-           totalLandmarks: landmarks.length,
-           firstFew: landmarks.slice(0, 5).map((l, i) => ({ 
-             index: i, 
+         console.log('🔍 Landmark visibility check - Total landmarks:', landmarks.length);
+         landmarks.slice(0, 5).forEach((l, i) => {
+           console.log(`🔍 Landmark ${i}:`, {
+             hasLandmark: !!l,
              visibility: l?.visibility,
              x: l?.x,
-             y: l?.y,
-             hasLandmark: !!l
-           }))
+             y: l?.y
+           });
          });
 
-         console.log('🔑 Key landmarks to check:', keyLandmarks.slice(0, 10)); // Show first 10 key landmark indices
+         console.log('🔑 Key landmarks to check (first 10):', keyLandmarks.slice(0, 10));
+         
+         let drawnCount = 0;
+         let skippedCount = 0;
          
          keyLandmarks.forEach(index => {
            const landmark = landmarks[index];
-           console.log(`🔍 Checking landmark ${index}:`, { 
-             hasLandmark: !!landmark, 
-             visibility: landmark?.visibility,
-             x: landmark?.x,
-             y: landmark?.y
-           });
            
            if (landmark && landmark.visibility > 0.1) { // Lower threshold to see more landmarks
              // Convert normalized coordinates (0-1) to canvas coordinates
@@ -184,18 +180,24 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
              }
 
              console.log(`📍 Drawing landmark ${index}:`, { x, y, visibility: landmark.visibility, isMirrored });
+             drawnCount++;
 
              ctx.beginPath();
              ctx.arc(x, y, 4, 0, 2 * Math.PI); // Larger dots (4px radius)
              ctx.fill();
            } else {
-             console.log(`❌ Skipping landmark ${index}:`, { 
-               hasLandmark: !!landmark, 
-               visibility: landmark?.visibility,
-               threshold: 0.1
-             });
+             skippedCount++;
+             if (skippedCount <= 5) { // Only log first 5 skipped landmarks to avoid spam
+               console.log(`❌ Skipping landmark ${index}:`, { 
+                 hasLandmark: !!landmark, 
+                 visibility: landmark?.visibility,
+                 threshold: 0.1
+               });
+             }
            }
          });
+         
+         console.log(`📊 Landmark summary: ${drawnCount} drawn, ${skippedCount} skipped`);
     },
     [videoRef]
   );
