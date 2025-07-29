@@ -247,12 +247,27 @@ export class MediaPipeService {
       return { x: 0, y: 0, width: 0, height: 0 };
     }
 
-    // Find min/max coordinates - start with first visible landmark
+    // Use face-specific landmarks for more accurate bounding box
+    // Focus on facial features (eyes, nose, mouth, cheeks) rather than entire head
+    const faceLandmarkIndices = [
+      // Eyes
+      33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246,
+      362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398,
+      // Nose
+      1, 2, 3, 4, 5, 6, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
+      // Mouth
+      0, 267, 37, 39, 40, 185, 61, 146, 91, 181, 84, 17, 314, 405, 320, 307, 375, 321, 308, 324, 318, 78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308,
+      // Cheeks and face outline (excluding hair/head)
+      10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109
+    ];
+
+    // Find min/max coordinates from face-specific landmarks
     let minX = 1, maxX = 0, minY = 1, maxY = 0;
     let hasVisibleLandmarks = false;
     
-    landmarks.forEach(landmark => {
-      if (landmark.visibility && landmark.visibility > 0.5) {
+    faceLandmarkIndices.forEach(index => {
+      const landmark = landmarks[index];
+      if (landmark && landmark.visibility && landmark.visibility > 0.5) {
         if (!hasVisibleLandmarks) {
           // Initialize with first visible landmark
           minX = maxX = landmark.x;
@@ -268,19 +283,27 @@ export class MediaPipeService {
     });
 
     if (!hasVisibleLandmarks) {
-      // If no visible landmarks, use all landmarks
-      minX = Math.min(...landmarks.map(l => l.x));
-      maxX = Math.max(...landmarks.map(l => l.x));
-      minY = Math.min(...landmarks.map(l => l.y));
-      maxY = Math.max(...landmarks.map(l => l.y));
+      // Fallback to all landmarks if no face-specific landmarks are visible
+      landmarks.forEach(landmark => {
+        if (landmark.visibility && landmark.visibility > 0.5) {
+          if (!hasVisibleLandmarks) {
+            minX = maxX = landmark.x;
+            minY = maxY = landmark.y;
+            hasVisibleLandmarks = true;
+          } else {
+            minX = Math.min(minX, landmark.x);
+            maxX = Math.max(maxX, landmark.x);
+            minY = Math.min(minY, landmark.y);
+            maxY = Math.max(maxY, landmark.y);
+          }
+        }
+      });
     }
 
     const width = maxX - minX;
     const height = maxY - minY;
     const x = minX + width / 2;
     const y = minY + height / 2;
-
-
 
     return { x, y, width, height };
   }
