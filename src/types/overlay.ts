@@ -126,6 +126,8 @@ export interface OverlayState {
   availableOverlays: OverlayConfig[];
   /** Currently active overlays */
   activeOverlays: ActiveOverlay[];
+  /** Cache for preserving rendering settings of removed overlays */
+  removedOverlaysCache: Map<string, OverlayRendering>;
   /** Whether overlay system is enabled */
   isEnabled: boolean;
   /** Current overlay mode */

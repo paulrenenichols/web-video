@@ -60,6 +60,7 @@ const convertGlassesToOverlayConfig = (glasses: GlassesConfig): OverlayConfig =>
 const initialState: OverlayState = {
   availableOverlays: AVAILABLE_GLASSES.map(convertGlassesToOverlayConfig),
   activeOverlays: [],
+  removedOverlaysCache: new Map(),
   isEnabled: false,
   mode: 'preview',
   error: null,
@@ -103,19 +104,36 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
             lastUpdate: Date.now(),
           }));
         } else {
+          // Check if we have cached rendering settings for this overlay
+          const cachedRendering = state.removedOverlaysCache.get(config.id);
+          const renderingToUse = cachedRendering 
+            ? { ...config.defaultRendering, ...cachedRendering }
+            : config.defaultRendering;
+          
+          if (cachedRendering) {
+            console.log('🔄 Store: Using cached rendering settings for overlay:', config.id, cachedRendering);
+          }
+
           // Add new overlay
           const newOverlay: ActiveOverlay = {
             config,
             position: config.defaultPosition,
-            rendering: config.defaultRendering,
+            rendering: renderingToUse,
             enabled: true,
             lastUpdate: Date.now(),
           };
 
-          set(state => ({
-            activeOverlays: [...state.activeOverlays, newOverlay],
-            lastUpdate: Date.now(),
-          }));
+          set(state => {
+            // Remove from cache since we're using it
+            const newCache = new Map(state.removedOverlaysCache);
+            newCache.delete(config.id);
+            
+            return {
+              activeOverlays: [...state.activeOverlays, newOverlay],
+              removedOverlaysCache: newCache,
+              lastUpdate: Date.now(),
+            };
+          });
         }
       },
 
@@ -123,12 +141,33 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
        * Remove overlay from active list
        */
       removeOverlay: (overlayId: string) => {
-        set(state => ({
-          activeOverlays: state.activeOverlays.filter(
-            overlay => overlay.config.id !== overlayId
-          ),
-          lastUpdate: Date.now(),
-        }));
+        set(state => {
+          const overlayToRemove = state.activeOverlays.find(
+            overlay => overlay.config.id === overlayId
+          );
+          
+          // Cache the rendering settings before removing
+          if (overlayToRemove) {
+            const newCache = new Map(state.removedOverlaysCache);
+            newCache.set(overlayId, overlayToRemove.rendering);
+            console.log('🔄 Store: Caching rendering settings for removed overlay:', overlayId, overlayToRemove.rendering);
+            
+            return {
+              activeOverlays: state.activeOverlays.filter(
+                overlay => overlay.config.id !== overlayId
+              ),
+              removedOverlaysCache: newCache,
+              lastUpdate: Date.now(),
+            };
+          }
+          
+          return {
+            activeOverlays: state.activeOverlays.filter(
+              overlay => overlay.config.id !== overlayId
+            ),
+            lastUpdate: Date.now(),
+          };
+        });
       },
 
       /**
