@@ -186,7 +186,7 @@ export class OverlayService {
       if (boundingBox && boundingBox.width > 0) {
         // Use face width as base for scaling
         const faceWidth = boundingBox.width;
-        glassesWidth = faceWidth * 0.7; // 70% of face width for glasses (more realistic)
+        glassesWidth = faceWidth * 1.0; // 100% of face width for glasses (full face width)
       } else {
         // Fallback to eye separation
         glassesWidth = eyeSeparation * 1.2; // 20% wider than eye separation
