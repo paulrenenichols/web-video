@@ -142,9 +142,12 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
    * Render hat overlays on canvas
    */
   const renderHats = useCallback(async () => {
+    console.log('🎩 renderHats - Starting render');
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     const video = videoRef.current;
+
+    console.log('🎩 renderHats - Canvas:', !!canvas, 'Context:', !!ctx, 'Video:', !!video, 'Landmarks:', !!facialLandmarks, 'Visible:', isVisible, 'HatOverlays:', hatOverlays.length);
 
     if (
       !canvas ||
@@ -154,6 +157,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
       !isVisible ||
       hatOverlays.length === 0
     ) {
+      console.log('🎩 renderHats - Skipping render due to missing dependencies');
       return;
     }
 
@@ -229,17 +233,21 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
    * Main render function
    */
   const render = useCallback(async () => {
+    console.log('🎩 HatOverlay render - isVisible:', isVisible, 'status:', status, 'facialLandmarks:', !!facialLandmarks, 'faceDetection:', !!faceDetection, 'hatOverlays.length:', hatOverlays.length);
+    
     if (
       !isVisible ||
       status !== 'detected' ||
       !facialLandmarks ||
       !faceDetection
     ) {
+      console.log('🎩 HatOverlay render - Skipping render due to conditions not met');
       return;
     }
 
+    console.log('🎩 HatOverlay render - Calling renderHats');
     await renderHats();
-  }, [isVisible, status, facialLandmarks, faceDetection, renderHats]);
+  }, [isVisible, status, facialLandmarks, faceDetection, renderHats, hatOverlays.length]);
 
   // Set up video event listeners
   useEffect(() => {
