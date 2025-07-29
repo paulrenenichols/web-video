@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Screenshots and debugging files
+screenshots/
+*.png
+*.jpg
+*.jpeg
+*.gif
