@@ -79,15 +79,11 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
       boundingBox: detection.boundingBox
     });
 
-    // Calculate scale factors
-    const scaleX = canvasWidth / videoWidth;
-    const scaleY = canvasHeight / videoHeight;
-
-    // Convert normalized coordinates to canvas coordinates
-    const x = detection.boundingBox.x * scaleX;
-    const y = detection.boundingBox.y * scaleY;
-    const width = detection.boundingBox.width * scaleX;
-    const height = detection.boundingBox.height * scaleY;
+    // Convert normalized coordinates (0-1) to canvas coordinates
+    const x = detection.boundingBox.x * canvasWidth;
+    const y = detection.boundingBox.y * canvasHeight;
+    const width = detection.boundingBox.width * canvasWidth;
+    const height = detection.boundingBox.height * canvasHeight;
 
     console.log('🎨 Drawing box at:', { x, y, width, height });
 
@@ -124,10 +120,6 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
 
-    // Calculate scale factors
-    const scaleX = canvasWidth / videoWidth;
-    const scaleY = canvasHeight / videoHeight;
-
     // Draw key landmarks (simplified for Step 3)
     const keyLandmarks = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // Basic face outline
     
@@ -138,8 +130,9 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
     keyLandmarks.forEach(index => {
       const landmark = landmarks[index];
       if (landmark && landmark.visibility > 0.5) {
-        const x = landmark.x * scaleX;
-        const y = landmark.y * scaleY;
+        // Convert normalized coordinates (0-1) to canvas coordinates
+        const x = landmark.x * canvasWidth;
+        const y = landmark.y * canvasHeight;
         
         ctx.beginPath();
         ctx.arc(x, y, 2, 0, 2 * Math.PI);
