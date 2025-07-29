@@ -1,0 +1,206 @@
+/**
+ * @fileoverview Overlay store for state management.
+ *
+ * Manages overlay state including active overlays, positioning,
+ * and rendering properties using Zustand.
+ */
+
+import { create } from 'zustand';
+import { devtools } from 'zustand/middleware';
+import {
+  OverlayState,
+  OverlayActions,
+  OverlayConfig,
+  ActiveOverlay,
+  OverlayPosition,
+  OverlayRendering,
+  OverlayType,
+} from '@/types/overlay';
+
+/**
+ * Initial overlay state
+ */
+const initialState: OverlayState = {
+  availableOverlays: [],
+  activeOverlays: [],
+  isEnabled: false,
+  mode: 'preview',
+  error: null,
+  lastUpdate: null,
+};
+
+/**
+ * Overlay store using Zustand
+ */
+export const useOverlayStore = create<OverlayState & OverlayActions>()(
+  devtools(
+    (set, get) => ({
+      ...initialState,
+
+      /**
+       * Add overlay to active list
+       */
+      addOverlay: (config: OverlayConfig) => {
+        const state = get();
+        const existingOverlay = state.activeOverlays.find(
+          overlay => overlay.config.id === config.id
+        );
+
+        if (existingOverlay) {
+          // Update existing overlay
+          set(state => ({
+            activeOverlays: state.activeOverlays.map(overlay =>
+              overlay.config.id === config.id
+                ? {
+                    ...overlay,
+                    config,
+                    lastUpdate: Date.now(),
+                  }
+                : overlay
+            ),
+            lastUpdate: Date.now(),
+          }));
+        } else {
+          // Add new overlay
+          const newOverlay: ActiveOverlay = {
+            config,
+            position: config.defaultPosition,
+            rendering: config.defaultRendering,
+            enabled: true,
+            lastUpdate: Date.now(),
+          };
+
+          set(state => ({
+            activeOverlays: [...state.activeOverlays, newOverlay],
+            lastUpdate: Date.now(),
+          }));
+        }
+      },
+
+      /**
+       * Remove overlay from active list
+       */
+      removeOverlay: (overlayId: string) => {
+        set(state => ({
+          activeOverlays: state.activeOverlays.filter(
+            overlay => overlay.config.id !== overlayId
+          ),
+          lastUpdate: Date.now(),
+        }));
+      },
+
+      /**
+       * Update overlay position
+       */
+      updateOverlayPosition: (overlayId: string, position: Partial<OverlayPosition>) => {
+        set(state => ({
+          activeOverlays: state.activeOverlays.map(overlay =>
+            overlay.config.id === overlayId
+              ? {
+                  ...overlay,
+                  position: { ...overlay.position, ...position },
+                  lastUpdate: Date.now(),
+                }
+              : overlay
+          ),
+          lastUpdate: Date.now(),
+        }));
+      },
+
+      /**
+       * Update overlay rendering
+       */
+      updateOverlayRendering: (overlayId: string, rendering: Partial<OverlayRendering>) => {
+        set(state => ({
+          activeOverlays: state.activeOverlays.map(overlay =>
+            overlay.config.id === overlayId
+              ? {
+                  ...overlay,
+                  rendering: { ...overlay.rendering, ...rendering },
+                  lastUpdate: Date.now(),
+                }
+              : overlay
+          ),
+          lastUpdate: Date.now(),
+        }));
+      },
+
+      /**
+       * Enable/disable overlay
+       */
+      toggleOverlay: (overlayId: string, enabled?: boolean) => {
+        set(state => ({
+          activeOverlays: state.activeOverlays.map(overlay =>
+            overlay.config.id === overlayId
+              ? {
+                  ...overlay,
+                  enabled: enabled !== undefined ? enabled : !overlay.enabled,
+                  lastUpdate: Date.now(),
+                }
+              : overlay
+          ),
+          lastUpdate: Date.now(),
+        }));
+      },
+
+      /**
+       * Clear all overlays
+       */
+      clearOverlays: () => {
+        set({
+          activeOverlays: [],
+          lastUpdate: Date.now(),
+        });
+      },
+
+      /**
+       * Set overlay system enabled state
+       */
+      setEnabled: (enabled: boolean) => {
+        set({
+          isEnabled: enabled,
+          lastUpdate: Date.now(),
+        });
+      },
+
+      /**
+       * Set overlay mode
+       */
+      setMode: (mode: 'preview' | 'recording') => {
+        set({
+          mode,
+          lastUpdate: Date.now(),
+        });
+      },
+
+      /**
+       * Set error message
+       */
+      setError: (error: string | null) => {
+        set({
+          error,
+          lastUpdate: Date.now(),
+        });
+      },
+
+      /**
+       * Get overlay by ID
+       */
+      getOverlay: (overlayId: string) => {
+        const state = get();
+        return state.activeOverlays.find(overlay => overlay.config.id === overlayId) || null;
+      },
+
+      /**
+       * Get overlays by type
+       */
+      getOverlaysByType: (type: OverlayType) => {
+        const state = get();
+        return state.activeOverlays.filter(overlay => overlay.config.type === type);
+      },
+    }),
+    {
+      name: 'overlay-store',
+    }
+  )
+); 

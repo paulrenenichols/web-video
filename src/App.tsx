@@ -19,6 +19,8 @@ import { TrackingToggle } from '@/components/tracking/TrackingToggle';
 import { TrackingStatusIndicator } from '@/components/tracking/TrackingStatus';
 import { FaceTracking } from '@/components/tracking/FaceTracking';
 import { TrackingVisualization } from '@/components/tracking/TrackingVisualization';
+import { OverlaySystem } from '@/components/overlays/OverlaySystem';
+import { useOverlayStore } from '@/stores/overlay-store';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 const VideoRecorderApp: React.FC = () => {
@@ -41,9 +43,15 @@ const VideoRecorderApp: React.FC = () => {
   // Get tracking state for Step 2 testing
   const trackingState = useTrackingStore();
 
+  // Get overlay state for Step 6 testing
+  const overlayState = useOverlayStore();
+
   // Step 3: Tracking visualization state
   const [showTracking, setShowTracking] = React.useState(false);
   const [showEnhancedTracking, setShowEnhancedTracking] = React.useState(false);
+
+  // Step 6: Overlay system state
+  const [showOverlays, setShowOverlays] = React.useState(false);
 
   // Auto-hide enhanced tracking when basic tracking is disabled
   React.useEffect(() => {
@@ -156,6 +164,13 @@ const VideoRecorderApp: React.FC = () => {
                   videoRef={videoRef}
                   className="aspect-video w-full"
                 />
+
+                {/* Step 6: Overlay system */}
+                <OverlaySystem
+                  isVisible={showOverlays}
+                  videoRef={videoRef}
+                  className="aspect-video w-full"
+                />
               </div>
             </div>
           </div>
@@ -262,6 +277,50 @@ const VideoRecorderApp: React.FC = () => {
                       <div>Enhanced visualization with feature outlines, accuracy indicators, and orientation data</div>
                     )}
                   </div>
+                </div>
+              </div>
+
+              {/* Step 6: Overlay System Controls */}
+              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-4">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                  Overlay System (Step 6)
+                </h3>
+                <div className="space-y-3">
+                  <button
+                    onClick={() => {
+                      setShowOverlays(!showOverlays);
+                      useOverlayStore.getState().setEnabled(!showOverlays);
+                    }}
+                    disabled={!trackingState.isInitialized || !showTracking}
+                    className={`w-full px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      showOverlays
+                        ? 'bg-purple-600 text-white hover:bg-purple-700'
+                        : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                    } ${
+                      !trackingState.isInitialized || !showTracking
+                        ? 'opacity-50 cursor-not-allowed'
+                        : ''
+                    }`}
+                  >
+                    {showOverlays ? 'Hide Overlays' : 'Show Overlays'}
+                  </button>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                    {showOverlays ? (
+                      <div>
+                        <div>• Overlay system enabled</div>
+                        <div>• Position calculation active</div>
+                        <div>• Canvas rendering ready</div>
+                        <div>• Active overlays: {overlayState.activeOverlays.length}</div>
+                      </div>
+                    ) : (
+                      <div>Basic overlay system with positioning calculations and canvas rendering foundation</div>
+                    )}
+                  </div>
+                  {overlayState.error && (
+                    <div className="text-red-500 text-xs">
+                      Error: {overlayState.error}
+                    </div>
+                  )}
                 </div>
               </div>
               <ControlPanel
