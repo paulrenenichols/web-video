@@ -101,19 +101,8 @@ const VideoRecorderApp: React.FC = () => {
     }
   }, [isVisualizationEnabled]);
 
-  // Auto-hide enhanced tracking when basic tracking is disabled
-  React.useEffect(() => {
-    if (!showTracking) {
-      setShowEnhancedTracking(false);
-    }
-  }, [showTracking]);
-
-  // Auto-hide enhanced tracking when overlays are on
-  React.useEffect(() => {
-    if (showOverlays) {
-      setShowEnhancedTracking(false);
-    }
-  }, [showOverlays]);
+  // Note: All visualization types can now be enabled independently
+  // No forced dependencies between tracking, enhanced tracking, and overlays
 
 
   const videoRef = useRef<HTMLVideoElement>(null);

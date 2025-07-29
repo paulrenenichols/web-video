@@ -106,7 +106,7 @@ export const VisualizationControls: React.FC<VisualizationControlsProps> = ({
               type="checkbox"
               checked={showEnhancedTracking}
               onChange={(e) => onToggleEnhancedTracking(e.target.checked)}
-              disabled={isDisabled || !showTracking}
+              disabled={isDisabled}
               className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 focus:ring-2"
             />
             <div className="flex-1">
@@ -125,7 +125,7 @@ export const VisualizationControls: React.FC<VisualizationControlsProps> = ({
               type="checkbox"
               checked={showOverlays}
               onChange={(e) => onToggleOverlays(e.target.checked)}
-              disabled={isDisabled || !showTracking}
+              disabled={isDisabled}
               className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
             />
             <div className="flex-1">
