@@ -157,6 +157,14 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
     const rect = video.getBoundingClientRect();
     canvas.width = rect.width;
     canvas.height = rect.height;
+    
+    console.log('📏 Canvas size updated:', {
+      canvasWidth: canvas.width,
+      canvasHeight: canvas.height,
+      videoRect: rect,
+      videoVideoWidth: video.videoWidth,
+      videoVideoHeight: video.videoHeight
+    });
   }, [videoRef]);
 
   /**
@@ -182,6 +190,13 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
       hasLandmarks: !!(facialLandmarks && facialLandmarks.landmarks.length > 0),
       canvasSize: { width: canvas.width, height: canvas.height }
     });
+
+    // Draw a test rectangle to verify canvas is working
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+    ctx.fillRect(10, 10, 100, 50);
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(10, 10, 100, 50);
 
     // Draw bounding box if face is detected
     if (status === 'detected' && faceDetection && faceDetection.detected) {
@@ -237,7 +252,10 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
     <canvas
       ref={canvasRef}
       className={`absolute inset-0 pointer-events-none ${className}`}
-      style={{ zIndex: 10 }}
+      style={{ 
+        zIndex: 10,
+        border: '2px solid red' // Temporary border to see if canvas is positioned correctly
+      }}
     />
   );
 }; 
