@@ -84,8 +84,8 @@ export function calculateFaceOrientation(landmarks: LandmarkPoint[]): {
   if (landmarks.length < 468) return { yaw: 0, pitch: 0, roll: 0 };
 
   // Use key landmarks for orientation calculation
-  const leftEye = landmarks[33]; // Left eye center
-  const rightEye = landmarks[263]; // Right eye center
+  const leftEye = landmarks[159]; // Left eye center (correct MediaPipe landmark)
+  const rightEye = landmarks[386]; // Right eye center (correct MediaPipe landmark)
   const nose = landmarks[1]; // Nose tip
   
   if (!leftEye || !rightEye || !nose) {

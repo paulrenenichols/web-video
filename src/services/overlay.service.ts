@@ -168,8 +168,8 @@ export class OverlayService {
     landmarks: LandmarkPoint[]
   ): OverlayPosition {
     // Use eye landmarks for precise positioning
-    const leftEye = landmarks[33]; // Left eye center
-    const rightEye = landmarks[263]; // Right eye center
+    const leftEye = landmarks[159]; // Left eye center (correct MediaPipe landmark)
+    const rightEye = landmarks[386]; // Right eye center (correct MediaPipe landmark)
 
     if (leftEye && rightEye && leftEye.visibility > 0.5 && rightEye.visibility > 0.5) {
       // Position between eyes

@@ -77,8 +77,8 @@ const VideoRecorderApp: React.FC = () => {
           visible: true,
         },
         anchors: {
-          primary: 33, // Left eye center
-          secondary: [263], // Right eye center
+          primary: 159, // Left eye center (correct MediaPipe landmark)
+          secondary: [386], // Right eye center (correct MediaPipe landmark)
           offset: { x: 0, y: 0 },
         },
         scaling: {
