@@ -186,6 +186,16 @@ export class MediaPipeService {
     
     if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
       console.log('❌ No face landmarks detected');
+      
+      // Trigger "no face detected" event
+      const noFaceDetection: FaceDetectionResult = {
+        detected: false,
+        confidence: 0.0,
+        timestamp: Date.now(),
+      };
+      
+      console.log('🚫 No face detected:', noFaceDetection);
+      this.onDetectionCallback?.(noFaceDetection);
       return;
     }
 
