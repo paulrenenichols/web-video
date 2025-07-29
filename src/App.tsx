@@ -60,7 +60,7 @@ const VideoRecorderApp: React.FC = () => {
   const [showCameraControls, setShowCameraControls] = React.useState(true);
   const [showOverlayControls, setShowOverlayControls] = React.useState(true);
   const [hatOverlaySystemEnabled, setHatOverlaySystemEnabled] =
-    React.useState(false);
+    React.useState(true);
 
   // Separate state for debug controls overlay system (independent of overlay controls)
   const [debugGlassesOverlayEnabled, setDebugGlassesOverlayEnabled] =
@@ -298,6 +298,10 @@ const VideoRecorderApp: React.FC = () => {
                       glassesOverlaySystemEnabled={glassesOverlaySystemEnabled}
                       onToggleGlassesOverlaySystem={
                         setGlassesOverlaySystemEnabled
+                      }
+                      hatOverlaySystemEnabled={hatOverlaySystemEnabled}
+                      onToggleHatOverlaySystem={
+                        setHatOverlaySystemEnabled
                       }
                     />
                   </div>

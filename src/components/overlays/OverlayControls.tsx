@@ -97,12 +97,18 @@ interface OverlayControlsProps {
   glassesOverlaySystemEnabled?: boolean;
   /** Callback to toggle glasses overlay system */
   onToggleGlassesOverlaySystem?: (enabled: boolean) => void;
+  /** Whether hat overlay system is enabled */
+  hatOverlaySystemEnabled?: boolean;
+  /** Callback to toggle hat overlay system */
+  onToggleHatOverlaySystem?: (enabled: boolean) => void;
 }
 
 export const OverlayControls: React.FC<OverlayControlsProps> = ({
   className = '',
   glassesOverlaySystemEnabled = false,
   onToggleGlassesOverlaySystem,
+  hatOverlaySystemEnabled = false,
+  onToggleHatOverlaySystem,
 }) => {
   const [selectedGlasses, setSelectedGlasses] = useState<string | null>(null);
   const [selectedHat, setSelectedHat] = useState<string | null>(null);
@@ -273,6 +279,15 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
   };
 
   /**
+   * Toggle hat overlay system visibility
+   */
+  const handleToggleHatOverlaySystem = () => {
+    if (onToggleHatOverlaySystem) {
+      onToggleHatOverlaySystem(!hatOverlaySystemEnabled);
+    }
+  };
+
+  /**
    * Clear all overlays
    */
   const handleClearOverlays = () => {
@@ -309,7 +324,17 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                   : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
               }`}
             >
-              {glassesOverlaySystemEnabled ? 'Visible' : 'Hidden'}
+              {glassesOverlaySystemEnabled ? 'Glasses On' : 'Glasses Off'}
+            </button>
+            <button
+              onClick={handleToggleHatOverlaySystem}
+              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                hatOverlaySystemEnabled
+                  ? 'bg-green-500 text-white hover:bg-green-600'
+                  : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+              }`}
+            >
+              {hatOverlaySystemEnabled ? 'Hats On' : 'Hats Off'}
             </button>
             <button
               onClick={handleClearOverlays}
@@ -644,6 +669,14 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                 className={`font-medium ${glassesOverlaySystemEnabled ? 'text-green-600' : 'text-gray-400'}`}
               >
                 {glassesOverlaySystemEnabled ? 'Visible' : 'Hidden'}
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span>Hat System:</span>
+              <span
+                className={`font-medium ${hatOverlaySystemEnabled ? 'text-green-600' : 'text-gray-400'}`}
+              >
+                {hatOverlaySystemEnabled ? 'Visible' : 'Hidden'}
               </span>
             </div>
             <div className="flex items-center space-x-2">
