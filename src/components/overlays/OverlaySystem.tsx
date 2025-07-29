@@ -259,7 +259,7 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
         // No additional canvas mirroring needed
         
         // Apply overlay transformations
-        ctx.translate(canvasX + canvasWidth_px / 2, canvasY + canvasHeight_px / 2);
+        ctx.translate(canvasX, canvasY);
         ctx.rotate((positionResult.position.rotation * Math.PI) / 180);
         ctx.scale(positionResult.position.scale, positionResult.position.scale);
 
@@ -271,7 +271,7 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
         
         console.log('🎨 Rectangle drawing - Center position:', canvasX.toFixed(1), canvasY.toFixed(1));
         console.log('🎨 Rectangle drawing - Translation offset:', (canvasWidth_px / 2).toFixed(1), (canvasHeight_px / 2).toFixed(1));
-        console.log('🎨 Rectangle drawing - Final center:', (canvasX + canvasWidth_px / 2).toFixed(1), (canvasY + canvasHeight_px / 2).toFixed(1));
+        console.log('🎨 Rectangle drawing - Final center:', canvasX.toFixed(1), canvasY.toFixed(1));
         console.log('🎨 Rectangle drawing - Rectangle bounds:', (-canvasWidth_px / 2).toFixed(1), (-canvasHeight_px / 2).toFixed(1), canvasWidth_px.toFixed(1), canvasHeight_px.toFixed(1));
 
         // Draw overlay label
