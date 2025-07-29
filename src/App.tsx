@@ -18,6 +18,7 @@ import { useTrackingStore } from '@/stores/tracking-store';
 import { TrackingToggle } from '@/components/tracking/TrackingToggle';
 import { TrackingStatusIndicator } from '@/components/tracking/TrackingStatus';
 import { FaceTracking } from '@/components/tracking/FaceTracking';
+import { TrackingVisualization } from '@/components/tracking/TrackingVisualization';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 const VideoRecorderApp: React.FC = () => {
@@ -42,6 +43,7 @@ const VideoRecorderApp: React.FC = () => {
 
   // Step 3: Tracking visualization state
   const [showTracking, setShowTracking] = React.useState(false);
+  const [showEnhancedTracking, setShowEnhancedTracking] = React.useState(false);
 
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -135,10 +137,17 @@ const VideoRecorderApp: React.FC = () => {
                   ref={videoRef}
                 />
                 <FaceTracking
-                  isVisible={showTracking}
+                  isVisible={showTracking && !showEnhancedTracking}
                   videoRef={videoRef}
                   className="aspect-video w-full"
                   stream={stream}
+                />
+
+                {/* Step 5: Enhanced tracking visualization */}
+                <TrackingVisualization
+                  isVisible={showEnhancedTracking}
+                  videoRef={videoRef}
+                  className="aspect-video w-full"
                 />
               </div>
             </div>
@@ -210,6 +219,42 @@ const VideoRecorderApp: React.FC = () => {
                     isTracking={trackingState.isTracking}
                     error={trackingState.error}
                   />
+                </div>
+              </div>
+
+              {/* Step 5: Enhanced Tracking Controls */}
+              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-4">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                  Enhanced Visualization (Step 5)
+                </h3>
+                <div className="space-y-3">
+                  <button
+                    onClick={() => setShowEnhancedTracking(!showEnhancedTracking)}
+                    disabled={!trackingState.isInitialized || !showTracking}
+                    className={`w-full px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      showEnhancedTracking
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                    } ${
+                      !trackingState.isInitialized || !showTracking
+                        ? 'opacity-50 cursor-not-allowed'
+                        : ''
+                    }`}
+                  >
+                    {showEnhancedTracking ? 'Hide Enhanced' : 'Show Enhanced'}
+                  </button>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                    {showEnhancedTracking ? (
+                      <div>
+                        <div>• Feature outlines with labels</div>
+                        <div>• Accuracy indicator</div>
+                        <div>• Face orientation data</div>
+                        <div>• Stability indicator</div>
+                      </div>
+                    ) : (
+                      <div>Enhanced visualization with feature outlines, accuracy indicators, and orientation data</div>
+                    )}
+                  </div>
                 </div>
               </div>
               <ControlPanel
