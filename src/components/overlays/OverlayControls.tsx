@@ -1,0 +1,347 @@
+/**
+ * @fileoverview Overlay controls component for managing facial overlays.
+ *
+ * Provides interface for selecting, enabling, and configuring
+ * glasses and other facial overlays with real-time preview.
+ */
+
+import React, { useState } from 'react';
+import { useOverlayStore } from '@/stores/overlay-store';
+import { OverlayType, OverlayConfig } from '@/types/overlay';
+
+/**
+ * Available glasses configurations
+ */
+const GLASSES_OPTIONS: OverlayConfig[] = [
+  {
+    id: 'glasses-sunglasses',
+    type: OverlayType.GLASSES,
+    name: 'Sunglasses',
+    imageUrl: '/overlays/glasses-sunglasses.png',
+    defaultPosition: {
+      x: 0.5,
+      y: 0.4,
+      width: 0.3,
+      height: 0.12,
+      rotation: 0,
+      scale: 1,
+      zIndex: 10,
+    },
+    defaultRendering: {
+      opacity: 1,
+      blendMode: 'normal',
+      visible: true,
+    },
+    anchors: {
+      primary: 159, // Left eye center
+      secondary: [386], // Right eye center
+      offset: { x: 0, y: 0 },
+    },
+    scaling: {
+      base: 1,
+      widthFactor: 1.2,
+      heightFactor: 1.0,
+    },
+  },
+  {
+    id: 'glasses-reading',
+    type: OverlayType.GLASSES,
+    name: 'Reading Glasses',
+    imageUrl: '/overlays/glasses-reading.png',
+    defaultPosition: {
+      x: 0.5,
+      y: 0.4,
+      width: 0.25,
+      height: 0.1,
+      rotation: 0,
+      scale: 1,
+      zIndex: 10,
+    },
+    defaultRendering: {
+      opacity: 1,
+      blendMode: 'normal',
+      visible: true,
+    },
+    anchors: {
+      primary: 159, // Left eye center
+      secondary: [386], // Right eye center
+      offset: { x: 0, y: 0 },
+    },
+    scaling: {
+      base: 1,
+      widthFactor: 1.1,
+      heightFactor: 1.0,
+    },
+  },
+  {
+    id: 'glasses-aviator',
+    type: OverlayType.GLASSES,
+    name: 'Aviator',
+    imageUrl: '/overlays/glasses-aviator.png',
+    defaultPosition: {
+      x: 0.5,
+      y: 0.4,
+      width: 0.35,
+      height: 0.15,
+      rotation: 0,
+      scale: 1,
+      zIndex: 10,
+    },
+    defaultRendering: {
+      opacity: 1,
+      blendMode: 'normal',
+      visible: true,
+    },
+    anchors: {
+      primary: 159, // Left eye center
+      secondary: [386], // Right eye center
+      offset: { x: 0, y: 0 },
+    },
+    scaling: {
+      base: 1,
+      widthFactor: 1.3,
+      heightFactor: 1.1,
+    },
+  },
+];
+
+interface OverlayControlsProps {
+  /** Whether controls are visible */
+  isVisible: boolean;
+  /** Container className */
+  className?: string;
+}
+
+export const OverlayControls: React.FC<OverlayControlsProps> = ({
+  isVisible,
+  className = '',
+}) => {
+  const [selectedGlasses, setSelectedGlasses] = useState<string | null>(null);
+  
+  const {
+    activeOverlays,
+    isEnabled,
+    addOverlay,
+    removeOverlay,
+    toggleOverlay,
+    updateOverlayRendering,
+    clearOverlays,
+    setEnabled,
+  } = useOverlayStore();
+
+  // Get active glasses overlays
+  const activeGlasses = activeOverlays.filter(
+    overlay => overlay.config.type === OverlayType.GLASSES
+  );
+
+  /**
+   * Handle glasses selection
+   */
+  const handleGlassesSelect = (glassesId: string) => {
+    if (selectedGlasses === glassesId) {
+      // Deselect if already selected
+      setSelectedGlasses(null);
+      const activeGlasses = activeOverlays.find(
+        overlay => overlay.config.id === glassesId
+      );
+      if (activeGlasses) {
+        removeOverlay(glassesId);
+      }
+    } else {
+      // Select new glasses
+      setSelectedGlasses(glassesId);
+      const glassesConfig = GLASSES_OPTIONS.find(
+        option => option.id === glassesId
+      );
+      if (glassesConfig) {
+        addOverlay(glassesConfig);
+      }
+    }
+  };
+
+  /**
+   * Handle glasses opacity change
+   */
+  const handleGlassesOpacityChange = (glassesId: string, opacity: number) => {
+    updateOverlayRendering(glassesId, { opacity });
+  };
+
+  /**
+   * Handle glasses scale change
+   */
+  const handleGlassesScaleChange = (glassesId: string, scale: number) => {
+    const overlay = activeOverlays.find(o => o.config.id === glassesId);
+    if (overlay) {
+      updateOverlayRendering(glassesId, { 
+        // Update scale through position since rendering doesn't have scale
+      });
+    }
+  };
+
+  /**
+   * Toggle overlay system
+   */
+  const handleToggleOverlaySystem = () => {
+    setEnabled(!isEnabled);
+  };
+
+  /**
+   * Clear all overlays
+   */
+  const handleClearOverlays = () => {
+    clearOverlays();
+    setSelectedGlasses(null);
+  };
+
+  if (!isVisible) {
+    return null;
+  }
+
+  return (
+    <div className={`bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg ${className}`}>
+      <div className="space-y-4">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-800">Overlay Controls</h3>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleToggleOverlaySystem}
+              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                isEnabled
+                  ? 'bg-green-500 text-white hover:bg-green-600'
+                  : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+              }`}
+            >
+              {isEnabled ? 'Enabled' : 'Disabled'}
+            </button>
+            <button
+              onClick={handleClearOverlays}
+              className="px-3 py-1 rounded text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors"
+            >
+              Clear All
+            </button>
+          </div>
+        </div>
+
+        {/* Glasses Section */}
+        <div className="space-y-3">
+          <h4 className="text-md font-medium text-gray-700">Glasses</h4>
+          
+          {/* Glasses Options */}
+          <div className="grid grid-cols-1 gap-2">
+            {GLASSES_OPTIONS.map(glasses => {
+              const isActive = activeGlasses.some(
+                overlay => overlay.config.id === glasses.id
+              );
+              const isSelected = selectedGlasses === glasses.id;
+              
+              return (
+                <div
+                  key={glasses.id}
+                  className={`p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                    isSelected
+                      ? 'border-blue-500 bg-blue-50'
+                      : isActive
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+                  }`}
+                  onClick={() => handleGlassesSelect(glasses.id)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center">
+                        <span className="text-xs text-gray-600">👓</span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-800">{glasses.name}</p>
+                        <p className="text-xs text-gray-500">
+                          {isActive ? 'Active' : 'Click to add'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {isActive && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleOverlay(glasses.id, false);
+                          }}
+                          className="text-red-500 hover:text-red-700 text-sm"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Active Glasses Controls */}
+          {activeGlasses.length > 0 && (
+            <div className="space-y-3 pt-3 border-t border-gray-200">
+              <h5 className="text-sm font-medium text-gray-600">Active Glasses</h5>
+              {activeGlasses.map(glasses => (
+                <div key={glasses.config.id} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700">
+                      {glasses.config.name}
+                    </span>
+                    <button
+                      onClick={() => toggleOverlay(glasses.config.id)}
+                      className={`text-xs px-2 py-1 rounded ${
+                        glasses.enabled
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      {glasses.enabled ? 'On' : 'Off'}
+                    </button>
+                  </div>
+                  
+                  {/* Opacity Control */}
+                  <div className="space-y-1">
+                    <label className="text-xs text-gray-600">Opacity</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={glasses.rendering.opacity}
+                      onChange={(e) => handleGlassesOpacityChange(
+                        glasses.config.id,
+                        parseFloat(e.target.value)
+                      )}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>0%</span>
+                      <span>{Math.round(glasses.rendering.opacity * 100)}%</span>
+                      <span>100%</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Status */}
+        <div className="pt-3 border-t border-gray-200">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-600">Active Overlays:</span>
+            <span className="font-medium text-gray-800">
+              {activeOverlays.length}
+            </span>
+          </div>
+          {activeOverlays.length > 0 && (
+            <div className="mt-1 text-xs text-gray-500">
+              {activeOverlays.map(overlay => overlay.config.name).join(', ')}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}; 

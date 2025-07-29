@@ -164,63 +164,37 @@ export class OverlayService {
   /**
    * Adjust position for glasses
    */
-    private static adjustGlassesPosition(
+  private static adjustGlassesPosition(
     position: OverlayPosition,
     landmarks: LandmarkPoint[],
     boundingBox?: { x: number; y: number; width: number; height: number }
   ): OverlayPosition {
     // Use eye landmarks for precise positioning
-    const leftEye = landmarks[159]; // Left eye center (correct MediaPipe landmark)
-    const rightEye = landmarks[386]; // Right eye center (correct MediaPipe landmark)
+    const leftEye = landmarks[159]; // Left eye center
+    const rightEye = landmarks[386]; // Right eye center
+    const leftEyeOuter = landmarks[33]; // Left eye outer corner
+    const rightEyeOuter = landmarks[263]; // Right eye outer corner
 
     if (leftEye && rightEye && leftEye.visibility > 0.5 && rightEye.visibility > 0.5) {
-      // Calculate eye span (distance from outer edge to outer edge)
-      // We need to find the outer edges of both eyes
-      const leftEyeOuter = landmarks[33]; // Left eye outer corner
-      const rightEyeOuter = landmarks[263]; // Right eye outer corner
-      
       if (leftEyeOuter && rightEyeOuter && leftEyeOuter.visibility > 0.5 && rightEyeOuter.visibility > 0.5) {
         // Calculate eye span (distance between outer edges)
         const eyeSpan = Math.abs(rightEyeOuter.x - leftEyeOuter.x);
         
-        // Position at center between eye centers (to match the red circles)
-        let eyeSpanCenterX = (leftEye.x + rightEye.x) / 2;
-        const eyeCenterY = (leftEye.y + rightEye.y) / 2; // Keep Y at eye center level
-        
-        // Note: We're using eye centers (159 & 386) to match the red circles
-        // The width is still based on eye span (outer edges) for proper scaling
+        // Position at center between eye centers
+        const eyeCenterX = (leftEye.x + rightEye.x) / 2;
+        const eyeCenterY = (leftEye.y + rightEye.y) / 2;
 
         // Calculate glasses width based on eye span
-        const glassesWidth = eyeSpan * 1.3; // 30% wider than eye span to sit outside eye circles
-
-        console.log('🔍 Glasses positioning - Left Eye Center:', leftEye.x.toFixed(3), leftEye.y.toFixed(3), 'visibility:', leftEye.visibility.toFixed(3));
-        console.log('🔍 Glasses positioning - Right Eye Center:', rightEye.x.toFixed(3), rightEye.y.toFixed(3), 'visibility:', rightEye.visibility.toFixed(3));
-        console.log('🔍 Glasses positioning - Left Eye Outer:', leftEyeOuter.x.toFixed(3), leftEyeOuter.y.toFixed(3), 'visibility:', leftEyeOuter.visibility.toFixed(3));
-        console.log('🔍 Glasses positioning - Right Eye Outer:', rightEyeOuter.x.toFixed(3), rightEyeOuter.y.toFixed(3), 'visibility:', rightEyeOuter.visibility.toFixed(3));
-        console.log('🔍 Glasses positioning - Eye Span Center:', eyeSpanCenterX.toFixed(3), eyeCenterY.toFixed(3));
-        console.log('🔍 Glasses positioning - Eye Span (outer to outer):', eyeSpan.toFixed(3));
-        console.log('🔍 Glasses positioning - Glasses width (130% of eye span):', glassesWidth.toFixed(3));
-        console.log('🔍 Glasses positioning - Original position:', position.x.toFixed(3), position.y.toFixed(3));
-        console.log('🔍 Glasses positioning - Adjusted position:', eyeSpanCenterX.toFixed(3), eyeCenterY.toFixed(3));
+        const glassesWidth = eyeSpan * 1.3; // 30% wider than eye span
 
         return {
           ...position,
-          x: eyeSpanCenterX,
+          x: eyeCenterX,
           y: eyeCenterY,
           width: glassesWidth,
         };
-      } else {
-        console.log('⚠️ Eye outer landmarks not visible enough:', {
-          leftEyeOuter: leftEyeOuter ? { visibility: leftEyeOuter.visibility } : 'missing',
-          rightEyeOuter: rightEyeOuter ? { visibility: rightEyeOuter.visibility } : 'missing'
-        });
       }
     }
-
-    console.log('⚠️ Eye landmarks not visible enough:', {
-      leftEye: leftEye ? { visibility: leftEye.visibility } : 'missing',
-      rightEye: rightEye ? { visibility: rightEye.visibility } : 'missing'
-    });
 
     return position;
   }

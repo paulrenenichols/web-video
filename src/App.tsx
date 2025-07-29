@@ -20,6 +20,8 @@ import { TrackingStatusIndicator } from '@/components/tracking/TrackingStatus';
 import { FaceTracking } from '@/components/tracking/FaceTracking';
 import { TrackingVisualization } from '@/components/tracking/TrackingVisualization';
 import { OverlaySystem } from '@/components/overlays/OverlaySystem';
+import { GlassesOverlay } from '@/components/overlays/GlassesOverlay';
+import { OverlayControls } from '@/components/overlays/OverlayControls';
 import { useOverlayStore } from '@/stores/overlay-store';
 import { VisualizationControls } from '@/components/controls/VisualizationControls';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
@@ -53,44 +55,7 @@ const VideoRecorderApp: React.FC = () => {
   const [showEnhancedTracking, setShowEnhancedTracking] = React.useState(false);
   const [showOverlays, setShowOverlays] = React.useState(false);
 
-  // Add test overlay when overlay system is enabled
-  React.useEffect(() => {
-    if (showOverlays && overlayState.activeOverlays.length === 0) {
-      // Add a test glasses overlay
-      const testGlassesConfig = {
-        id: 'test-glasses',
-        type: 'glasses' as const,
-        name: 'Test Glasses',
-        imageUrl: '/test-glasses.png', // Placeholder
-        defaultPosition: {
-          x: 0.5,
-          y: 0.4,
-          width: 0.4, // Increased to 0.4 (40% of canvas width)
-          height: 0.08, // Slightly reduced height
-          rotation: 0,
-          scale: 1,
-          zIndex: 1,
-        },
-        defaultRendering: {
-          opacity: 0.8,
-          blendMode: 'normal' as const,
-          visible: true,
-        },
-        anchors: {
-          primary: 159, // Left eye center (correct MediaPipe landmark)
-          secondary: [386], // Right eye center (correct MediaPipe landmark)
-          offset: { x: 0, y: 0 },
-        },
-        scaling: {
-          base: 1,
-          widthFactor: 1,
-          heightFactor: 1,
-        },
-      };
-      
-      useOverlayStore.getState().addOverlay(testGlassesConfig);
-    }
-  }, [showOverlays, overlayState.activeOverlays.length]);
+
 
   // Unified visualization logic
   React.useEffect(() => {
@@ -215,6 +180,13 @@ const VideoRecorderApp: React.FC = () => {
                   videoRef={videoRef}
                   className="aspect-video w-full"
                 />
+
+                {/* Glasses overlay */}
+                <GlassesOverlay
+                  isVisible={showOverlays}
+                  videoRef={videoRef}
+                  className="aspect-video w-full"
+                />
               </div>
             </div>
           </div>
@@ -286,7 +258,13 @@ const VideoRecorderApp: React.FC = () => {
                 </div>
               </div>
 
-              {/* Unified Visualization Controls - Below Tracking State */}
+              {/* Overlay Controls - Below Tracking State */}
+              <OverlayControls
+                isVisible={showOverlays}
+                className="w-full"
+              />
+
+              {/* Unified Visualization Controls - Below Overlay Controls */}
               <VisualizationControls
                 isVisualizationEnabled={isVisualizationEnabled}
                 onToggleVisualization={setIsVisualizationEnabled}
