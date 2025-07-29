@@ -41,20 +41,34 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
   const drawBoundingBox = useCallback((ctx: CanvasRenderingContext2D, detection: any) => {
     console.log('🎯 drawBoundingBox called with:', detection);
     
-    if (!detection.boundingBox || !videoRef.current) {
-      console.log('❌ No bounding box or video ref');
+    if (!detection.boundingBox) {
+      console.log('❌ No bounding box data');
+      return;
+    }
+
+    if (!videoRef.current) {
+      console.log('❌ No video ref');
       return;
     }
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      console.log('❌ No canvas ref');
+      return;
+    }
 
     // Get video dimensions
     const videoWidth = video.videoWidth;
     const videoHeight = video.videoHeight;
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
+
+    // Check if video dimensions are valid
+    if (videoWidth === 0 || videoHeight === 0) {
+      console.log('❌ Invalid video dimensions:', { videoWidth, videoHeight });
+      return;
+    }
 
     console.log('📐 Dimensions:', {
       video: { width: videoWidth, height: videoHeight },
@@ -191,12 +205,12 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
       canvasSize: { width: canvas.width, height: canvas.height }
     });
 
-    // Draw a test rectangle to verify canvas is working
-    ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-    ctx.fillRect(10, 10, 100, 50);
-    ctx.strokeStyle = 'red';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(10, 10, 100, 50);
+    // Draw a test rectangle to verify canvas is working (temporary)
+    // ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+    // ctx.fillRect(10, 10, 100, 50);
+    // ctx.strokeStyle = 'red';
+    // ctx.lineWidth = 2;
+    // ctx.strokeRect(10, 10, 100, 50);
 
     // Draw bounding box if face is detected
     if (status === 'detected' && faceDetection && faceDetection.detected) {
@@ -253,8 +267,7 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
       ref={canvasRef}
       className={`absolute inset-0 pointer-events-none ${className}`}
       style={{ 
-        zIndex: 10,
-        border: '2px solid red' // Temporary border to see if canvas is positioned correctly
+        zIndex: 10
       }}
     />
   );
