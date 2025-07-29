@@ -65,7 +65,7 @@ const VideoRecorderApp: React.FC = () => {
         defaultPosition: {
           x: 0.5,
           y: 0.4,
-          width: 0.35, // Increased from 0.3 to 0.35 (35% of canvas width)
+          width: 0.4, // Increased to 0.4 (40% of canvas width)
           height: 0.08, // Slightly reduced height
           rotation: 0,
           scale: 1,
@@ -341,8 +341,14 @@ const VideoRecorderApp: React.FC = () => {
                 <div className="space-y-3">
                   <button
                     onClick={() => {
-                      setShowOverlays(!showOverlays);
-                      useOverlayStore.getState().setEnabled(!showOverlays);
+                      const newShowOverlays = !showOverlays;
+                      setShowOverlays(newShowOverlays);
+                      useOverlayStore.getState().setEnabled(newShowOverlays);
+                      
+                      // Clear existing overlays when toggling
+                      if (newShowOverlays) {
+                        useOverlayStore.getState().clearOverlays();
+                      }
                     }}
                     disabled={!trackingState.isInitialized || !showTracking}
                     className={`w-full px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
