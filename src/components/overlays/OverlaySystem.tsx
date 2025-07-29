@@ -138,15 +138,33 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
       if (!overlay.enabled || !overlay.rendering.visible) return;
 
       try {
-        // Calculate overlay position
-        const positionResult = OverlayService.calculateOverlayPosition(
-          overlay.config,
-          positioningContext
-        );
+        // For glasses overlays, skip the overlay service entirely
+        let positionResult: any;
+        
+        if (overlay.config.type === 'glasses') {
+          // Create a dummy position result for glasses (we'll calculate real position below)
+          positionResult = {
+            isValid: true,
+            position: {
+              x: 0, // Will be calculated below
+              y: 0, // Will be calculated below
+              width: 0, // Will be calculated below
+              height: overlay.config.defaultPosition.height,
+              rotation: 0,
+              scale: 1,
+            }
+          };
+        } else {
+          // For non-glasses overlays, use the overlay service
+          positionResult = OverlayService.calculateOverlayPosition(
+            overlay.config,
+            positioningContext
+          );
 
-        if (!positionResult.isValid) {
-          console.warn(`Overlay ${overlay.config.name} position invalid:`, positionResult.error);
-          return;
+          if (!positionResult.isValid) {
+            console.warn(`Overlay ${overlay.config.name} position invalid:`, positionResult.error);
+            return;
+          }
         }
 
         // For glasses overlays, use the red eye tracking as the source of truth
