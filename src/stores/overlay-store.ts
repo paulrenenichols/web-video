@@ -16,12 +16,49 @@ import {
   OverlayRendering,
   OverlayType,
 } from '@/types/overlay';
+import { AVAILABLE_GLASSES, GlassesConfig } from '@/constants/glasses';
+
+/**
+ * Convert glasses config to overlay config
+ */
+const convertGlassesToOverlayConfig = (glasses: GlassesConfig): OverlayConfig => {
+  return {
+    id: glasses.id,
+    type: OverlayType.GLASSES,
+    name: glasses.name,
+    imageUrl: glasses.imagePath,
+    defaultPosition: {
+      x: 0.5,
+      y: 0.4,
+      width: 0.3,
+      height: 0.15,
+      rotation: 0,
+      scale: glasses.defaultScale,
+      zIndex: 1,
+    },
+    defaultRendering: {
+      opacity: glasses.defaultOpacity,
+      blendMode: 'normal',
+      visible: true,
+    },
+    anchors: {
+      primary: 159, // Left eye center
+      secondary: [386], // Right eye center
+      offset: { x: 0, y: 0 },
+    },
+    scaling: {
+      base: 1.0,
+      widthFactor: 1.0,
+      heightFactor: 1.0,
+    },
+  };
+};
 
 /**
  * Initial overlay state
  */
 const initialState: OverlayState = {
-  availableOverlays: [],
+  availableOverlays: AVAILABLE_GLASSES.map(convertGlassesToOverlayConfig),
   activeOverlays: [],
   isEnabled: false,
   mode: 'preview',

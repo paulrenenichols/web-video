@@ -8,87 +8,28 @@
 import React, { useState } from 'react';
 import { useOverlayStore } from '@/stores/overlay-store';
 import { OverlayType, OverlayConfig } from '@/types/overlay';
+import { AVAILABLE_GLASSES } from '@/constants/glasses';
 
 /**
- * Available glasses configurations
+ * Convert glasses config to overlay config for controls
  */
-const GLASSES_OPTIONS: OverlayConfig[] = [
-  {
-    id: 'glasses-sunglasses',
+const convertGlassesToOverlayConfig = (glasses: any): OverlayConfig => {
+  return {
+    id: glasses.id,
     type: OverlayType.GLASSES,
-    name: 'Sunglasses',
-    imageUrl: '/overlays/glasses-sunglasses.png',
+    name: glasses.name,
+    imageUrl: glasses.imagePath,
     defaultPosition: {
       x: 0.5,
       y: 0.4,
       width: 0.3,
-      height: 0.12,
-      rotation: 0,
-      scale: 1,
-      zIndex: 10,
-    },
-    defaultRendering: {
-      opacity: 1,
-      blendMode: 'normal',
-      visible: true,
-    },
-    anchors: {
-      primary: 159, // Left eye center
-      secondary: [386], // Right eye center
-      offset: { x: 0, y: 0 },
-    },
-    scaling: {
-      base: 1,
-      widthFactor: 1.2,
-      heightFactor: 1.0,
-    },
-  },
-  {
-    id: 'glasses-reading',
-    type: OverlayType.GLASSES,
-    name: 'Reading Glasses',
-    imageUrl: '/overlays/glasses-reading.png',
-    defaultPosition: {
-      x: 0.5,
-      y: 0.4,
-      width: 0.25,
-      height: 0.1,
-      rotation: 0,
-      scale: 1,
-      zIndex: 10,
-    },
-    defaultRendering: {
-      opacity: 1,
-      blendMode: 'normal',
-      visible: true,
-    },
-    anchors: {
-      primary: 159, // Left eye center
-      secondary: [386], // Right eye center
-      offset: { x: 0, y: 0 },
-    },
-    scaling: {
-      base: 1,
-      widthFactor: 1.1,
-      heightFactor: 1.0,
-    },
-  },
-  {
-    id: 'glasses-aviator',
-    type: OverlayType.GLASSES,
-    name: 'Aviator',
-    imageUrl: '/overlays/glasses-aviator.png',
-    defaultPosition: {
-      x: 0.5,
-      y: 0.4,
-      width: 0.35,
       height: 0.15,
       rotation: 0,
-      scale: 1,
-      zIndex: 10,
+      scale: glasses.defaultScale,
+      zIndex: 1,
     },
     defaultRendering: {
-      opacity: 1,
+      opacity: glasses.defaultOpacity,
       blendMode: 'normal',
       visible: true,
     },
@@ -98,12 +39,17 @@ const GLASSES_OPTIONS: OverlayConfig[] = [
       offset: { x: 0, y: 0 },
     },
     scaling: {
-      base: 1,
-      widthFactor: 1.3,
-      heightFactor: 1.1,
+      base: 1.0,
+      widthFactor: 1.0,
+      heightFactor: 1.0,
     },
-  },
-];
+  };
+};
+
+/**
+ * Available glasses configurations
+ */
+const GLASSES_OPTIONS: OverlayConfig[] = AVAILABLE_GLASSES.map(convertGlassesToOverlayConfig);
 
 interface OverlayControlsProps {
   /** Container className */

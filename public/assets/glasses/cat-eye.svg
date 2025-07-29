@@ -1,0 +1,20 @@
+<svg width="200" height="60" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Left lens frame -->
+  <path d="M 10 25 Q 15 15 25 15 Q 35 15 40 25 Q 40 35 35 40 Q 25 40 20 35 Q 15 35 10 25 Z" fill="none" stroke="#333" stroke-width="2"/>
+  
+  <!-- Right lens frame -->
+  <path d="M 160 25 Q 165 15 175 15 Q 185 15 190 25 Q 190 35 185 40 Q 175 40 170 35 Q 165 35 160 25 Z" fill="none" stroke="#333" stroke-width="2"/>
+  
+  <!-- Bridge -->
+  <rect x="40" y="25" width="120" height="10" fill="none" stroke="#333" stroke-width="2"/>
+  
+  <!-- Left temple -->
+  <line x1="10" y1="30" x2="0" y2="30" stroke="#333" stroke-width="2"/>
+  
+  <!-- Right temple -->
+  <line x1="190" y1="30" x2="200" y2="30" stroke="#333" stroke-width="2"/>
+  
+  <!-- Lens reflections -->
+  <ellipse cx="25" cy="27.5" rx="6" ry="3" fill="rgba(255,255,255,0.3)"/>
+  <ellipse cx="175" cy="27.5" rx="6" ry="3" fill="rgba(255,255,255,0.3)"/>
+</svg> 

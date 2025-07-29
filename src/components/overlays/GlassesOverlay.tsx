@@ -27,6 +27,7 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number>();
+  const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
 
   // Get overlay and tracking state
   const { activeOverlays, isEnabled } = useOverlayStore();
@@ -56,6 +57,26 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
 
     return true;
   }, [videoRef]);
+
+  /**
+   * Preload image if not already cached
+   */
+  const preloadImage = useCallback((imageUrl: string): Promise<HTMLImageElement> => {
+    return new Promise((resolve, reject) => {
+      if (imageCache.current.has(imageUrl)) {
+        resolve(imageCache.current.get(imageUrl)!);
+        return;
+      }
+
+      const img = new Image();
+      img.onload = () => {
+        imageCache.current.set(imageUrl, img);
+        resolve(img);
+      };
+      img.onerror = reject;
+      img.src = imageUrl;
+    });
+  }, []);
 
   /**
    * Clear canvas
@@ -183,7 +204,7 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
     }
 
     // Render each glasses overlay
-    glassesOverlays.forEach(overlay => {
+    glassesOverlays.forEach(async (overlay) => {
       if (!overlay.rendering.visible) return;
 
       try {
@@ -197,7 +218,35 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
         ctx.rotate((glassesPosition.rotation * Math.PI) / 180);
         ctx.scale(overlay.position.scale, overlay.position.scale);
 
-        // Draw glasses placeholder (green rectangle)
+        // Get cached image or load it
+        const img = await preloadImage(overlay.config.imageUrl);
+        
+        // Calculate aspect ratio to maintain proportions
+        const aspectRatio = img.width / img.height;
+        const targetWidth = glassesPosition.width;
+        const targetHeight = targetWidth / aspectRatio;
+        
+        // Draw the image
+        ctx.drawImage(
+          img,
+          -targetWidth / 2,
+          -targetHeight / 2,
+          targetWidth,
+          targetHeight
+        );
+
+        // Restore context
+        ctx.restore();
+
+      } catch (error) {
+        console.error(`Error rendering glasses overlay ${overlay.config.name}:`, error);
+        
+        // Fallback to green rectangle if image fails to load
+        ctx.save();
+        ctx.translate(glassesPosition.x, glassesPosition.y);
+        ctx.rotate((glassesPosition.rotation * Math.PI) / 180);
+        ctx.scale(overlay.position.scale, overlay.position.scale);
+        
         ctx.strokeStyle = '#00ff00';
         ctx.lineWidth = 3;
         ctx.strokeRect(
@@ -206,7 +255,7 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
           glassesPosition.width,
           glassesPosition.height
         );
-
+        
         // Draw glasses label
         ctx.fillStyle = '#00ff00';
         ctx.font = '14px Arial';
@@ -216,12 +265,8 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
           0,
           -glassesPosition.height / 2 - 10
         );
-
-        // Restore context
+        
         ctx.restore();
-
-      } catch (error) {
-        console.error(`Error rendering glasses overlay ${overlay.config.name}:`, error);
       }
     });
 
