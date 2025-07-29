@@ -99,6 +99,13 @@ const VideoRecorderApp: React.FC = () => {
     }
   }, [showTracking]);
 
+  // Auto-hide enhanced visualization when overlays are enabled
+  React.useEffect(() => {
+    if (showOverlays) {
+      setShowEnhancedTracking(false);
+    }
+  }, [showOverlays]);
+
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
