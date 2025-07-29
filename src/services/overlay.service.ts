@@ -173,12 +173,23 @@ export class OverlayService {
       const eyeCenterX = (leftEye.x + rightEye.x) / 2;
       const eyeCenterY = (leftEye.y + rightEye.y) / 2;
       
+      console.log('🔍 Glasses positioning:', {
+        leftEye: { x: leftEye.x, y: leftEye.y, visibility: leftEye.visibility },
+        rightEye: { x: rightEye.x, y: rightEye.y, visibility: rightEye.visibility },
+        center: { x: eyeCenterX, y: eyeCenterY }
+      });
+      
       return {
         ...position,
         x: eyeCenterX,
         y: eyeCenterY,
       };
     }
+
+    console.log('⚠️ Eye landmarks not visible enough:', {
+      leftEye: leftEye ? { visibility: leftEye.visibility } : 'missing',
+      rightEye: rightEye ? { visibility: rightEye.visibility } : 'missing'
+    });
 
     return position;
   }
