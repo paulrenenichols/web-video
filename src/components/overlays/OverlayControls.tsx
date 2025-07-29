@@ -121,10 +121,14 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
   };
 
   /**
-   * Handle glasses opacity change
+   * Handle glasses opacity change for all active glasses
    */
-  const handleGlassesOpacityChange = (glassesId: string, opacity: number) => {
-    updateOverlayRendering(glassesId, { opacity });
+  const handleGlassesOpacityChange = (opacity: number) => {
+    console.log('🎨 Updating opacity for all glasses to:', opacity);
+    activeGlasses.forEach(glasses => {
+      console.log('🎨 Updating opacity for glasses:', glasses.config.name, 'to:', opacity);
+      updateOverlayRendering(glasses.config.id, { opacity });
+    });
   };
 
   /**
@@ -301,34 +305,33 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                       </button>
                     </div>
                   </div>
-
-                  {/* Opacity Control */}
-                  <div className="space-y-1">
-                    <label className="text-xs text-gray-600">Opacity</label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={glasses.rendering.opacity}
-                      onChange={e =>
-                        handleGlassesOpacityChange(
-                          glasses.config.id,
-                          parseFloat(e.target.value)
-                        )
-                      }
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                    />
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <span>0%</span>
-                      <span>
-                        {Math.round(glasses.rendering.opacity * 100)}%
-                      </span>
-                      <span>100%</span>
-                    </div>
-                  </div>
                 </div>
               ))}
+
+              {/* Single Opacity Control for All Glasses */}
+              <div className="space-y-1 pt-2 border-t border-gray-100">
+                <label className="text-xs text-gray-600">Glasses Opacity</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={activeGlasses.length > 0 ? activeGlasses[0].rendering.opacity : 0.9}
+                  onChange={e =>
+                    handleGlassesOpacityChange(parseFloat(e.target.value))
+                  }
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                />
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>0%</span>
+                  <span>
+                    {activeGlasses.length > 0 
+                      ? Math.round(activeGlasses[0].rendering.opacity * 100)
+                      : 90}%
+                  </span>
+                  <span>100%</span>
+                </div>
+              </div>
             </div>
           )}
         </div>
