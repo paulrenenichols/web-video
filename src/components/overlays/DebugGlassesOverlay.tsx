@@ -93,8 +93,7 @@ export const DebugGlassesOverlay: React.FC<DebugGlassesOverlayProps> = ({
       !isEnabled ||
       status !== 'detected' ||
       !facialLandmarks ||
-      !faceDetection ||
-      activeOverlays.length === 0
+      !faceDetection
     ) {
       return;
     }
@@ -129,6 +128,91 @@ export const DebugGlassesOverlay: React.FC<DebugGlassesOverlayProps> = ({
       canvasSize: { width: canvasWidth, height: canvasHeight },
       isMirrored,
     };
+
+    // Always render debug visualization for glasses positioning
+    const renderDebugGlassesVisualization = () => {
+      // Get eye landmarks
+      const leftEye = facialLandmarks.landmarks[159]; // Left eye center
+      const rightEye = facialLandmarks.landmarks[386]; // Right eye center
+      const leftEyeOuter = facialLandmarks.landmarks[33]; // Left eye outer corner
+      const rightEyeOuter = facialLandmarks.landmarks[263]; // Right eye outer corner
+
+      if (leftEye && rightEye && leftEye.visibility > 0.5 && rightEye.visibility > 0.5) {
+        // Calculate eye positions
+        let leftEyeX = leftEye.x * canvasWidth;
+        const leftEyeY = leftEye.y * canvasHeight;
+        let rightEyeX = rightEye.x * canvasWidth;
+        const rightEyeY = rightEye.y * canvasHeight;
+        
+        if (isMirrored) {
+          leftEyeX = canvasWidth - leftEyeX;
+          rightEyeX = canvasWidth - rightEyeX;
+        }
+
+        // Calculate center between eyes
+        const centerX = (leftEyeX + rightEyeX) / 2;
+        const centerY = (leftEyeY + rightEyeY) / 2;
+
+        // Calculate width based on eye span
+        let eyeSpan = 100; // Default fallback
+        if (leftEyeOuter && rightEyeOuter && leftEyeOuter.visibility > 0.5 && rightEyeOuter.visibility > 0.5) {
+          let leftOuterX = leftEyeOuter.x * canvasWidth;
+          let rightOuterX = rightEyeOuter.x * canvasWidth;
+          
+          if (isMirrored) {
+            leftOuterX = canvasWidth - leftOuterX;
+            rightOuterX = canvasWidth - rightOuterX;
+          }
+          
+          eyeSpan = Math.abs(rightOuterX - leftOuterX);
+        }
+        
+        const rectangleWidth = eyeSpan * 1.3; // 130% of eye span
+        const rectangleHeight = rectangleWidth * 0.3; // 30% of width for height
+        
+        // Calculate rotation angle from eye positions
+        const deltaX = rightEyeX - leftEyeX;
+        const deltaY = rightEyeY - leftEyeY;
+        const rotationAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+
+        // Draw red dots for eye centers
+        ctx.beginPath();
+        ctx.arc(leftEyeX, leftEyeY, 6, 0, 2 * Math.PI);
+        ctx.fillStyle = '#ff0000';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(rightEyeX, rightEyeY, 6, 0, 2 * Math.PI);
+        ctx.fillStyle = '#ff0000';
+        ctx.fill();
+
+        // Draw red dot for center between eyes
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 4, 0, 2 * Math.PI);
+        ctx.fillStyle = '#ff0000';
+        ctx.fill();
+
+        // Draw green rectangle that bounds both eyes
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate((rotationAngle * Math.PI) / 180);
+        
+        ctx.strokeStyle = '#00ff00';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(-rectangleWidth / 2, -rectangleHeight / 2, rectangleWidth, rectangleHeight);
+        
+        ctx.restore();
+
+        console.log('🔍 Debug visualization - Left eye:', leftEyeX.toFixed(1), leftEyeY.toFixed(1));
+        console.log('🔍 Debug visualization - Right eye:', rightEyeX.toFixed(1), rightEyeY.toFixed(1));
+        console.log('🔍 Debug visualization - Center:', centerX.toFixed(1), centerY.toFixed(1));
+        console.log('🔍 Debug visualization - Rectangle size:', rectangleWidth.toFixed(1), 'x', rectangleHeight.toFixed(1));
+        console.log('🔍 Debug visualization - Rotation:', rotationAngle.toFixed(1), 'degrees');
+      }
+    };
+
+    // Render debug visualization
+    renderDebugGlassesVisualization();
 
     // Sort overlays by z-index
     const sortedOverlays = [...activeOverlays].sort((a, b) => a.position.zIndex - b.position.zIndex);

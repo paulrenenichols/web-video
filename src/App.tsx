@@ -287,7 +287,9 @@ const VideoRecorderApp: React.FC = () => {
                     <OverlayControls
                       className="w-full"
                       glassesOverlaySystemEnabled={glassesOverlaySystemEnabled}
-                      onToggleGlassesOverlaySystem={setGlassesOverlaySystemEnabled}
+                      onToggleGlassesOverlaySystem={
+                        setGlassesOverlaySystemEnabled
+                      }
                     />
                   </div>
                 )}
