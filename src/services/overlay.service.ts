@@ -183,9 +183,12 @@ export class OverlayService {
         // Calculate eye span (distance between outer edges)
         const eyeSpan = Math.abs(rightEyeOuter.x - leftEyeOuter.x);
         
-        // Position at center between outer edges (not eye centers)
-        const eyeSpanCenterX = (leftEyeOuter.x + rightEyeOuter.x) / 2;
+        // Position at center between eye centers (to match the red circles)
+        let eyeSpanCenterX = (leftEye.x + rightEye.x) / 2;
         const eyeCenterY = (leftEye.y + rightEye.y) / 2; // Keep Y at eye center level
+        
+        // Note: We're using eye centers (159 & 386) to match the red circles
+        // The width is still based on eye span (outer edges) for proper scaling
 
         // Calculate glasses width based on eye span
         const glassesWidth = eyeSpan * 1.3; // 30% wider than eye span to sit outside eye circles
