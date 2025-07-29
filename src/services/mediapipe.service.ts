@@ -33,7 +33,7 @@ export class MediaPipeService {
   constructor(options: MediaPipeOptions = {}) {
     this.options = {
       enableFaceMesh: options.enableFaceMesh ?? true,
-      enableFaceDetection: options.enableFaceDetection ?? true,
+      enableFaceDetection: options.enableFaceDetection ?? false, // Disable face detection for now
       minDetectionConfidence: options.minDetectionConfidence ?? 0.5,
       minTrackingConfidence: options.minTrackingConfidence ?? 0.5,
     };
@@ -50,6 +50,7 @@ export class MediaPipeService {
       if (this.options.enableFaceDetection) {
         this.faceDetection = new FaceDetection({
           locateFile: (file) => {
+            console.log('🔍 Loading MediaPipe file:', file);
             return `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`;
           },
         });
@@ -68,6 +69,7 @@ export class MediaPipeService {
       if (this.options.enableFaceMesh) {
         this.faceMesh = new FaceMesh({
           locateFile: (file) => {
+            console.log('🎭 Loading MediaPipe file:', file);
             return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
           },
         });
@@ -201,8 +203,18 @@ export class MediaPipeService {
       timestamp: Date.now(),
     };
 
+    // Also trigger face detection callback since we have a face
+    const faceDetection: FaceDetectionResult = {
+      detected: true,
+      confidence: 1.0,
+      timestamp: Date.now(),
+    };
+
     console.log('📍 Facial landmarks detected:', facialLandmarks.landmarks.length, 'points');
+    console.log('🎯 Face detected via mesh:', faceDetection);
+    
     this.onLandmarksCallback?.(facialLandmarks);
+    this.onDetectionCallback?.(faceDetection);
   }
 
   /**
