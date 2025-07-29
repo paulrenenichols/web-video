@@ -70,11 +70,11 @@ export class OverlayService {
         context
       );
 
-      // Mirror position if video is mirrored
-      if (isMirrored) {
-        adjustedPosition.x = 1 - adjustedPosition.x;
-        console.log('🔍 Mirroring applied - Original:', (1 - adjustedPosition.x).toFixed(3), 'Mirrored:', adjustedPosition.x.toFixed(3));
-      }
+      // Note: MediaPipe landmarks are already in the correct coordinate system for mirrored video
+      // No additional mirroring needed for overlay positioning
+      // if (isMirrored) {
+      //   adjustedPosition.x = 1 - adjustedPosition.x;
+      // }
 
       // Calculate confidence based on landmark visibility
       const confidence = this.calculateConfidence(landmarks, config);
