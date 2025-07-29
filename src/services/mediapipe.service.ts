@@ -305,6 +305,11 @@ export class MediaPipeService {
     const x = minX + width / 2;
     const y = minY + height / 2;
 
+    console.log('🔍 Bounding box calculation - Face landmarks used:', faceLandmarkIndices.length);
+    console.log('🔍 Bounding box calculation - Min/Max X:', minX.toFixed(3), maxX.toFixed(3));
+    console.log('🔍 Bounding box calculation - Min/Max Y:', minY.toFixed(3), maxY.toFixed(3));
+    console.log('🔍 Bounding box calculation - Width/Height:', width.toFixed(3), height.toFixed(3));
+
     return { x, y, width, height };
   }
 

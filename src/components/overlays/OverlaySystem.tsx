@@ -88,11 +88,6 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
     // Clear canvas
     clearCanvas();
 
-    // Draw red border around canvas for debugging
-    ctx.strokeStyle = '#ff0000';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(0, 0, canvas.width, canvas.height);
-
     // Check if we have valid tracking data
     if (
       !isEnabled ||
