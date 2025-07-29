@@ -176,9 +176,6 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
         // Restore context
         ctx.restore();
 
-        // Update overlay position in store
-        useOverlayStore.getState().updateOverlayPosition(overlay.config.id, positionResult.position);
-
       } catch (error) {
         console.error(`Error rendering overlay ${overlay.config.name}:`, error);
       }
