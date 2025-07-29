@@ -150,11 +150,26 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
                 // Debug: Check visibility of first few landmarks
          console.log('🔍 Landmark visibility check:', {
            totalLandmarks: landmarks.length,
-           firstFew: landmarks.slice(0, 5).map((l, i) => ({ index: i, visibility: l?.visibility }))
+           firstFew: landmarks.slice(0, 5).map((l, i) => ({ 
+             index: i, 
+             visibility: l?.visibility,
+             x: l?.x,
+             y: l?.y,
+             hasLandmark: !!l
+           }))
          });
 
+         console.log('🔑 Key landmarks to check:', keyLandmarks.slice(0, 10)); // Show first 10 key landmark indices
+         
          keyLandmarks.forEach(index => {
            const landmark = landmarks[index];
+           console.log(`🔍 Checking landmark ${index}:`, { 
+             hasLandmark: !!landmark, 
+             visibility: landmark?.visibility,
+             x: landmark?.x,
+             y: landmark?.y
+           });
+           
            if (landmark && landmark.visibility > 0.1) { // Lower threshold to see more landmarks
              // Convert normalized coordinates (0-1) to canvas coordinates
              // Check if video is mirrored (front-facing camera)
@@ -173,6 +188,12 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
              ctx.beginPath();
              ctx.arc(x, y, 4, 0, 2 * Math.PI); // Larger dots (4px radius)
              ctx.fill();
+           } else {
+             console.log(`❌ Skipping landmark ${index}:`, { 
+               hasLandmark: !!landmark, 
+               visibility: landmark?.visibility,
+               threshold: 0.1
+             });
            }
          });
     },
