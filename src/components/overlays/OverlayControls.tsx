@@ -250,7 +250,8 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                         <button
                           onClick={e => {
                             e.stopPropagation();
-                            toggleOverlay(glasses.id, false);
+                            removeOverlay(glasses.id);
+                            setSelectedGlasses(null);
                           }}
                           className="text-red-500 hover:text-red-700 text-sm"
                         >
@@ -278,16 +279,27 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                     <span className="text-sm font-medium text-gray-700">
                       {glasses.config.name}
                     </span>
-                    <button
-                      onClick={() => toggleOverlay(glasses.config.id)}
-                      className={`text-xs px-2 py-1 rounded ${
-                        glasses.enabled
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-600'
-                      }`}
-                    >
-                      {glasses.enabled ? 'On' : 'Off'}
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => toggleOverlay(glasses.config.id)}
+                        className={`text-xs px-2 py-1 rounded ${
+                          glasses.enabled
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-gray-100 text-gray-600'
+                        }`}
+                      >
+                        {glasses.enabled ? 'On' : 'Off'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          removeOverlay(glasses.config.id);
+                          setSelectedGlasses(null);
+                        }}
+                        className="text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200"
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </div>
 
                   {/* Opacity Control */}
