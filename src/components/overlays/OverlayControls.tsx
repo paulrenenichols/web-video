@@ -78,6 +78,12 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
     setEnabled,
   } = useOverlayStore();
 
+  // Debug effect to track overlay state changes
+  React.useEffect(() => {
+    const glassesOverlays = activeOverlays.filter(o => o.config.type === OverlayType.GLASSES);
+    console.log('🔍 OverlayControls - Overlay state changed:', JSON.stringify(glassesOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled }))));
+  }, [activeOverlays]);
+
   // Local state for overlay controls - independent of overlay system visibility
   const [isOverlayControlsEnabled, setIsOverlayControlsEnabled] =
     useState(true);
