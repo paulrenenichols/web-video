@@ -200,11 +200,23 @@ export class MediaPipeService {
     }
 
     const landmarks = results.multiFaceLandmarks[0];
+    
+    // Debug: Check the structure of the first landmark
+    if (landmarks.length > 0) {
+      console.log('🔍 First landmark structure:', {
+        point: landmarks[0],
+        keys: Object.keys(landmarks[0]),
+        hasVisibility: 'visibility' in landmarks[0],
+        hasPresence: 'presence' in landmarks[0],
+        hasZ: 'z' in landmarks[0]
+      });
+    }
+    
     const landmarkPoints: LandmarkPoint[] = landmarks.map((point: any) => ({
       x: point.x,
       y: point.y,
       z: point.z,
-      visibility: point.visibility,
+      visibility: point.visibility || point.presence || 1.0, // Try different property names or default to 1.0
     }));
 
     const facialLandmarks: FacialLandmarks = {
