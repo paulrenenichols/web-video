@@ -121,12 +121,14 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
   };
 
   /**
-   * Handle glasses opacity change for all active glasses
+   * Handle glasses opacity change for all glasses overlays
    */
   const handleGlassesOpacityChange = (opacity: number) => {
     console.log('🎨 Updating opacity for all glasses to:', opacity);
-    activeGlasses.forEach(glasses => {
-      console.log('🎨 Updating opacity for glasses:', glasses.config.name, 'to:', opacity);
+    const allGlassesOverlays = activeOverlays.filter(o => o.config.type === OverlayType.GLASSES);
+    console.log('🎨 All glasses overlays count:', allGlassesOverlays.length);
+    allGlassesOverlays.forEach(glasses => {
+      console.log('🎨 Updating opacity for glasses:', glasses.config.name, 'Current opacity:', glasses.rendering.opacity, 'New opacity:', opacity, 'Enabled:', glasses.enabled);
       updateOverlayRendering(glasses.config.id, { opacity });
     });
   };
@@ -285,7 +287,11 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                     </span>
                     <div className="flex items-center space-x-2">
                       <button
-                        onClick={() => toggleOverlay(glasses.config.id)}
+                        onClick={() => {
+                          console.log('🔄 Toggling glasses:', glasses.config.name, 'Current enabled:', glasses.enabled);
+                          console.log('🔄 Current opacity:', glasses.rendering.opacity);
+                          toggleOverlay(glasses.config.id);
+                        }}
                         className={`text-xs px-2 py-1 rounded ${
                           glasses.enabled
                             ? 'bg-green-100 text-green-700'
@@ -316,7 +322,9 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                   min="0"
                   max="1"
                   step="0.1"
-                  value={activeGlasses.length > 0 ? activeGlasses[0].rendering.opacity : 0.9}
+                  value={activeOverlays.filter(o => o.config.type === OverlayType.GLASSES).length > 0 
+                    ? activeOverlays.filter(o => o.config.type === OverlayType.GLASSES)[0].rendering.opacity 
+                    : 0.9}
                   onChange={e =>
                     handleGlassesOpacityChange(parseFloat(e.target.value))
                   }
@@ -325,8 +333,8 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                 <div className="flex justify-between text-xs text-gray-500">
                   <span>0%</span>
                   <span>
-                    {activeGlasses.length > 0 
-                      ? Math.round(activeGlasses[0].rendering.opacity * 100)
+                    {activeOverlays.filter(o => o.config.type === OverlayType.GLASSES).length > 0 
+                      ? Math.round(activeOverlays.filter(o => o.config.type === OverlayType.GLASSES)[0].rendering.opacity * 100)
                       : 90}%
                   </span>
                   <span>100%</span>
