@@ -148,7 +148,7 @@ export class OverlayService {
 
     switch (type) {
       case OverlayType.GLASSES:
-        return this.adjustGlassesPosition(position, landmarks);
+        return this.adjustGlassesPosition(position, landmarks, boundingBox);
       
       case OverlayType.HAT:
         return this.adjustHatPosition(position, landmarks);
@@ -166,7 +166,8 @@ export class OverlayService {
    */
   private static adjustGlassesPosition(
     position: OverlayPosition,
-    landmarks: LandmarkPoint[]
+    landmarks: LandmarkPoint[],
+    boundingBox?: { x: number; y: number; width: number; height: number }
   ): OverlayPosition {
     // Use eye landmarks for precise positioning
     const leftEye = landmarks[159]; // Left eye center (correct MediaPipe landmark)
@@ -177,14 +178,25 @@ export class OverlayService {
       const eyeCenterX = (leftEye.x + rightEye.x) / 2;
       const eyeCenterY = (leftEye.y + rightEye.y) / 2;
       
-      // Calculate eye separation and set width to span both eyes
+      // Calculate eye separation
       const eyeSeparation = Math.abs(rightEye.x - leftEye.x);
-      const glassesWidth = eyeSeparation * 1.2; // 20% wider than eye separation for comfort
+      
+      // Calculate glasses width based on face size
+      let glassesWidth: number;
+      if (boundingBox && boundingBox.width > 0) {
+        // Use face width as base for scaling
+        const faceWidth = boundingBox.width;
+        glassesWidth = faceWidth * 0.4; // 40% of face width for glasses
+      } else {
+        // Fallback to eye separation
+        glassesWidth = eyeSeparation * 1.2; // 20% wider than eye separation
+      }
       
       console.log('🔍 Glasses positioning - Left Eye:', leftEye.x.toFixed(3), leftEye.y.toFixed(3), 'visibility:', leftEye.visibility.toFixed(3));
       console.log('🔍 Glasses positioning - Right Eye:', rightEye.x.toFixed(3), rightEye.y.toFixed(3), 'visibility:', rightEye.visibility.toFixed(3));
       console.log('🔍 Glasses positioning - Center:', eyeCenterX.toFixed(3), eyeCenterY.toFixed(3));
       console.log('🔍 Glasses positioning - Eye separation:', eyeSeparation.toFixed(3));
+      console.log('🔍 Glasses positioning - Face width:', boundingBox?.width.toFixed(3) || 'N/A');
       console.log('🔍 Glasses positioning - Glasses width:', glassesWidth.toFixed(3));
       console.log('🔍 Glasses positioning - Original position:', position.x.toFixed(3), position.y.toFixed(3));
       console.log('🔍 Glasses positioning - Adjusted position:', eyeCenterX.toFixed(3), eyeCenterY.toFixed(3));
