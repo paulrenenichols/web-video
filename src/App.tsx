@@ -31,7 +31,7 @@ const VideoRecorderApp: React.FC = () => {
   } = useCamera();
 
   // Initialize MediaPipe for Step 1 testing
-  const { initialize, isInitialized } = useMediaPipe();
+  const { initialize, isInitialized, processVideo } = useMediaPipe();
 
   const {
     isRecording,
@@ -56,6 +56,13 @@ const VideoRecorderApp: React.FC = () => {
       } catch (error) {
         console.error('Failed to initialize MediaPipe:', error);
       }
+    }
+  };
+
+  // Handle MediaPipe video processing for Step 1 testing
+  const handleVideoProcess = async (videoElement: HTMLVideoElement): Promise<void> => {
+    if (isInitialized && isActive) {
+      await processVideo(videoElement);
     }
   };
 
@@ -103,7 +110,11 @@ const VideoRecorderApp: React.FC = () => {
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Camera Feed
               </h2>
-              <VideoPlayer stream={stream} className="aspect-video w-full" />
+              <VideoPlayer 
+                stream={stream} 
+                className="aspect-video w-full" 
+                onVideoProcess={handleVideoProcess}
+              />
             </div>
           </div>
 

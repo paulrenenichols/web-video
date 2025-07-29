@@ -13,6 +13,7 @@ interface VideoPlayerProps {
   autoPlay?: boolean;
   muted?: boolean;
   playsInline?: boolean;
+  onVideoProcess?: (videoElement: HTMLVideoElement) => Promise<void>;
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
@@ -21,6 +22,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   autoPlay = true,
   muted = true,
   playsInline = true,
+  onVideoProcess,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -37,6 +39,43 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       });
     }
   }, [stream, autoPlay]);
+
+  // Set up MediaPipe processing for Step 1 testing
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !onVideoProcess || !stream) return;
+
+    let animationFrameId: number;
+    let isProcessing = false;
+
+    const processFrame = async () => {
+      if (!isProcessing) {
+        isProcessing = true;
+        try {
+          await onVideoProcess(video);
+        } catch (error) {
+          console.error('Error processing video frame:', error);
+        } finally {
+          isProcessing = false;
+        }
+      }
+      animationFrameId = requestAnimationFrame(processFrame);
+    };
+
+    // Start processing when video is ready
+    const handleCanPlay = () => {
+      processFrame();
+    };
+
+    video.addEventListener('canplay', handleCanPlay);
+
+    return () => {
+      video.removeEventListener('canplay', handleCanPlay);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [stream, onVideoProcess]);
 
   if (!stream) {
     return (
