@@ -213,18 +213,51 @@ export class MediaPipeService {
       timestamp: Date.now(),
     };
 
+    // Calculate bounding box from landmarks
+    const boundingBox = this.calculateBoundingBoxFromLandmarks(landmarkPoints);
+
     // Also trigger face detection callback since we have a face
     const faceDetection: FaceDetectionResult = {
       detected: true,
       confidence: 1.0,
+      boundingBox,
       timestamp: Date.now(),
     };
 
     console.log('📍 Facial landmarks detected:', facialLandmarks.landmarks.length, 'points');
     console.log('🎯 Face detected via mesh:', faceDetection);
+    console.log('📦 Bounding box calculated:', boundingBox);
     
     this.onLandmarksCallback?.(facialLandmarks);
     this.onDetectionCallback?.(faceDetection);
+  }
+
+  /**
+   * Calculate bounding box from facial landmarks
+   */
+  private calculateBoundingBoxFromLandmarks(landmarks: LandmarkPoint[]): { x: number; y: number; width: number; height: number } {
+    if (landmarks.length === 0) {
+      return { x: 0, y: 0, width: 0, height: 0 };
+    }
+
+    // Find min/max coordinates
+    let minX = 1, maxX = 0, minY = 1, maxY = 0;
+    
+    landmarks.forEach(landmark => {
+      if (landmark.visibility && landmark.visibility > 0.5) {
+        minX = Math.min(minX, landmark.x);
+        maxX = Math.max(maxX, landmark.x);
+        minY = Math.min(minY, landmark.y);
+        maxY = Math.max(maxY, landmark.y);
+      }
+    });
+
+    const width = maxX - minX;
+    const height = maxY - minY;
+    const x = minX + width / 2;
+    const y = minY + height / 2;
+
+    return { x, y, width, height };
   }
 
   /**

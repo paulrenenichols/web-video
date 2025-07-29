@@ -39,7 +39,12 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
    * Draw face bounding box
    */
   const drawBoundingBox = useCallback((ctx: CanvasRenderingContext2D, detection: any) => {
-    if (!detection.boundingBox || !videoRef.current) return;
+    console.log('🎯 drawBoundingBox called with:', detection);
+    
+    if (!detection.boundingBox || !videoRef.current) {
+      console.log('❌ No bounding box or video ref');
+      return;
+    }
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -51,6 +56,12 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
 
+    console.log('📐 Dimensions:', {
+      video: { width: videoWidth, height: videoHeight },
+      canvas: { width: canvasWidth, height: canvasHeight },
+      boundingBox: detection.boundingBox
+    });
+
     // Calculate scale factors
     const scaleX = canvasWidth / videoWidth;
     const scaleY = canvasHeight / videoHeight;
@@ -60,6 +71,8 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
     const y = detection.boundingBox.y * scaleY;
     const width = detection.boundingBox.width * scaleX;
     const height = detection.boundingBox.height * scaleY;
+
+    console.log('🎨 Drawing box at:', { x, y, width, height });
 
     // Draw bounding box
     ctx.strokeStyle = '#00ff00';
@@ -162,13 +175,23 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
     // Clear previous frame
     clearCanvas();
 
+    console.log('🎨 Rendering tracking visualization:', {
+      isVisible,
+      status,
+      hasFaceDetection: !!faceDetection,
+      hasLandmarks: !!(facialLandmarks && facialLandmarks.landmarks.length > 0),
+      canvasSize: { width: canvas.width, height: canvas.height }
+    });
+
     // Draw bounding box if face is detected
     if (status === 'detected' && faceDetection && faceDetection.detected) {
+      console.log('📦 Drawing bounding box:', faceDetection);
       drawBoundingBox(ctx, faceDetection);
     }
 
     // Draw landmarks if available
     if (facialLandmarks && facialLandmarks.landmarks.length > 0) {
+      console.log('📍 Drawing landmarks:', facialLandmarks.landmarks.length, 'points');
       drawLandmarks(ctx, facialLandmarks.landmarks);
     }
 
