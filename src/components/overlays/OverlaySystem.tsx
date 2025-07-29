@@ -198,6 +198,67 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
         // Restore context
         ctx.restore();
 
+        // Draw eye circles for debugging (red circles around eyes)
+        if (overlay.config.type === 'glasses') {
+          // Get eye landmarks
+          const leftEye = facialLandmarks.landmarks[159]; // Left eye center
+          const rightEye = facialLandmarks.landmarks[386]; // Right eye center
+          const leftEyeOuter = facialLandmarks.landmarks[33]; // Left eye outer corner
+          const rightEyeOuter = facialLandmarks.landmarks[263]; // Right eye outer corner
+
+          if (leftEye && rightEye && leftEye.visibility > 0.5 && rightEye.visibility > 0.5) {
+            // Draw left eye circle
+            let leftEyeX = leftEye.x * canvasWidth;
+            const leftEyeY = leftEye.y * canvasHeight;
+            if (isMirrored) {
+              leftEyeX = canvasWidth - leftEyeX;
+            }
+            
+            ctx.beginPath();
+            ctx.arc(leftEyeX, leftEyeY, 8, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw right eye circle
+            let rightEyeX = rightEye.x * canvasWidth;
+            const rightEyeY = rightEye.y * canvasHeight;
+            if (isMirrored) {
+              rightEyeX = canvasWidth - rightEyeX;
+            }
+            
+            ctx.beginPath();
+            ctx.arc(rightEyeX, rightEyeY, 8, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw eye span line (from outer edge to outer edge)
+            if (leftEyeOuter && rightEyeOuter && leftEyeOuter.visibility > 0.5 && rightEyeOuter.visibility > 0.5) {
+              let leftOuterX = leftEyeOuter.x * canvasWidth;
+              let rightOuterX = rightEyeOuter.x * canvasWidth;
+              const outerY = (leftEyeOuter.y + rightEyeOuter.y) / 2 * canvasHeight;
+              
+              if (isMirrored) {
+                leftOuterX = canvasWidth - leftOuterX;
+                rightOuterX = canvasWidth - rightOuterX;
+              }
+              
+              ctx.beginPath();
+              ctx.moveTo(leftOuterX, outerY);
+              ctx.lineTo(rightOuterX, outerY);
+              ctx.strokeStyle = '#ff0000';
+              ctx.lineWidth = 1;
+              ctx.setLineDash([3, 3]);
+              ctx.stroke();
+              ctx.setLineDash([]);
+            }
+
+            console.log('👁️ Eye circles drawn - Left eye:', leftEyeX.toFixed(1), leftEyeY.toFixed(1));
+            console.log('👁️ Eye circles drawn - Right eye:', rightEyeX.toFixed(1), rightEyeY.toFixed(1));
+          }
+        }
+
       } catch (error) {
         console.error(`Error rendering overlay ${overlay.config.name}:`, error);
       }
