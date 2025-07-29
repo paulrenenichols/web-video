@@ -96,4 +96,32 @@ export interface MediaPipeState {
   error: string | null;
   /** Number of faces currently detected */
   faceCount: number;
+}
+
+/**
+ * Tracking confidence levels
+ */
+export enum ConfidenceLevel {
+  /** Low confidence (0-0.3) */
+  LOW = 'low',
+  /** Medium confidence (0.3-0.7) */
+  MEDIUM = 'medium',
+  /** High confidence (0.7-1.0) */
+  HIGH = 'high',
+}
+
+/**
+ * Tracking performance metrics
+ */
+export interface TrackingMetrics {
+  /** Average confidence over time */
+  averageConfidence: number;
+  /** Number of frames processed */
+  framesProcessed: number;
+  /** Frames per second */
+  fps: number;
+  /** Detection rate (detections per second) */
+  detectionRate: number;
+  /** Last update timestamp */
+  lastUpdate: number;
 } 

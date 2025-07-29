@@ -8,6 +8,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { MediaPipeService } from '@/services/mediapipe.service';
 import { MediaPipeOptions, FaceDetection, FacialLandmarks } from '@/types/tracking';
+import { useTrackingStore } from '@/stores/tracking-store';
 
 /**
  * MediaPipe hook for facial tracking
@@ -15,6 +16,15 @@ import { MediaPipeOptions, FaceDetection, FacialLandmarks } from '@/types/tracki
 export const useMediaPipe = (options: MediaPipeOptions = {}) => {
   const mediaPipeRef = useRef<MediaPipeService | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Get tracking store actions
+  const {
+    updateFaceDetection,
+    updateFacialLandmarks,
+    setInitialized,
+    setError,
+    setStatus,
+  } = useTrackingStore();
 
   /**
    * Initialize MediaPipe service
@@ -30,7 +40,7 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
       
       mediaPipeRef.current = new MediaPipeService(options);
       
-      // Set up detection callback for logging
+      // Set up detection callback for logging and state management
       mediaPipeRef.current.onDetection((detection: FaceDetection) => {
         console.log('🎯 Face Detection Event:', {
           detected: detection.detected,
@@ -38,23 +48,33 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
           boundingBox: detection.boundingBox,
           timestamp: new Date(detection.timestamp).toISOString(),
         });
+        
+        // Update tracking store
+        updateFaceDetection(detection);
       });
 
-      // Set up landmarks callback for logging
+      // Set up landmarks callback for logging and state management
       mediaPipeRef.current.onLandmarks((landmarks: FacialLandmarks) => {
         console.log('📍 Facial Landmarks Event:', {
           landmarkCount: landmarks.landmarks.length,
           confidence: landmarks.confidence,
           timestamp: new Date(landmarks.timestamp).toISOString(),
         });
+        
+        // Update tracking store
+        updateFacialLandmarks(landmarks);
       });
 
       await mediaPipeRef.current.initialize();
       setIsInitialized(true);
+      setInitialized(true);
+      setStatus('not_detected');
       
       console.log('✅ MediaPipe hook initialized successfully');
     } catch (error) {
       console.error('❌ Failed to initialize MediaPipe hook:', error);
+      setError(error instanceof Error ? error.message : 'Unknown error');
+      setStatus('error');
       throw error;
     }
   }, [options]);
@@ -117,9 +137,11 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
       mediaPipeRef.current.dispose();
       mediaPipeRef.current = null;
       setIsInitialized(false);
+      setInitialized(false);
+      setStatus('not_detected');
       console.log('✅ MediaPipe hook disposed');
     }
-  }, []);
+  }, [setInitialized, setStatus]);
 
   // Cleanup on unmount
   useEffect(() => {

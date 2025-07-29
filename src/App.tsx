@@ -14,6 +14,7 @@ import { ControlPanel } from '@/components/controls/ControlPanel';
 import { useCamera } from '@/hooks/useCamera';
 import { useRecording } from '@/hooks/useRecording';
 import { useMediaPipe } from '@/hooks/useMediaPipe';
+import { useTrackingStore } from '@/stores/tracking-store';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 const VideoRecorderApp: React.FC = () => {
@@ -32,6 +33,9 @@ const VideoRecorderApp: React.FC = () => {
 
   // Initialize MediaPipe for Step 1 testing
   const { initialize, isInitialized, processVideo } = useMediaPipe();
+  
+  // Get tracking state for Step 2 testing
+  const trackingState = useTrackingStore();
 
   const {
     isRecording,
@@ -127,6 +131,23 @@ const VideoRecorderApp: React.FC = () => {
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Controls
               </h2>
+              
+              {/* Step 2: Tracking State Display */}
+              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-4">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                  Tracking State (Step 2)
+                </h3>
+                <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                  <div>Status: <span className="font-mono">{trackingState.status}</span></div>
+                  <div>Face Count: <span className="font-mono">{trackingState.faceCount}</span></div>
+                  <div>Confidence: <span className="font-mono">{(trackingState.confidence * 100).toFixed(1)}%</span></div>
+                  <div>Tracking: <span className="font-mono">{trackingState.isTracking ? 'Yes' : 'No'}</span></div>
+                  <div>Initialized: <span className="font-mono">{trackingState.isInitialized ? 'Yes' : 'No'}</span></div>
+                  {trackingState.error && (
+                    <div className="text-red-500">Error: {trackingState.error}</div>
+                  )}
+                </div>
+              </div>
               <ControlPanel
                 isActive={isActive}
                 isLoading={isLoading}
