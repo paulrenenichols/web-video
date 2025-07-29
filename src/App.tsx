@@ -54,6 +54,7 @@ const VideoRecorderApp: React.FC = () => {
   const [showTracking, setShowTracking] = React.useState(false);
   const [showEnhancedTracking, setShowEnhancedTracking] = React.useState(false);
   const [showOverlays, setShowOverlays] = React.useState(false);
+  const [showDebugControls, setShowDebugControls] = React.useState(false);
 
 
 
@@ -229,66 +230,84 @@ const VideoRecorderApp: React.FC = () => {
                 onClearRecording={handleClearRecording}
               />
 
-              {/* Tracking State - Below Camera Controls */}
-              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                  Tracking State
-                </h3>
-                <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                  <div>
-                    Status: <span className="font-mono">{trackingState.status}</span>
-                  </div>
-                  <div>
-                    Face Count: <span className="font-mono">{trackingState.faceCount}</span>
-                  </div>
-                  <div>
-                    Confidence: <span className="font-mono">{(trackingState.confidence * 100).toFixed(1)}%</span>
-                  </div>
-                  <div>
-                    Tracking: <span className="font-mono">{trackingState.isTracking ? 'Yes' : 'No'}</span>
-                  </div>
-                  <div>
-                    Initialized: <span className="font-mono">{trackingState.isInitialized ? 'Yes' : 'No'}</span>
-                  </div>
-                  {trackingState.error && (
-                    <div className="text-red-500">
-                      Error: {trackingState.error}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Overlay Controls - Below Tracking State */}
+              {/* Overlay Controls - Always Visible */}
               <OverlayControls
-                isVisible={showOverlays}
                 className="w-full"
               />
 
-              {/* Unified Visualization Controls - Below Overlay Controls */}
-              <VisualizationControls
-                isVisualizationEnabled={isVisualizationEnabled}
-                onToggleVisualization={setIsVisualizationEnabled}
-                showTracking={showTracking}
-                showEnhancedTracking={showEnhancedTracking}
-                showOverlays={showOverlays}
-                onToggleTracking={setShowTracking}
-                onToggleEnhancedTracking={setShowEnhancedTracking}
-                onToggleOverlays={(enabled) => {
-                  setShowOverlays(enabled);
-                  useOverlayStore.getState().setEnabled(enabled);
-                  if (enabled) {
-                    useOverlayStore.getState().clearOverlays();
-                  }
-                }}
-                isTrackingInitialized={trackingState.isInitialized}
-                isTracking={trackingState.isTracking}
-                trackingStatus={trackingState.status}
-                trackingConfidence={trackingState.confidence}
-                faceCount={trackingState.faceCount}
-                trackingError={trackingState.error}
-                activeOverlaysCount={overlayState.activeOverlays.length}
-                overlayError={overlayState.error}
-              />
+              {/* Debug Controls - Collapsible */}
+              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+                <button
+                  onClick={() => setShowDebugControls(!showDebugControls)}
+                  className="flex items-center justify-between w-full text-left"
+                >
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                    Debug Controls
+                  </h3>
+                  <span className="text-gray-500">
+                    {showDebugControls ? '▼' : '▶'}
+                  </span>
+                </button>
+                
+                {showDebugControls && (
+                  <div className="mt-4 space-y-4">
+                    {/* Tracking State */}
+                    <div className="bg-white dark:bg-gray-700 rounded p-3">
+                      <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                        Tracking State
+                      </h4>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                        <div>
+                          Status: <span className="font-mono">{trackingState.status}</span>
+                        </div>
+                        <div>
+                          Face Count: <span className="font-mono">{trackingState.faceCount}</span>
+                        </div>
+                        <div>
+                          Confidence: <span className="font-mono">{(trackingState.confidence * 100).toFixed(1)}%</span>
+                        </div>
+                        <div>
+                          Tracking: <span className="font-mono">{trackingState.isTracking ? 'Yes' : 'No'}</span>
+                        </div>
+                        <div>
+                          Initialized: <span className="font-mono">{trackingState.isInitialized ? 'Yes' : 'No'}</span>
+                        </div>
+                        {trackingState.error && (
+                          <div className="text-red-500">
+                            Error: {trackingState.error}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Visualization Controls */}
+                    <VisualizationControls
+                      isVisualizationEnabled={isVisualizationEnabled}
+                      onToggleVisualization={setIsVisualizationEnabled}
+                      showTracking={showTracking}
+                      showEnhancedTracking={showEnhancedTracking}
+                      showOverlays={showOverlays}
+                      onToggleTracking={setShowTracking}
+                      onToggleEnhancedTracking={setShowEnhancedTracking}
+                      onToggleOverlays={(enabled) => {
+                        setShowOverlays(enabled);
+                        useOverlayStore.getState().setEnabled(enabled);
+                        if (enabled) {
+                          useOverlayStore.getState().clearOverlays();
+                        }
+                      }}
+                      isTrackingInitialized={trackingState.isInitialized}
+                      isTracking={trackingState.isTracking}
+                      trackingStatus={trackingState.status}
+                      trackingConfidence={trackingState.confidence}
+                      faceCount={trackingState.faceCount}
+                      trackingError={trackingState.error}
+                      activeOverlaysCount={overlayState.activeOverlays.length}
+                      overlayError={overlayState.error}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

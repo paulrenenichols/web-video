@@ -106,14 +106,11 @@ const GLASSES_OPTIONS: OverlayConfig[] = [
 ];
 
 interface OverlayControlsProps {
-  /** Whether controls are visible */
-  isVisible: boolean;
   /** Container className */
   className?: string;
 }
 
 export const OverlayControls: React.FC<OverlayControlsProps> = ({
-  isVisible,
   className = '',
 }) => {
   const [selectedGlasses, setSelectedGlasses] = useState<string | null>(null);
@@ -193,9 +190,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
     setSelectedGlasses(null);
   };
 
-  if (!isVisible) {
-    return null;
-  }
+
 
   return (
     <div className={`bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg ${className}`}>
