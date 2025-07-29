@@ -183,9 +183,9 @@ export class OverlayService {
         // Calculate eye span (distance between outer edges)
         const eyeSpan = Math.abs(rightEyeOuter.x - leftEyeOuter.x);
         
-        // Position at center between eyes
-        const eyeCenterX = (leftEye.x + rightEye.x) / 2;
-        const eyeCenterY = (leftEye.y + rightEye.y) / 2;
+        // Position at center between outer edges (not eye centers)
+        const eyeSpanCenterX = (leftEyeOuter.x + rightEyeOuter.x) / 2;
+        const eyeCenterY = (leftEye.y + rightEye.y) / 2; // Keep Y at eye center level
 
         // Calculate glasses width based on eye span
         const glassesWidth = eyeSpan * 1.3; // 30% wider than eye span to sit outside eye circles
@@ -194,15 +194,15 @@ export class OverlayService {
         console.log('🔍 Glasses positioning - Right Eye Center:', rightEye.x.toFixed(3), rightEye.y.toFixed(3), 'visibility:', rightEye.visibility.toFixed(3));
         console.log('🔍 Glasses positioning - Left Eye Outer:', leftEyeOuter.x.toFixed(3), leftEyeOuter.y.toFixed(3), 'visibility:', leftEyeOuter.visibility.toFixed(3));
         console.log('🔍 Glasses positioning - Right Eye Outer:', rightEyeOuter.x.toFixed(3), rightEyeOuter.y.toFixed(3), 'visibility:', rightEyeOuter.visibility.toFixed(3));
-        console.log('🔍 Glasses positioning - Eye Center:', eyeCenterX.toFixed(3), eyeCenterY.toFixed(3));
+        console.log('🔍 Glasses positioning - Eye Span Center:', eyeSpanCenterX.toFixed(3), eyeCenterY.toFixed(3));
         console.log('🔍 Glasses positioning - Eye Span (outer to outer):', eyeSpan.toFixed(3));
-        console.log('🔍 Glasses positioning - Glasses width (110% of eye span):', glassesWidth.toFixed(3));
+        console.log('🔍 Glasses positioning - Glasses width (130% of eye span):', glassesWidth.toFixed(3));
         console.log('🔍 Glasses positioning - Original position:', position.x.toFixed(3), position.y.toFixed(3));
-        console.log('🔍 Glasses positioning - Adjusted position:', eyeCenterX.toFixed(3), eyeCenterY.toFixed(3));
+        console.log('🔍 Glasses positioning - Adjusted position:', eyeSpanCenterX.toFixed(3), eyeCenterY.toFixed(3));
 
         return {
           ...position,
-          x: eyeCenterX,
+          x: eyeSpanCenterX,
           y: eyeCenterY,
           width: glassesWidth,
         };
