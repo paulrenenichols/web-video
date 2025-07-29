@@ -240,22 +240,45 @@ export class MediaPipeService {
       return { x: 0, y: 0, width: 0, height: 0 };
     }
 
-    // Find min/max coordinates
+    // Find min/max coordinates - start with first visible landmark
     let minX = 1, maxX = 0, minY = 1, maxY = 0;
+    let hasVisibleLandmarks = false;
     
     landmarks.forEach(landmark => {
       if (landmark.visibility && landmark.visibility > 0.5) {
-        minX = Math.min(minX, landmark.x);
-        maxX = Math.max(maxX, landmark.x);
-        minY = Math.min(minY, landmark.y);
-        maxY = Math.max(maxY, landmark.y);
+        if (!hasVisibleLandmarks) {
+          // Initialize with first visible landmark
+          minX = maxX = landmark.x;
+          minY = maxY = landmark.y;
+          hasVisibleLandmarks = true;
+        } else {
+          minX = Math.min(minX, landmark.x);
+          maxX = Math.max(maxX, landmark.x);
+          minY = Math.min(minY, landmark.y);
+          maxY = Math.max(maxY, landmark.y);
+        }
       }
     });
+
+    if (!hasVisibleLandmarks) {
+      // If no visible landmarks, use all landmarks
+      minX = Math.min(...landmarks.map(l => l.x));
+      maxX = Math.max(...landmarks.map(l => l.x));
+      minY = Math.min(...landmarks.map(l => l.y));
+      maxY = Math.max(...landmarks.map(l => l.y));
+    }
 
     const width = maxX - minX;
     const height = maxY - minY;
     const x = minX + width / 2;
     const y = minY + height / 2;
+
+    console.log('🔍 Bounding box calculation:', {
+      minX, maxX, minY, maxY,
+      width, height, x, y,
+      landmarkCount: landmarks.length,
+      visibleCount: landmarks.filter(l => l.visibility && l.visibility > 0.5).length
+    });
 
     return { x, y, width, height };
   }
