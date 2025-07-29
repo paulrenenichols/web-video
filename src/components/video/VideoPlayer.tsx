@@ -55,7 +55,6 @@ export const VideoPlayer = forwardRef<HTMLVideoElement, VideoPlayerProps>(({
       if (!isProcessing) {
         isProcessing = true;
         try {
-          console.log('🎬 VideoPlayer: Processing frame...');
           await onVideoProcess(video);
         } catch (error) {
           console.error('Error processing video frame:', error);

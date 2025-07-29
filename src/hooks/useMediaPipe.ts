@@ -40,28 +40,13 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
       
       mediaPipeRef.current = new MediaPipeService(options);
       
-      // Set up detection callback for logging and state management
+      // Set up detection callback for state management
       mediaPipeRef.current.onDetection((detection: FaceDetection) => {
-        console.log('🎯 Face Detection Event:', {
-          detected: detection.detected,
-          confidence: detection.confidence,
-          boundingBox: detection.boundingBox,
-          timestamp: new Date(detection.timestamp).toISOString(),
-        });
-        
-        // Update tracking store
         updateFaceDetection(detection);
       });
 
-      // Set up landmarks callback for logging and state management
+      // Set up landmarks callback for state management
       mediaPipeRef.current.onLandmarks((landmarks: FacialLandmarks) => {
-        console.log('📍 Facial Landmarks Event:', {
-          landmarkCount: landmarks.landmarks.length,
-          confidence: landmarks.confidence,
-          timestamp: new Date(landmarks.timestamp).toISOString(),
-        });
-        
-        // Update tracking store
         updateFacialLandmarks(landmarks);
       });
 
@@ -89,7 +74,6 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
     }
 
     try {
-      console.log('🔄 Processing video frame with MediaPipe...');
       await mediaPipeRef.current.processFrame(videoElement);
     } catch (error) {
       console.error('Error processing video with MediaPipe:', error);

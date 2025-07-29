@@ -183,7 +183,6 @@ export class MediaPipeService {
    * Handle face mesh results
    */
   private handleFaceMeshResults(results: any): void {
-    console.log('📊 Raw face mesh results:', results);
     
     if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
       console.log('❌ No face landmarks detected');
@@ -221,7 +220,7 @@ export class MediaPipeService {
       timestamp: Date.now(),
     };
 
-    console.log('📊 Landmark statistics:', stats);
+
 
     // Calculate bounding box from landmarks
     const boundingBox = this.calculateBoundingBoxFromLandmarks(landmarkPoints);
@@ -234,9 +233,7 @@ export class MediaPipeService {
       timestamp: Date.now(),
     };
 
-    console.log('📍 Facial landmarks detected:', facialLandmarks.landmarks.length, 'points');
-    console.log('🎯 Face detected via mesh:', faceDetection);
-    console.log('📦 Bounding box calculated:', boundingBox);
+          console.log('📍 Facial landmarks detected:', facialLandmarks.landmarks.length, 'points');
     
     this.onLandmarksCallback?.(facialLandmarks);
     this.onDetectionCallback?.(faceDetection);
@@ -283,12 +280,7 @@ export class MediaPipeService {
     const x = minX + width / 2;
     const y = minY + height / 2;
 
-    console.log('🔍 Bounding box calculation:', {
-      minX, maxX, minY, maxY,
-      width, height, x, y,
-      landmarkCount: landmarks.length,
-      visibleCount: landmarks.filter(l => l.visibility && l.visibility > 0.5).length
-    });
+
 
     return { x, y, width, height };
   }

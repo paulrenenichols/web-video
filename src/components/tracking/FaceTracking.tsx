@@ -39,24 +39,13 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
    */
   const drawBoundingBox = useCallback(
     (ctx: CanvasRenderingContext2D, detection: any) => {
-      console.log('🎯 drawBoundingBox called with:', detection);
 
-      if (!detection.boundingBox) {
-        console.log('❌ No bounding box data');
-        return;
-      }
-
-      if (!videoRef.current) {
-        console.log('❌ No video ref');
+      if (!detection.boundingBox || !videoRef.current || !canvasRef.current) {
         return;
       }
 
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      if (!canvas) {
-        console.log('❌ No canvas ref');
-        return;
-      }
 
       // Get video dimensions
       const videoWidth = video.videoWidth;
@@ -66,19 +55,10 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
 
       // Check if video dimensions are valid
       if (videoWidth === 0 || videoHeight === 0) {
-        console.log('❌ Invalid video dimensions:', {
-          videoWidth,
-          videoHeight,
-        });
         return;
       }
 
-             console.log('📐 Dimensions:', {
-         video: { width: videoWidth, height: videoHeight },
-         canvas: { width: canvasWidth, height: canvasHeight },
-         boundingBox: detection.boundingBox,
-         canvasRect: canvas.getBoundingClientRect(),
-       });
+
 
              // Convert normalized coordinates (0-1) to canvas coordinates
        // Check if video is mirrored (front-facing camera)
@@ -94,7 +74,7 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
          x = canvasWidth - x;
        }
 
-      console.log('🎨 Drawing box at:', { x, y, width, height });
+
 
       // Draw bounding box
       ctx.strokeStyle = '#00ff00';
@@ -145,18 +125,7 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
        ctx.strokeStyle = '#ff0000';
        ctx.lineWidth = 2;
 
-                // Debug: Check visibility of first few landmarks
-         console.log('🔍 Landmark visibility check - Total landmarks:', landmarks.length);
-         landmarks.slice(0, 5).forEach((l, i) => {
-           console.log(`🔍 Landmark ${i}:`, {
-             hasLandmark: !!l,
-             visibility: l?.visibility,
-             x: l?.x,
-             y: l?.y
-           });
-         });
-
-         console.log('🔑 Key landmarks to check (first 10):', keyLandmarks.slice(0, 10));
+       
          
          let drawnCount = 0;
          let skippedCount = 0;
@@ -177,7 +146,6 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
                x = canvasWidth - x;
              }
 
-             console.log(`📍 Drawing landmark ${index}:`, { x, y, visibility: landmark.visibility, isMirrored });
              drawnCount++;
 
              ctx.beginPath();
@@ -185,17 +153,10 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
              ctx.fill();
            } else {
              skippedCount++;
-             if (skippedCount <= 5) { // Only log first 5 skipped landmarks to avoid spam
-               console.log(`❌ Skipping landmark ${index}:`, { 
-                 hasLandmark: !!landmark, 
-                 visibility: landmark?.visibility,
-                 threshold: 0.1
-               });
-             }
            }
          });
          
-         console.log(`📊 Landmark summary: ${drawnCount} drawn, ${skippedCount} skipped`);
+
     },
     [videoRef]
   );
@@ -302,13 +263,7 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
     // Clear previous frame
     clearCanvas();
 
-    console.log('🎨 Rendering tracking visualization:', {
-      isVisible,
-      status,
-      hasFaceDetection: !!faceDetection,
-      hasLandmarks: !!(facialLandmarks && facialLandmarks.landmarks.length > 0),
-      canvasSize: { width: canvas.width, height: canvas.height },
-    });
+
 
     // Draw a test rectangle to verify canvas is working (temporary)
     // ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
@@ -319,17 +274,12 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
 
     // Draw bounding box if face is detected
     if (status === 'detected' && faceDetection && faceDetection.detected) {
-      console.log('📦 Drawing bounding box:', faceDetection);
+  
       drawBoundingBox(ctx, faceDetection);
     }
 
     // Draw landmarks if available
     if (facialLandmarks && facialLandmarks.landmarks.length > 0) {
-      console.log(
-        '📍 Drawing landmarks:',
-        facialLandmarks.landmarks.length,
-        'points'
-      );
       drawLandmarks(ctx, facialLandmarks.landmarks);
     }
 
@@ -352,15 +302,6 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
     if (!video) return;
 
     const handleVideoReady = () => {
-      console.log('🎥 Video ready event fired');
-      console.log('🎥 Video state:', {
-        videoWidth: video.videoWidth,
-        videoHeight: video.videoHeight,
-        readyState: video.readyState,
-        currentTime: video.currentTime,
-        duration: video.duration,
-        rect: video.getBoundingClientRect(),
-      });
       updateCanvasSize();
     };
 

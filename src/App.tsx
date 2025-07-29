@@ -43,24 +43,7 @@ const VideoRecorderApp: React.FC = () => {
   // Step 3: Tracking visualization state
   const [showTracking, setShowTracking] = React.useState(false);
 
-  // Debug tracking state
-  React.useEffect(() => {
-    console.log('🔍 Tracking state debug:', {
-      showTracking,
-      isInitialized,
-      trackingState: {
-        status: trackingState.status,
-        isTracking: trackingState.isTracking,
-        isInitialized: trackingState.isInitialized,
-      },
-    });
-  }, [
-    showTracking,
-    isInitialized,
-    trackingState.status,
-    trackingState.isTracking,
-    trackingState.isInitialized,
-  ]);
+
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const {
@@ -89,16 +72,10 @@ const VideoRecorderApp: React.FC = () => {
     }
   };
 
-  // Handle MediaPipe video processing for Step 1 testing
+  // Handle MediaPipe video processing
   const handleVideoProcess = async (
     videoElement: HTMLVideoElement
   ): Promise<void> => {
-    console.log(
-      '🎯 handleVideoProcess called, isInitialized:',
-      isInitialized,
-      'isActive:',
-      isActive
-    );
     if (isActive) {
       await processVideo(videoElement);
     } else {
