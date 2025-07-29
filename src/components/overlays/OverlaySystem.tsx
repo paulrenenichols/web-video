@@ -219,7 +219,7 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
             // Calculate rotation angle from eye positions
             const deltaX = rightEyeX - leftEyeX;
             const deltaY = rightEyeY - leftEyeY;
-            const rotationAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+            rotationAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
             
             console.log('🎯 Rotation calculation - DeltaX:', deltaX.toFixed(1), 'DeltaY:', deltaY.toFixed(1));
             console.log('🎯 Rotation calculation - Raw angle (radians):', Math.atan2(deltaY, deltaX).toFixed(3));
