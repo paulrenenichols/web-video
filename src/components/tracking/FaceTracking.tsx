@@ -72,11 +72,12 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
         return;
       }
 
-      console.log('📐 Dimensions:', {
-        video: { width: videoWidth, height: videoHeight },
-        canvas: { width: canvasWidth, height: canvasHeight },
-        boundingBox: detection.boundingBox,
-      });
+             console.log('📐 Dimensions:', {
+         video: { width: videoWidth, height: videoHeight },
+         canvas: { width: canvasWidth, height: canvasHeight },
+         boundingBox: detection.boundingBox,
+         canvasRect: canvas.getBoundingClientRect(),
+       });
 
       // Convert normalized coordinates (0-1) to canvas coordinates
       const x = detection.boundingBox.x * canvasWidth;
@@ -122,25 +123,27 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
       const canvasWidth = canvas.width;
       const canvasHeight = canvas.height;
 
-      // Draw key landmarks (simplified for Step 3)
-      const keyLandmarks = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // Basic face outline
+             // Draw key landmarks (simplified for Step 3)
+       const keyLandmarks = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // Basic face outline
 
-      ctx.fillStyle = '#ff0000';
-      ctx.strokeStyle = '#ff0000';
-      ctx.lineWidth = 1;
+       ctx.fillStyle = '#ff0000';
+       ctx.strokeStyle = '#ff0000';
+       ctx.lineWidth = 2;
 
-      keyLandmarks.forEach(index => {
-        const landmark = landmarks[index];
-        if (landmark && landmark.visibility > 0.5) {
-          // Convert normalized coordinates (0-1) to canvas coordinates
-          const x = landmark.x * canvasWidth;
-          const y = landmark.y * canvasHeight;
+       keyLandmarks.forEach(index => {
+         const landmark = landmarks[index];
+         if (landmark) {
+           // Convert normalized coordinates (0-1) to canvas coordinates
+           const x = landmark.x * canvasWidth;
+           const y = landmark.y * canvasHeight;
 
-          ctx.beginPath();
-          ctx.arc(x, y, 2, 0, 2 * Math.PI);
-          ctx.fill();
-        }
-      });
+           console.log(`📍 Drawing landmark ${index}:`, { x, y, visibility: landmark.visibility });
+
+           ctx.beginPath();
+           ctx.arc(x, y, 4, 0, 2 * Math.PI); // Larger dots (4px radius)
+           ctx.fill();
+         }
+       });
     },
     [videoRef]
   );
