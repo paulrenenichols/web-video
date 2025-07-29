@@ -25,7 +25,3 @@ dist-ssr
 
 # Screenshots and debugging files
 screenshots/
-*.png
-*.jpg
-*.jpeg
-*.gif
