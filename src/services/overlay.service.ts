@@ -222,14 +222,6 @@ export class OverlayService {
     return position;
   }
 
-    console.log('⚠️ Eye landmarks not visible enough:', {
-      leftEye: leftEye ? { visibility: leftEye.visibility } : 'missing',
-      rightEye: rightEye ? { visibility: rightEye.visibility } : 'missing'
-    });
-
-    return position;
-  }
-
   /**
    * Adjust position for hat
    */
