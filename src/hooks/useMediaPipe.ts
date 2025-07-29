@@ -69,6 +69,7 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
     }
 
     try {
+      console.log('🔄 Processing video frame with MediaPipe...');
       await mediaPipeRef.current.processFrame(videoElement);
     } catch (error) {
       console.error('Error processing video with MediaPipe:', error);

@@ -125,17 +125,22 @@ export class MediaPipeService {
    */
   async processFrame(videoElement: HTMLVideoElement): Promise<void> {
     if (!this.isInitialized) {
+      console.warn('MediaPipe not initialized, skipping frame processing');
       return;
     }
 
     try {
+      console.log('📹 Processing frame with MediaPipe...');
+      
       // Process with face detection
       if (this.faceDetection) {
+        console.log('🔍 Sending frame to face detection...');
         await this.faceDetection.send({ image: videoElement });
       }
 
       // Process with face mesh
       if (this.faceMesh) {
+        console.log('🎭 Sending frame to face mesh...');
         await this.faceMesh.send({ image: videoElement });
       }
     } catch (error) {
@@ -147,6 +152,8 @@ export class MediaPipeService {
    * Handle face detection results
    */
   private handleFaceDetectionResults(results: any): void {
+    console.log('📊 Raw face detection results:', results);
+    
     const detection: FaceDetectionResult = {
       detected: results.detections.length > 0,
       confidence: results.detections[0]?.score || 0,
@@ -154,8 +161,8 @@ export class MediaPipeService {
     };
 
     if (results.detections.length > 0) {
-      const detection = results.detections[0];
-      const boundingBox = detection.boundingBox;
+      const detectionResult = results.detections[0];
+      const boundingBox = detectionResult.boundingBox;
       
       detection.boundingBox = {
         x: boundingBox.xCenter,
@@ -165,7 +172,7 @@ export class MediaPipeService {
       };
     }
 
-    console.log('Face detection:', detection);
+    console.log('🎯 Processed face detection:', detection);
     this.onDetectionCallback?.(detection);
   }
 
@@ -173,7 +180,10 @@ export class MediaPipeService {
    * Handle face mesh results
    */
   private handleFaceMeshResults(results: any): void {
+    console.log('📊 Raw face mesh results:', results);
+    
     if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
+      console.log('❌ No face landmarks detected');
       return;
     }
 
@@ -191,7 +201,7 @@ export class MediaPipeService {
       timestamp: Date.now(),
     };
 
-    console.log('Facial landmarks detected:', facialLandmarks.landmarks.length, 'points');
+    console.log('📍 Facial landmarks detected:', facialLandmarks.landmarks.length, 'points');
     this.onLandmarksCallback?.(facialLandmarks);
   }
 
