@@ -61,8 +61,11 @@ const VideoRecorderApp: React.FC = () => {
 
   // Handle MediaPipe video processing for Step 1 testing
   const handleVideoProcess = async (videoElement: HTMLVideoElement): Promise<void> => {
-    if (isInitialized && isActive) {
+    console.log('🎯 handleVideoProcess called, isInitialized:', isInitialized, 'isActive:', isActive);
+    if (isActive) {
       await processVideo(videoElement);
+    } else {
+      console.log('⚠️ Skipping video processing - camera not active');
     }
   };
 

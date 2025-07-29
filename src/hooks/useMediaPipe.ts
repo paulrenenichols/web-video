@@ -5,7 +5,7 @@
  * Handles initialization, processing, and cleanup of MediaPipe resources.
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { MediaPipeService } from '@/services/mediapipe.service';
 import { MediaPipeOptions, FaceDetection, FacialLandmarks } from '@/types/tracking';
 
@@ -14,13 +14,13 @@ import { MediaPipeOptions, FaceDetection, FacialLandmarks } from '@/types/tracki
  */
 export const useMediaPipe = (options: MediaPipeOptions = {}) => {
   const mediaPipeRef = useRef<MediaPipeService | null>(null);
-  const isInitializedRef = useRef(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   /**
    * Initialize MediaPipe service
    */
   const initialize = useCallback(async (): Promise<void> => {
-    if (isInitializedRef.current) {
+    if (isInitialized) {
       console.log('MediaPipe already initialized');
       return;
     }
@@ -50,7 +50,7 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
       });
 
       await mediaPipeRef.current.initialize();
-      isInitializedRef.current = true;
+      setIsInitialized(true);
       
       console.log('✅ MediaPipe hook initialized successfully');
     } catch (error) {
@@ -63,7 +63,7 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
    * Process video element with MediaPipe
    */
   const processVideo = useCallback(async (videoElement: HTMLVideoElement): Promise<void> => {
-    if (!mediaPipeRef.current || !isInitializedRef.current) {
+    if (!mediaPipeRef.current || !isInitialized) {
       console.warn('MediaPipe not initialized, initializing now...');
       await initialize();
     }
@@ -80,7 +80,7 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
    * Start continuous processing
    */
   const startProcessing = useCallback(async (videoElement: HTMLVideoElement): Promise<void> => {
-    if (!mediaPipeRef.current || !isInitializedRef.current) {
+    if (!mediaPipeRef.current || !isInitialized) {
       console.warn('MediaPipe not initialized, initializing now...');
       await initialize();
     }
@@ -116,7 +116,7 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
       console.log('🧹 Disposing MediaPipe hook...');
       mediaPipeRef.current.dispose();
       mediaPipeRef.current = null;
-      isInitializedRef.current = false;
+      setIsInitialized(false);
       console.log('✅ MediaPipe hook disposed');
     }
   }, []);
@@ -134,6 +134,6 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
     startProcessing,
     getState,
     dispose,
-    isInitialized: isInitializedRef.current,
+    isInitialized,
   };
 }; 
