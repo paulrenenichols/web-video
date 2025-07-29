@@ -1,32 +1,28 @@
 /**
- * @fileoverview Main overlay management system.
+ * @fileoverview Overlay system component for rendering facial overlays.
  *
- * Coordinates overlay positioning, rendering, and state management.
- * Handles multiple overlays and their interactions.
+ * Manages the rendering of overlays (glasses, hats) on top of video feed
+ * using facial landmarks for positioning and tracking.
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useOverlays } from '@/hooks/useOverlays';
-import type { FacialLandmarks } from '@/types/tracking';
+import { useTrackingStore } from '@/stores/tracking-store';
 
 interface OverlaySystemProps {
-  landmarks: FacialLandmarks | null;
   videoElement: HTMLVideoElement | null;
   className?: string;
 }
 
 export const OverlaySystem: React.FC<OverlaySystemProps> = ({
-  landmarks,
   videoElement,
   className = '',
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isInitialized, setIsInitialized] = React.useState(false);
-
   const {
-    activeOverlays,
     isRendering,
     error,
+    activeOverlays,
     initializeOverlays,
     loadOverlayImages,
     startRendering,
@@ -34,76 +30,61 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
     updateOverlayPositions,
   } = useOverlays();
 
+  // Get landmarks directly from the tracking store
+  const { landmarks } = useTrackingStore();
+
   /**
-   * @description Initialize overlay system when component mounts
+   * @description Initialize overlay service when canvas is available
    */
   useEffect(() => {
     const initOverlays = async () => {
       if (!canvasRef.current) return;
 
       try {
+        console.log('OverlaySystem: Initializing overlay service...');
         initializeOverlays(canvasRef.current);
         await loadOverlayImages();
-        setIsInitialized(true);
+        console.log('OverlaySystem: Overlay service initialized successfully');
       } catch (error) {
-        console.error('Failed to initialize overlay system:', error);
+        console.error(
+          'OverlaySystem: Failed to initialize overlay service:',
+          error
+        );
       }
     };
 
-    if (!isInitialized) {
-      initOverlays();
-    }
-  }, [isInitialized, initializeOverlays, loadOverlayImages]);
+    initOverlays();
+  }, [initializeOverlays, loadOverlayImages]);
 
   /**
-   * @description Start/stop rendering when landmarks or video element changes
+   * @description Start rendering when video element and landmarks are available
    */
   useEffect(() => {
-    if (!isInitialized || !canvasRef.current) {
-      if (isRendering) {
-        stopRendering();
-      }
+    if (!canvasRef.current || !videoElement || isRendering) {
       return;
     }
 
-    // Start rendering even without video element for testing
-    if (!isRendering) {
-      const mockVideoElement =
-        videoElement ||
-        ({
-          videoWidth: 640,
-          videoHeight: 480,
-          clientWidth: 640,
-          clientHeight: 480,
-        } as HTMLVideoElement);
+    console.log(
+      'OverlaySystem: Starting rendering with video element and landmarks:',
+      landmarks?.landmarks.length || 0
+    );
 
-      startRendering(
-        mockVideoElement,
-        landmarks || {
-          landmarks: [],
-          faceInViewConfidence: 0,
-          faceBoundingBox: { x: 0, y: 0, width: 0, height: 0 },
-          rotation: { x: 0, y: 0, z: 0 },
-        }
-      );
-    }
-  }, [
-    isInitialized,
-    landmarks,
-    videoElement,
-    isRendering,
-    startRendering,
-    stopRendering,
-  ]);
+    // Start rendering with the video element
+    startRendering(videoElement);
+  }, [landmarks, videoElement, isRendering, startRendering, stopRendering]);
 
   /**
    * @description Update overlay positions when landmarks change
    */
   useEffect(() => {
     if (isRendering && landmarks && activeOverlays.length > 0) {
+      console.log(
+        'OverlaySystem: Updating overlay positions with landmarks:',
+        landmarks.landmarks.length
+      );
       updateOverlayPositions(landmarks);
     }
-  }, [landmarks, isRendering, activeOverlays.length]);
+  }, [landmarks, isRendering, activeOverlays.length, updateOverlayPositions]);
 
   /**
    * @description Update canvas size to match video element

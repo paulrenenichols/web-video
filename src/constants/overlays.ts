@@ -1,8 +1,8 @@
 /**
- * @fileoverview Overlay configuration constants for glasses and hat overlays.
+ * @fileoverview Overlay configuration constants for glasses and hats.
  *
- * Defines predefined overlay configurations including positioning,
- * anchor points, and rendering constraints for the enhancement phase.
+ * Defines the visual properties, positioning constraints, and anchor points
+ * for different types of facial overlays in the enhancement phase.
  */
 
 import type { OverlayConfig } from '@/types/overlay';
@@ -22,13 +22,18 @@ export const GLASSES_OVERLAYS: OverlayConfig[] = [
       scale: 1,
       opacity: 1,
     },
-    anchorPoints: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+    // Use indices that correspond to eye regions in our mock landmark generation
+    // Left eye: indices 245-304, Right eye: indices 304-363
+    anchorPoints: [
+      245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259,
+      260,
+    ],
     constraints: {
       minScale: 0.8,
       maxScale: 1.2,
       minOpacity: 0.7,
       maxOpacity: 1,
-      maxRotation: 5, // Reduced rotation for less jitter
+      maxRotation: 5,
     },
   },
   {
@@ -45,13 +50,17 @@ export const GLASSES_OVERLAYS: OverlayConfig[] = [
       scale: 1,
       opacity: 1,
     },
-    anchorPoints: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+    // Use indices that correspond to eye regions in our mock landmark generation
+    anchorPoints: [
+      245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259,
+      260,
+    ],
     constraints: {
       minScale: 0.8,
       maxScale: 1.2,
       minOpacity: 0.7,
       maxOpacity: 1,
-      maxRotation: 5, // Reduced rotation for less jitter
+      maxRotation: 5,
     },
   },
   {
@@ -63,111 +72,134 @@ export const GLASSES_OVERLAYS: OverlayConfig[] = [
       x: 0,
       y: 0,
       width: 130,
-      height: 50,
+      height: 45,
       rotation: 0,
       scale: 1,
       opacity: 1,
     },
-    anchorPoints: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+    // Use indices that correspond to eye regions in our mock landmark generation
+    anchorPoints: [
+      245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259,
+      260,
+    ],
     constraints: {
-      minScale: 0.7,
-      maxScale: 1.3,
-      minOpacity: 0.8,
+      minScale: 0.8,
+      maxScale: 1.2,
+      minOpacity: 0.7,
       maxOpacity: 1,
-      maxRotation: 5, // Reduced rotation for less jitter
+      maxRotation: 5,
     },
   },
 ];
 
-export const HAT_OVERLAYS: OverlayConfig[] = [
+export const HATS_OVERLAYS: OverlayConfig[] = [
   {
-    id: 'hat-baseball',
+    id: 'hats-baseball',
     type: 'hat',
     name: 'Baseball Cap',
     imageUrl: '/overlays/hats/baseball.svg',
     defaultPosition: {
       x: 0,
       y: 0,
-      width: 140,
-      height: 80,
+      width: 100,
+      height: 60,
       rotation: 0,
       scale: 1,
       opacity: 1,
     },
-    anchorPoints: [
-      10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379,
-      378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127,
-      162, 21, 54, 103, 67, 109,
-    ],
+    // Use indices that correspond to face outline in our mock landmark generation
+    // Face outline: indices 0-68
+    anchorPoints: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
     constraints: {
       minScale: 0.8,
-      maxScale: 1.2,
-      minOpacity: 0.8,
+      maxScale: 1.3,
+      minOpacity: 0.7,
       maxOpacity: 1,
-      maxRotation: 25,
+      maxRotation: 15,
     },
   },
   {
-    id: 'hat-cowboy',
+    id: 'hats-cowboy',
     type: 'hat',
     name: 'Cowboy Hat',
     imageUrl: '/overlays/hats/cowboy.svg',
     defaultPosition: {
       x: 0,
       y: 0,
-      width: 160,
-      height: 90,
+      width: 120,
+      height: 70,
       rotation: 0,
       scale: 1,
       opacity: 1,
     },
-    anchorPoints: [
-      10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379,
-      378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127,
-      162, 21, 54, 103, 67, 109,
-    ],
+    // Use indices that correspond to face outline in our mock landmark generation
+    // Face outline: indices 0-68
+    anchorPoints: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
     constraints: {
-      minScale: 0.7,
+      minScale: 0.8,
       maxScale: 1.3,
-      minOpacity: 0.8,
+      minOpacity: 0.7,
       maxOpacity: 1,
-      maxRotation: 30,
+      maxRotation: 15,
     },
   },
   {
-    id: 'hat-party',
+    id: 'hats-party',
     type: 'hat',
     name: 'Party Hat',
     imageUrl: '/overlays/hats/party.svg',
     defaultPosition: {
       x: 0,
       y: 0,
-      width: 120,
+      width: 80,
       height: 100,
       rotation: 0,
       scale: 1,
       opacity: 1,
     },
-    anchorPoints: [
-      10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379,
-      378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127,
-      162, 21, 54, 103, 67, 109,
-    ],
+    // Use indices that correspond to face outline in our mock landmark generation
+    // Face outline: indices 0-68
+    anchorPoints: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
     constraints: {
       minScale: 0.8,
-      maxScale: 1.2,
-      minOpacity: 0.9,
+      maxScale: 1.3,
+      minOpacity: 0.7,
       maxOpacity: 1,
-      maxRotation: 20,
+      maxRotation: 15,
     },
   },
 ];
 
-export const ALL_OVERLAYS = [...GLASSES_OVERLAYS, ...HAT_OVERLAYS];
+// Fallback overlay configuration for when MediaPipe fails
+export const FALLBACK_OVERLAY_CONFIG: OverlayConfig = {
+  id: 'fallback-glasses',
+  type: 'glasses',
+  name: 'Fallback Glasses',
+  imageUrl: '/overlays/glasses/sunglasses.svg',
+  defaultPosition: {
+    x: 0,
+    y: 0,
+    width: 120,
+    height: 40,
+    rotation: 0,
+    scale: 1,
+    opacity: 1,
+  },
+  anchorPoints: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+  constraints: {
+    minScale: 0.8,
+    maxScale: 1.2,
+    minOpacity: 0.7,
+    maxOpacity: 1,
+    maxRotation: 5,
+  },
+};
+
+export const ALL_OVERLAYS = [...GLASSES_OVERLAYS, ...HATS_OVERLAYS];
 
 export const OVERLAY_CATEGORIES = {
   glasses: GLASSES_OVERLAYS,
-  hats: HAT_OVERLAYS,
+  hats: HATS_OVERLAYS,
 } as const;
 
 export const OVERLAY_DEFAULT_SETTINGS = {

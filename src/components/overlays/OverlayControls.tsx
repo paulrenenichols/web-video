@@ -7,8 +7,7 @@
 
 import React, { useState } from 'react';
 import { useOverlays } from '@/hooks/useOverlays';
-import { useOverlayStore } from '@/stores/overlay-store';
-import { GLASSES_OVERLAYS, HAT_OVERLAYS } from '@/constants/overlays';
+import { OVERLAY_CATEGORIES } from '@/constants/overlays';
 import type { OverlayConfig } from '@/types/overlay';
 
 interface OverlayControlsProps {
@@ -72,10 +71,13 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
   };
 
   /**
-   * @description Get overlays for selected category
+   * @description Get overlays for the selected category
+   * @returns Array of overlay configurations
    */
   const getCategoryOverlays = (): OverlayConfig[] => {
-    return selectedCategory === 'glasses' ? GLASSES_OVERLAYS : HAT_OVERLAYS;
+    return selectedCategory === 'glasses'
+      ? OVERLAY_CATEGORIES.glasses
+      : OVERLAY_CATEGORIES.hats;
   };
 
   return (

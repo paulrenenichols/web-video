@@ -161,10 +161,9 @@ export const useOverlays = () => {
   /**
    * @description Start rendering overlays
    * @param videoElement - Video element for coordinate mapping
-   * @param landmarks - Current facial landmarks
    */
   const startRendering = useCallback(
-    (videoElement: HTMLVideoElement, landmarks: FacialLandmarks): void => {
+    (videoElement: HTMLVideoElement): void => {
       if (!overlayServiceRef.current || !canvasRef.current) {
         const error = 'Overlay service not initialized';
         console.error(error);

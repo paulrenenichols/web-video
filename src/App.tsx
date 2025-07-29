@@ -14,18 +14,17 @@ import { OverlaySystem } from '@/components/overlays/OverlaySystem';
 import { ControlPanel } from '@/components/controls/ControlPanel';
 import { useCamera } from '@/hooks/useCamera';
 import { useRecording } from '@/hooks/useRecording';
-import { useTrackingStore } from '@/stores/tracking-store';
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useState, useRef } from 'react';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 const VideoRecorderApp: React.FC = () => {
   const {
-    stream,
     isActive,
     isLoading,
+    error,
     devices,
     selectedDeviceId,
-    error,
+    stream,
     startCamera,
     stopCamera,
     switchCamera,
@@ -45,7 +44,6 @@ const VideoRecorderApp: React.FC = () => {
     reset: resetRecording,
   } = useRecording();
 
-  const { landmarks } = useTrackingStore();
   const [showTracking, setShowTracking] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -112,7 +110,6 @@ const VideoRecorderApp: React.FC = () => {
 
                 {/* Overlay System */}
                 <OverlaySystem
-                  landmarks={landmarks}
                   videoElement={videoRef.current}
                   className="absolute inset-0"
                 />
