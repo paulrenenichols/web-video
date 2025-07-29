@@ -164,7 +164,7 @@ export class OverlayService {
   /**
    * Adjust position for glasses
    */
-  private static adjustGlassesPosition(
+    private static adjustGlassesPosition(
     position: OverlayPosition,
     landmarks: LandmarkPoint[],
     boundingBox?: { x: number; y: number; width: number; height: number }
@@ -174,40 +174,53 @@ export class OverlayService {
     const rightEye = landmarks[386]; // Right eye center (correct MediaPipe landmark)
 
     if (leftEye && rightEye && leftEye.visibility > 0.5 && rightEye.visibility > 0.5) {
-      // Position between eyes
-      const eyeCenterX = (leftEye.x + rightEye.x) / 2;
-      const eyeCenterY = (leftEye.y + rightEye.y) / 2;
+      // Calculate eye span (distance from outer edge to outer edge)
+      // We need to find the outer edges of both eyes
+      const leftEyeOuter = landmarks[33]; // Left eye outer corner
+      const rightEyeOuter = landmarks[263]; // Right eye outer corner
       
-      // Calculate eye separation
-      const eyeSeparation = Math.abs(rightEye.x - leftEye.x);
-      
-      // Calculate glasses width based on face size
-      let glassesWidth: number;
-      if (boundingBox && boundingBox.width > 0) {
-        // Use face width as base for scaling
-        const faceWidth = boundingBox.width;
-        glassesWidth = faceWidth * 1.0; // 100% of face width for glasses (full face width)
+      if (leftEyeOuter && rightEyeOuter && leftEyeOuter.visibility > 0.5 && rightEyeOuter.visibility > 0.5) {
+        // Calculate eye span (distance between outer edges)
+        const eyeSpan = Math.abs(rightEyeOuter.x - leftEyeOuter.x);
+        
+        // Position at center between eyes
+        const eyeCenterX = (leftEye.x + rightEye.x) / 2;
+        const eyeCenterY = (leftEye.y + rightEye.y) / 2;
+
+        // Calculate glasses width based on eye span
+        const glassesWidth = eyeSpan * 1.1; // 10% wider than eye span for comfortable fit
+
+        console.log('🔍 Glasses positioning - Left Eye Center:', leftEye.x.toFixed(3), leftEye.y.toFixed(3), 'visibility:', leftEye.visibility.toFixed(3));
+        console.log('🔍 Glasses positioning - Right Eye Center:', rightEye.x.toFixed(3), rightEye.y.toFixed(3), 'visibility:', rightEye.visibility.toFixed(3));
+        console.log('🔍 Glasses positioning - Left Eye Outer:', leftEyeOuter.x.toFixed(3), leftEyeOuter.y.toFixed(3), 'visibility:', leftEyeOuter.visibility.toFixed(3));
+        console.log('🔍 Glasses positioning - Right Eye Outer:', rightEyeOuter.x.toFixed(3), rightEyeOuter.y.toFixed(3), 'visibility:', rightEyeOuter.visibility.toFixed(3));
+        console.log('🔍 Glasses positioning - Eye Center:', eyeCenterX.toFixed(3), eyeCenterY.toFixed(3));
+        console.log('🔍 Glasses positioning - Eye Span (outer to outer):', eyeSpan.toFixed(3));
+        console.log('🔍 Glasses positioning - Glasses width (110% of eye span):', glassesWidth.toFixed(3));
+        console.log('🔍 Glasses positioning - Original position:', position.x.toFixed(3), position.y.toFixed(3));
+        console.log('🔍 Glasses positioning - Adjusted position:', eyeCenterX.toFixed(3), eyeCenterY.toFixed(3));
+
+        return {
+          ...position,
+          x: eyeCenterX,
+          y: eyeCenterY,
+          width: glassesWidth,
+        };
       } else {
-        // Fallback to eye separation
-        glassesWidth = eyeSeparation * 1.2; // 20% wider than eye separation
+        console.log('⚠️ Eye outer landmarks not visible enough:', {
+          leftEyeOuter: leftEyeOuter ? { visibility: leftEyeOuter.visibility } : 'missing',
+          rightEyeOuter: rightEyeOuter ? { visibility: rightEyeOuter.visibility } : 'missing'
+        });
       }
-      
-      console.log('🔍 Glasses positioning - Left Eye:', leftEye.x.toFixed(3), leftEye.y.toFixed(3), 'visibility:', leftEye.visibility.toFixed(3));
-      console.log('🔍 Glasses positioning - Right Eye:', rightEye.x.toFixed(3), rightEye.y.toFixed(3), 'visibility:', rightEye.visibility.toFixed(3));
-      console.log('🔍 Glasses positioning - Center:', eyeCenterX.toFixed(3), eyeCenterY.toFixed(3));
-      console.log('🔍 Glasses positioning - Eye separation:', eyeSeparation.toFixed(3));
-      console.log('🔍 Glasses positioning - Face width:', boundingBox?.width.toFixed(3) || 'N/A');
-      console.log('🔍 Glasses positioning - Glasses width:', glassesWidth.toFixed(3));
-      console.log('🔍 Glasses positioning - Original position:', position.x.toFixed(3), position.y.toFixed(3));
-      console.log('🔍 Glasses positioning - Adjusted position:', eyeCenterX.toFixed(3), eyeCenterY.toFixed(3));
-      
-      return {
-        ...position,
-        x: eyeCenterX,
-        y: eyeCenterY,
-        width: glassesWidth,
-      };
     }
+
+    console.log('⚠️ Eye landmarks not visible enough:', {
+      leftEye: leftEye ? { visibility: leftEye.visibility } : 'missing',
+      rightEye: rightEye ? { visibility: rightEye.visibility } : 'missing'
+    });
+
+    return position;
+  }
 
     console.log('⚠️ Eye landmarks not visible enough:', {
       leftEye: leftEye ? { visibility: leftEye.visibility } : 'missing',
