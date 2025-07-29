@@ -177,9 +177,15 @@ export class OverlayService {
       const eyeCenterX = (leftEye.x + rightEye.x) / 2;
       const eyeCenterY = (leftEye.y + rightEye.y) / 2;
       
+      // Calculate eye separation and set width to span both eyes
+      const eyeSeparation = Math.abs(rightEye.x - leftEye.x);
+      const glassesWidth = eyeSeparation * 1.2; // 20% wider than eye separation for comfort
+      
       console.log('🔍 Glasses positioning - Left Eye:', leftEye.x.toFixed(3), leftEye.y.toFixed(3), 'visibility:', leftEye.visibility.toFixed(3));
       console.log('🔍 Glasses positioning - Right Eye:', rightEye.x.toFixed(3), rightEye.y.toFixed(3), 'visibility:', rightEye.visibility.toFixed(3));
       console.log('🔍 Glasses positioning - Center:', eyeCenterX.toFixed(3), eyeCenterY.toFixed(3));
+      console.log('🔍 Glasses positioning - Eye separation:', eyeSeparation.toFixed(3));
+      console.log('🔍 Glasses positioning - Glasses width:', glassesWidth.toFixed(3));
       console.log('🔍 Glasses positioning - Original position:', position.x.toFixed(3), position.y.toFixed(3));
       console.log('🔍 Glasses positioning - Adjusted position:', eyeCenterX.toFixed(3), eyeCenterY.toFixed(3));
       
@@ -187,6 +193,7 @@ export class OverlayService {
         ...position,
         x: eyeCenterX,
         y: eyeCenterY,
+        width: glassesWidth,
       };
     }
 
