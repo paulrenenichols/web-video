@@ -127,6 +127,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
     console.log('🎨 Updating opacity for all glasses to:', opacity);
     const allGlassesOverlays = activeOverlays.filter(o => o.config.type === OverlayType.GLASSES);
     console.log('🎨 All glasses overlays count:', allGlassesOverlays.length);
+    console.log('🎨 All glasses overlays before update:', JSON.stringify(allGlassesOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled }))));
     allGlassesOverlays.forEach(glasses => {
       console.log('🎨 Updating opacity for glasses:', glasses.config.name, 'Current opacity:', glasses.rendering.opacity, 'New opacity:', opacity, 'Enabled:', glasses.enabled);
       updateOverlayRendering(glasses.config.id, { opacity });
@@ -289,7 +290,8 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                       <button
                         onClick={() => {
                           console.log('🔄 Toggling glasses:', glasses.config.name, 'Current enabled:', glasses.enabled);
-                          console.log('🔄 Current opacity:', glasses.rendering.opacity);
+                          console.log('🔄 Current opacity before toggle:', glasses.rendering.opacity);
+                          console.log('🔄 All overlays before toggle:', JSON.stringify(activeOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled }))));
                           toggleOverlay(glasses.config.id);
                         }}
                         className={`text-xs px-2 py-1 rounded ${
@@ -320,7 +322,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                 {(() => {
                   const allGlassesOverlays = activeOverlays.filter(o => o.config.type === OverlayType.GLASSES);
                   const currentOpacity = allGlassesOverlays.length > 0 ? allGlassesOverlays[0].rendering.opacity : 0.9;
-                  console.log('🎨 Opacity control - All glasses overlays:', allGlassesOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled })));
+                  console.log('🎨 Opacity control - All glasses overlays:', JSON.stringify(allGlassesOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled }))));
                   console.log('🎨 Opacity control - Current opacity value:', currentOpacity);
                   return (
                     <input
