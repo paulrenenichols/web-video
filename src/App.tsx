@@ -53,6 +53,45 @@ const VideoRecorderApp: React.FC = () => {
   // Step 6: Overlay system state
   const [showOverlays, setShowOverlays] = React.useState(false);
 
+  // Add test overlay when overlay system is enabled
+  React.useEffect(() => {
+    if (showOverlays && overlayState.activeOverlays.length === 0) {
+      // Add a test glasses overlay
+      const testGlassesConfig = {
+        id: 'test-glasses',
+        type: 'glasses' as const,
+        name: 'Test Glasses',
+        imageUrl: '/test-glasses.png', // Placeholder
+        defaultPosition: {
+          x: 0.5,
+          y: 0.4,
+          width: 0.3,
+          height: 0.1,
+          rotation: 0,
+          scale: 1,
+          zIndex: 1,
+        },
+        defaultRendering: {
+          opacity: 0.8,
+          blendMode: 'normal' as const,
+          visible: true,
+        },
+        anchors: {
+          primary: 33, // Left eye center
+          secondary: [263], // Right eye center
+          offset: { x: 0, y: 0 },
+        },
+        scaling: {
+          base: 1,
+          widthFactor: 1,
+          heightFactor: 1,
+        },
+      };
+      
+      useOverlayStore.getState().addOverlay(testGlassesConfig);
+    }
+  }, [showOverlays, overlayState.activeOverlays.length]);
+
   // Auto-hide enhanced tracking when basic tracking is disabled
   React.useEffect(() => {
     if (!showTracking) {
