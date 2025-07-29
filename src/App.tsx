@@ -50,27 +50,28 @@ const VideoRecorderApp: React.FC = () => {
   const overlayState = useOverlayStore();
 
   // Unified visualization state
-  const [isVisualizationEnabled, setIsVisualizationEnabled] = React.useState(false);
+  const [isVisualizationEnabled, setIsVisualizationEnabled] =
+    React.useState(false);
   const [showTracking, setShowTracking] = React.useState(false);
   const [showEnhancedTracking, setShowEnhancedTracking] = React.useState(false);
   const [showOverlays, setShowOverlays] = React.useState(false);
   const [showDebugControls, setShowDebugControls] = React.useState(false);
 
   // Separate state for debug controls overlay system (independent of overlay controls)
-  const [debugOverlaySystemEnabled, setDebugOverlaySystemEnabled] = React.useState(false);
+  const [debugOverlaySystemEnabled, setDebugOverlaySystemEnabled] =
+    React.useState(false);
 
   // Initialize overlay system when component mounts
   React.useEffect(() => {
-    // Enable overlay system by default
+    // Enable overlay system by default for management
     useOverlayStore.getState().setEnabled(true);
   }, []);
 
-  // Control overlay system visibility based on debug controls checkbox
+  // Keep overlay system enabled for management, but control visibility through debug controls
   React.useEffect(() => {
-    useOverlayStore.getState().setEnabled(debugOverlaySystemEnabled);
-  }, [debugOverlaySystemEnabled]);
-
-
+    // Always keep overlay system enabled for management
+    useOverlayStore.getState().setEnabled(true);
+  }, []);
 
   // Unified visualization logic
   React.useEffect(() => {
@@ -83,7 +84,6 @@ const VideoRecorderApp: React.FC = () => {
 
   // Note: All visualization types can now be enabled independently
   // No forced dependencies between tracking, enhanced tracking, and overlays
-
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -245,9 +245,7 @@ const VideoRecorderApp: React.FC = () => {
               />
 
               {/* Overlay Controls - Always Visible */}
-              <OverlayControls
-                className="w-full"
-              />
+              <OverlayControls className="w-full" />
 
               {/* Debug Controls - Collapsible */}
               <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
@@ -262,7 +260,7 @@ const VideoRecorderApp: React.FC = () => {
                     {showDebugControls ? '▼' : '▶'}
                   </span>
                 </button>
-                
+
                 {showDebugControls && (
                   <div className="mt-4 space-y-4">
                     {/* Tracking State */}
@@ -272,19 +270,34 @@ const VideoRecorderApp: React.FC = () => {
                       </h4>
                       <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
                         <div>
-                          Status: <span className="font-mono">{trackingState.status}</span>
+                          Status:{' '}
+                          <span className="font-mono">
+                            {trackingState.status}
+                          </span>
                         </div>
                         <div>
-                          Face Count: <span className="font-mono">{trackingState.faceCount}</span>
+                          Face Count:{' '}
+                          <span className="font-mono">
+                            {trackingState.faceCount}
+                          </span>
                         </div>
                         <div>
-                          Confidence: <span className="font-mono">{(trackingState.confidence * 100).toFixed(1)}%</span>
+                          Confidence:{' '}
+                          <span className="font-mono">
+                            {(trackingState.confidence * 100).toFixed(1)}%
+                          </span>
                         </div>
                         <div>
-                          Tracking: <span className="font-mono">{trackingState.isTracking ? 'Yes' : 'No'}</span>
+                          Tracking:{' '}
+                          <span className="font-mono">
+                            {trackingState.isTracking ? 'Yes' : 'No'}
+                          </span>
                         </div>
                         <div>
-                          Initialized: <span className="font-mono">{trackingState.isInitialized ? 'Yes' : 'No'}</span>
+                          Initialized:{' '}
+                          <span className="font-mono">
+                            {trackingState.isInitialized ? 'Yes' : 'No'}
+                          </span>
                         </div>
                         {trackingState.error && (
                           <div className="text-red-500">
@@ -303,7 +316,7 @@ const VideoRecorderApp: React.FC = () => {
                       showOverlays={debugOverlaySystemEnabled}
                       onToggleTracking={setShowTracking}
                       onToggleEnhancedTracking={setShowEnhancedTracking}
-                      onToggleOverlays={(enabled) => {
+                      onToggleOverlays={enabled => {
                         setDebugOverlaySystemEnabled(enabled);
                       }}
                       isTrackingInitialized={trackingState.isInitialized}

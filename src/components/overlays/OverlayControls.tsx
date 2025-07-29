@@ -114,7 +114,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
   className = '',
 }) => {
   const [selectedGlasses, setSelectedGlasses] = useState<string | null>(null);
-  
+
   const {
     activeOverlays,
     isEnabled,
@@ -127,7 +127,8 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
   } = useOverlayStore();
 
   // Local state for overlay controls - independent of overlay system visibility
-  const [isOverlayControlsEnabled, setIsOverlayControlsEnabled] = useState(true);
+  const [isOverlayControlsEnabled, setIsOverlayControlsEnabled] =
+    useState(true);
   const [isOverlaySystemVisible, setIsOverlaySystemVisible] = useState(false);
 
   // Get active glasses overlays
@@ -173,7 +174,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
   const handleGlassesScaleChange = (glassesId: string, scale: number) => {
     const overlay = activeOverlays.find(o => o.config.id === glassesId);
     if (overlay) {
-      updateOverlayRendering(glassesId, { 
+      updateOverlayRendering(glassesId, {
         // Update scale through position since rendering doesn't have scale
       });
     }
@@ -201,14 +202,16 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
     setSelectedGlasses(null);
   };
 
-
-
   return (
-    <div className={`bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg ${className}`}>
+    <div
+      className={`bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg ${className}`}
+    >
       <div className="space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-800">Overlay Controls</h3>
+          <h3 className="text-lg font-semibold text-gray-800">
+            Overlay Controls
+          </h3>
           <div className="flex items-center space-x-2">
             <button
               onClick={handleToggleOverlayControls}
@@ -242,15 +245,17 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
         {/* Glasses Section */}
         <div className="space-y-3">
           <h4 className="text-md font-medium text-gray-700">Glasses</h4>
-          
+
           {/* Glasses Options */}
-          <div className={`grid grid-cols-1 gap-2 ${!isOverlayControlsEnabled ? 'opacity-50 pointer-events-none' : ''}`}>
+          <div
+            className={`grid grid-cols-1 gap-2 ${!isOverlayControlsEnabled ? 'opacity-50 pointer-events-none' : ''}`}
+          >
             {GLASSES_OPTIONS.map(glasses => {
               const isActive = activeGlasses.some(
                 overlay => overlay.config.id === glasses.id
               );
               const isSelected = selectedGlasses === glasses.id;
-              
+
               return (
                 <div
                   key={glasses.id}
@@ -258,10 +263,12 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                     isSelected
                       ? 'border-blue-500 bg-blue-50'
                       : isActive
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+                        ? 'border-green-500 bg-green-50'
+                        : 'border-gray-200 bg-gray-50 hover:border-gray-300'
                   }`}
-                  onClick={() => isOverlayControlsEnabled && handleGlassesSelect(glasses.id)}
+                  onClick={() =>
+                    isOverlayControlsEnabled && handleGlassesSelect(glasses.id)
+                  }
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
@@ -269,7 +276,9 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                         <span className="text-xs text-gray-600">👓</span>
                       </div>
                       <div>
-                        <p className="font-medium text-gray-800">{glasses.name}</p>
+                        <p className="font-medium text-gray-800">
+                          {glasses.name}
+                        </p>
                         <p className="text-xs text-gray-500">
                           {isActive ? 'Active' : 'Click to add'}
                         </p>
@@ -278,7 +287,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                     <div className="flex items-center space-x-2">
                       {isActive && (
                         <button
-                          onClick={(e) => {
+                          onClick={e => {
                             e.stopPropagation();
                             toggleOverlay(glasses.id, false);
                           }}
@@ -296,8 +305,12 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
 
           {/* Active Glasses Controls */}
           {activeGlasses.length > 0 && (
-            <div className={`space-y-3 pt-3 border-t border-gray-200 ${!isOverlayControlsEnabled ? 'opacity-50 pointer-events-none' : ''}`}>
-              <h5 className="text-sm font-medium text-gray-600">Active Glasses</h5>
+            <div
+              className={`space-y-3 pt-3 border-t border-gray-200 ${!isOverlayControlsEnabled ? 'opacity-50 pointer-events-none' : ''}`}
+            >
+              <h5 className="text-sm font-medium text-gray-600">
+                Active Glasses
+              </h5>
               {activeGlasses.map(glasses => (
                 <div key={glasses.config.id} className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -315,7 +328,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                       {glasses.enabled ? 'On' : 'Off'}
                     </button>
                   </div>
-                  
+
                   {/* Opacity Control */}
                   <div className="space-y-1">
                     <label className="text-xs text-gray-600">Opacity</label>
@@ -325,15 +338,19 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                       max="1"
                       step="0.1"
                       value={glasses.rendering.opacity}
-                      onChange={(e) => handleGlassesOpacityChange(
-                        glasses.config.id,
-                        parseFloat(e.target.value)
-                      )}
+                      onChange={e =>
+                        handleGlassesOpacityChange(
+                          glasses.config.id,
+                          parseFloat(e.target.value)
+                        )
+                      }
                       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                     />
                     <div className="flex justify-between text-xs text-gray-500">
                       <span>0%</span>
-                      <span>{Math.round(glasses.rendering.opacity * 100)}%</span>
+                      <span>
+                        {Math.round(glasses.rendering.opacity * 100)}%
+                      </span>
                       <span>100%</span>
                     </div>
                   </div>
@@ -359,19 +376,25 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
           <div className="mt-2 text-xs text-gray-500 space-y-1">
             <div className="flex items-center space-x-2">
               <span>Controls:</span>
-              <span className={`font-medium ${isOverlayControlsEnabled ? 'text-blue-600' : 'text-gray-400'}`}>
+              <span
+                className={`font-medium ${isOverlayControlsEnabled ? 'text-blue-600' : 'text-gray-400'}`}
+              >
                 {isOverlayControlsEnabled ? 'Active' : 'Inactive'}
               </span>
             </div>
             <div className="flex items-center space-x-2">
               <span>Controls System:</span>
-              <span className={`font-medium ${isOverlaySystemVisible ? 'text-green-600' : 'text-gray-400'}`}>
+              <span
+                className={`font-medium ${isOverlaySystemVisible ? 'text-green-600' : 'text-gray-400'}`}
+              >
                 {isOverlaySystemVisible ? 'Visible' : 'Hidden'}
               </span>
             </div>
             <div className="flex items-center space-x-2">
               <span>Debug System:</span>
-              <span className={`font-medium ${isEnabled ? 'text-green-600' : 'text-gray-400'}`}>
+              <span
+                className={`font-medium ${isEnabled ? 'text-green-600' : 'text-gray-400'}`}
+              >
                 {isEnabled ? 'Visible' : 'Hidden'}
               </span>
             </div>
@@ -380,4 +403,4 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
       </div>
     </div>
   );
-}; 
+};
