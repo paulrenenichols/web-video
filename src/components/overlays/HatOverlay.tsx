@@ -14,7 +14,7 @@ interface HatOverlayProps {
   /** Whether hat overlay is visible */
   isVisible: boolean;
   /** Video element reference */
-  videoRef: React.RefObject<HTMLVideoElement | null>;
+  videoRef: React.RefObject<HTMLVideoElement>;
   /** Container className */
   className?: string;
 }
@@ -81,61 +81,61 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
   /**
    * Preload and cache hat images
    */
-  const preloadImage = useCallback((imageUrl: string): Promise<HTMLImageElement> => {
-    return new Promise((resolve, reject) => {
-      if (imageCache.current.has(imageUrl)) {
-        resolve(imageCache.current.get(imageUrl)!);
-        return;
-      }
-      const img = new Image();
-      img.onload = () => {
-        imageCache.current.set(imageUrl, img);
-        resolve(img);
-      };
-      img.onerror = reject;
-      img.src = imageUrl;
-    });
-  }, []);
+  const preloadImage = useCallback(
+    (imageUrl: string): Promise<HTMLImageElement> => {
+      return new Promise((resolve, reject) => {
+        if (imageCache.current.has(imageUrl)) {
+          resolve(imageCache.current.get(imageUrl)!);
+          return;
+        }
+        const img = new Image();
+        img.onload = () => {
+          imageCache.current.set(imageUrl, img);
+          resolve(img);
+        };
+        img.onerror = reject;
+        img.src = imageUrl;
+      });
+    },
+    []
+  );
 
   /**
    * Calculate hat position based on head landmarks
    */
-  const calculateHatPosition = useCallback(
-    (landmarks: any, overlay: any) => {
-      if (!landmarks || landmarks.length < 468) return null;
+  const calculateHatPosition = useCallback((landmarks: any, overlay: any) => {
+    if (!landmarks || landmarks.length < 468) return null;
 
-      // Use head landmarks for hat positioning
-      // Landmarks 10, 338 for head top, 151, 337 for head sides
-      const headTop = landmarks[10];
-      const headTopRight = landmarks[338];
-      const headLeft = landmarks[151];
-      const headRight = landmarks[337];
+    // Use head landmarks for hat positioning
+    // Landmarks 10, 338 for head top, 151, 337 for head sides
+    const headTop = landmarks[10];
+    const headTopRight = landmarks[338];
+    const headLeft = landmarks[151];
+    const headRight = landmarks[337];
 
-      if (!headTop || !headTopRight || !headLeft || !headRight) return null;
+    if (!headTop || !headTopRight || !headLeft || !headRight) return null;
 
-      // Calculate head center and size
-      const headCenterX = (headLeft.x + headRight.x) / 2;
-      const headCenterY = (headTop.y + headTopRight.y) / 2;
-      const headWidth = Math.abs(headRight.x - headLeft.x);
-      const headHeight = Math.abs(headTop.y - headTopRight.y);
+    // Calculate head center and size
+    const headCenterX = (headLeft.x + headRight.x) / 2;
+    const headCenterY = (headTop.y + headTopRight.y) / 2;
+    const headWidth = Math.abs(headRight.x - headLeft.x);
+    const headHeight = Math.abs(headTop.y - headTopRight.y);
 
-      // Position hat above the head
-      const hatX = headCenterX;
-      const hatY = headTop.y - headHeight * 0.3; // Position above head
-      const hatWidth = headWidth * 1.2; // Slightly wider than head
-      const hatHeight = headHeight * 0.8; // Proportional to head height
+    // Position hat above the head
+    const hatX = headCenterX;
+    const hatY = headTop.y - headHeight * 0.3; // Position above head
+    const hatWidth = headWidth * 1.2; // Slightly wider than head
+    const hatHeight = headHeight * 0.8; // Proportional to head height
 
-      return {
-        x: hatX - hatWidth / 2,
-        y: hatY - hatHeight / 2,
-        width: hatWidth,
-        height: hatHeight,
-        rotation: 0,
-        scale: overlay.rendering.scale || 1.0,
-      };
-    },
-    []
-  );
+    return {
+      x: hatX - hatWidth / 2,
+      y: hatY - hatHeight / 2,
+      width: hatWidth,
+      height: hatHeight,
+      rotation: 0,
+      scale: overlay.rendering.scale || 1.0,
+    };
+  }, []);
 
   /**
    * Render hat overlays on canvas
@@ -145,7 +145,14 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     const ctx = canvas?.getContext('2d');
     const video = videoRef.current;
 
-    if (!canvas || !ctx || !video || !facialLandmarks || !isVisible || hatOverlays.length === 0) {
+    if (
+      !canvas ||
+      !ctx ||
+      !video ||
+      !facialLandmarks ||
+      !isVisible ||
+      hatOverlays.length === 0
+    ) {
       return;
     }
 
@@ -160,7 +167,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
 
         // Load hat image
         const img = await preloadImage(overlay.config.imageUrl);
-        
+
         // Apply opacity
         ctx.globalAlpha = overlay.rendering.opacity;
 
@@ -181,10 +188,9 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
           position.x * canvas.width,
           position.y * canvas.height - 5
         );
-
       } catch (error) {
         console.error('Error rendering hat overlay:', error);
-        
+
         // Fallback: draw green rectangle
         const position = calculateHatPosition(facialLandmarks, overlay);
         if (position) {
@@ -195,7 +201,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
             position.width * canvas.width,
             position.height * canvas.height
           );
-          
+
           ctx.fillStyle = 'rgba(0, 255, 0, 0.8)';
           ctx.font = '12px Arial';
           ctx.fillText(
@@ -208,7 +214,15 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     }
 
     ctx.restore();
-  }, [canvasRef, videoRef, facialLandmarks, hatOverlays, isVisible, calculateHatPosition, preloadImage]);
+  }, [
+    canvasRef,
+    videoRef,
+    facialLandmarks,
+    hatOverlays,
+    isVisible,
+    calculateHatPosition,
+    preloadImage,
+  ]);
 
   /**
    * Main render function
@@ -263,4 +277,4 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
       style={{ zIndex: 10 }}
     />
   );
-}; 
+};
