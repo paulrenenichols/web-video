@@ -119,7 +119,7 @@ export const VisualizationControls: React.FC<VisualizationControlsProps> = ({
             </div>
           </label>
 
-          {/* Overlay System */}
+          {/* Debug Glasses Overlay */}
           <label className="flex items-center space-x-3 cursor-pointer">
             <input
               type="checkbox"
@@ -130,10 +130,10 @@ export const VisualizationControls: React.FC<VisualizationControlsProps> = ({
             />
             <div className="flex-1">
               <div className="text-sm font-medium text-gray-900 dark:text-white">
-                Overlay System
+                Debug Glasses Overlay
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400">
-                Virtual objects (glasses, hats) - {activeOverlaysCount} active
+                Debug visualization for glasses positioning - {activeOverlaysCount} active
               </div>
             </div>
           </label>
