@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import { useOverlayStore } from '@/stores/overlay-store';
 import { OverlayType, OverlayConfig } from '@/types/overlay';
 import { AVAILABLE_GLASSES } from '@/constants/glasses';
+import { AVAILABLE_HATS } from '@/constants/hats';
 
 /**
  * Convert glasses config to overlay config for controls
@@ -51,6 +52,44 @@ const convertGlassesToOverlayConfig = (glasses: any): OverlayConfig => {
  */
 const GLASSES_OPTIONS: OverlayConfig[] = AVAILABLE_GLASSES.map(convertGlassesToOverlayConfig);
 
+/**
+ * Convert hat config to overlay config
+ */
+const convertHatToOverlayConfig = (hat: any): OverlayConfig => {
+  return {
+    id: hat.id,
+    type: OverlayType.HAT,
+    name: hat.name,
+    imageUrl: hat.imagePath,
+    defaultPosition: {
+      x: 0.5,
+      y: 0.2,
+      width: 0.4,
+      height: 0.25,
+      rotation: 0,
+      scale: hat.defaultScale,
+      zIndex: 2,
+    },
+    defaultRendering: {
+      opacity: hat.defaultOpacity,
+      blendMode: 'normal',
+      visible: true,
+    },
+    anchors: {
+      primary: 10,
+      secondary: [338, 151, 337],
+      offset: { x: 0, y: -0.1 },
+    },
+    scaling: {
+      base: 1.0,
+      widthFactor: 1.0,
+      heightFactor: 1.0,
+    },
+  };
+};
+
+const HAT_OPTIONS: OverlayConfig[] = AVAILABLE_HATS.map(convertHatToOverlayConfig);
+
 interface OverlayControlsProps {
   /** Container className */
   className?: string;
@@ -66,6 +105,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
   onToggleGlassesOverlaySystem,
 }) => {
   const [selectedGlasses, setSelectedGlasses] = useState<string | null>(null);
+  const [selectedHat, setSelectedHat] = useState<string | null>(null);
 
   const {
     activeOverlays,
@@ -91,6 +131,11 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
   // Get active glasses overlays
   const activeGlasses = activeOverlays.filter(
     overlay => overlay.config.type === OverlayType.GLASSES
+  );
+
+  // Get active hat overlays
+  const activeHats = activeOverlays.filter(
+    overlay => overlay.config.type === OverlayType.HAT
   );
 
   /**
@@ -133,6 +178,45 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
   };
 
   /**
+   * Handle hat selection - only one hat at a time
+   */
+  const handleHatSelect = (hatId: string) => {
+    const existingOverlay = activeOverlays.find(
+      overlay => overlay.config.id === hatId
+    );
+
+    if (existingOverlay) {
+      // If overlay exists, just toggle it instead of removing/re-adding
+      console.log('🔄 Toggling existing hat overlay:', hatId);
+      toggleOverlay(hatId);
+      
+      // Update selectedHat state based on enabled state
+      if (existingOverlay.enabled) {
+        setSelectedHat(null); // Deselect if turning off
+      } else {
+        setSelectedHat(hatId); // Select if turning on
+      }
+    } else {
+      // Clear any existing hats first
+      activeOverlays.forEach(overlay => {
+        if (overlay.config.type === OverlayType.HAT) {
+          removeOverlay(overlay.config.id);
+        }
+      });
+      
+      // Select new hat
+      setSelectedHat(hatId);
+      const hatConfig = HAT_OPTIONS.find(
+        option => option.id === hatId
+      );
+      if (hatConfig) {
+        console.log('Adding new hat overlay:', hatConfig);
+        addOverlay(hatConfig);
+      }
+    }
+  };
+
+  /**
    * Handle glasses opacity change for all glasses overlays
    */
   const handleGlassesOpacityChange = (opacity: number) => {
@@ -143,6 +227,20 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
     allGlassesOverlays.forEach(glasses => {
       console.log('🎨 Updating opacity for glasses:', glasses.config.name, 'Current opacity:', glasses.rendering.opacity, 'New opacity:', opacity, 'Enabled:', glasses.enabled);
       updateOverlayRendering(glasses.config.id, { opacity });
+    });
+  };
+
+  /**
+   * Handle hat opacity change for all hat overlays
+   */
+  const handleHatOpacityChange = (opacity: number) => {
+    console.log('🎨 Updating opacity for all hats to:', opacity);
+    const allHatOverlays = activeOverlays.filter(o => o.config.type === OverlayType.HAT);
+    console.log('🎨 All hat overlays count:', allHatOverlays.length);
+    console.log('🎨 All hat overlays before update:', JSON.stringify(allHatOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled }))));
+    allHatOverlays.forEach(hat => {
+      console.log('🎨 Updating opacity for hat:', hat.config.name, 'Current opacity:', hat.rendering.opacity, 'New opacity:', opacity, 'Enabled:', hat.enabled);
+      updateOverlayRendering(hat.config.id, { opacity });
     });
   };
 
@@ -360,6 +458,154 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                     {(() => {
                       const allGlassesOverlays = activeOverlays.filter(o => o.config.type === OverlayType.GLASSES);
                       const currentOpacity = allGlassesOverlays.length > 0 ? allGlassesOverlays[0].rendering.opacity : 0.9;
+                      return Math.round(currentOpacity * 100);
+                    })()}%
+                  </span>
+                  <span>100%</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Hats Section */}
+        <div className="space-y-3">
+          <h4 className="text-md font-medium text-gray-700">Hats</h4>
+
+          {/* Hat Options */}
+          <div
+            className={`grid grid-cols-1 gap-2 ${!isOverlayControlsEnabled ? 'opacity-50 pointer-events-none' : ''}`}
+          >
+            {HAT_OPTIONS.map(hat => {
+              const isActive = activeHats.some(
+                overlay => overlay.config.id === hat.id
+              );
+              const isSelected = selectedHat === hat.id;
+
+              return (
+                <div
+                  key={hat.id}
+                  className={`p-3 rounded-lg border-2 transition-all ${isOverlayControlsEnabled ? 'cursor-pointer' : 'cursor-not-allowed'} ${
+                    isSelected
+                      ? 'border-blue-500 bg-blue-50'
+                      : isActive
+                        ? 'border-green-500 bg-green-50'
+                        : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+                  }`}
+                  onClick={() =>
+                    isOverlayControlsEnabled && handleHatSelect(hat.id)
+                  }
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center">
+                        <span className="text-xs text-gray-600">🎩</span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-800">
+                          {hat.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {isActive ? 'Active' : 'Click to add'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {isActive && (
+                        <button
+                          onClick={e => {
+                            e.stopPropagation();
+                            removeOverlay(hat.id);
+                            setSelectedHat(null);
+                          }}
+                          className="text-red-500 hover:text-red-700 text-sm"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Active Hats Controls */}
+          {activeHats.length > 0 && (
+            <div
+              className={`space-y-3 pt-3 border-t border-gray-200 ${!isOverlayControlsEnabled ? 'opacity-50 pointer-events-none' : ''}`}
+            >
+              <h5 className="text-sm font-medium text-gray-600">
+                Active Hats
+              </h5>
+              {activeHats.map(hat => (
+                <div key={hat.config.id} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700">
+                      {hat.config.name}
+                    </span>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => {
+                          console.log('🔄 Toggling hat:', hat.config.name, 'Current enabled:', hat.enabled);
+                          console.log('🔄 Current opacity before toggle:', hat.rendering.opacity);
+                          console.log('🔄 All overlays before toggle:', JSON.stringify(activeOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled }))));
+                          toggleOverlay(hat.config.id);
+                          // Add a timeout to check the state after the toggle
+                          setTimeout(() => {
+                            console.log('🔄 After toggle - All overlays:', JSON.stringify(activeOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled }))));
+                          }, 100);
+                        }}
+                        className={`text-xs px-2 py-1 rounded ${
+                          hat.enabled
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-gray-100 text-gray-600'
+                        }`}
+                      >
+                        {hat.enabled ? 'On' : 'Off'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          removeOverlay(hat.config.id);
+                          setSelectedHat(null);
+                        }}
+                        className="text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Single Opacity Control for All Hats */}
+              <div className="space-y-1 pt-2 border-t border-gray-100">
+                <label className="text-xs text-gray-600">Hat Opacity</label>
+                {(() => {
+                  const allHatOverlays = activeOverlays.filter(o => o.config.type === OverlayType.HAT);
+                  const currentOpacity = allHatOverlays.length > 0 ? allHatOverlays[0].rendering.opacity : 0.9;
+                  console.log('🎨 Opacity control - All hat overlays:', JSON.stringify(allHatOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled }))));
+                  console.log('🎨 Opacity control - Current opacity value:', currentOpacity);
+                  return (
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={currentOpacity}
+                      onChange={e =>
+                        handleHatOpacityChange(parseFloat(e.target.value))
+                      }
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                  );
+                })()}
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>0%</span>
+                  <span>
+                    {(() => {
+                      const allHatOverlays = activeOverlays.filter(o => o.config.type === OverlayType.HAT);
+                      const currentOpacity = allHatOverlays.length > 0 ? allHatOverlays[0].rendering.opacity : 0.9;
                       return Math.round(currentOpacity * 100);
                     })()}%
                   </span>

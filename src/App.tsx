@@ -21,6 +21,7 @@ import { FaceTracking } from '@/components/tracking/FaceTracking';
 import { TrackingVisualization } from '@/components/tracking/TrackingVisualization';
 import { DebugGlassesOverlay } from '@/components/overlays/DebugGlassesOverlay';
 import { GlassesOverlay } from '@/components/overlays/GlassesOverlay';
+import { HatOverlay } from '@/components/overlays/HatOverlay';
 import { OverlayControls } from '@/components/overlays/OverlayControls';
 import { useOverlayStore } from '@/stores/overlay-store';
 import { VisualizationControls } from '@/components/controls/VisualizationControls';
@@ -58,6 +59,7 @@ const VideoRecorderApp: React.FC = () => {
   const [showDebugControls, setShowDebugControls] = React.useState(false);
   const [showCameraControls, setShowCameraControls] = React.useState(true);
   const [showOverlayControls, setShowOverlayControls] = React.useState(true);
+  const [hatOverlaySystemEnabled, setHatOverlaySystemEnabled] = React.useState(false);
 
   // Separate state for debug controls overlay system (independent of overlay controls)
   const [debugGlassesOverlayEnabled, setDebugGlassesOverlayEnabled] =

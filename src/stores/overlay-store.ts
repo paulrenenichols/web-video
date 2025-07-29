@@ -17,6 +17,7 @@ import {
   OverlayType,
 } from '@/types/overlay';
 import { AVAILABLE_GLASSES, GlassesConfig } from '@/constants/glasses';
+import { AVAILABLE_HATS, HatConfig } from '@/constants/hats';
 
 /**
  * Convert glasses config to overlay config
@@ -55,10 +56,49 @@ const convertGlassesToOverlayConfig = (glasses: GlassesConfig): OverlayConfig =>
 };
 
 /**
+ * Convert hat config to overlay config
+ */
+const convertHatToOverlayConfig = (hat: HatConfig): OverlayConfig => {
+  return {
+    id: hat.id,
+    type: OverlayType.HAT,
+    name: hat.name,
+    imageUrl: hat.imagePath,
+    defaultPosition: {
+      x: 0.5,
+      y: 0.2,
+      width: 0.4,
+      height: 0.25,
+      rotation: 0,
+      scale: hat.defaultScale,
+      zIndex: 2, // Higher than glasses
+    },
+    defaultRendering: {
+      opacity: hat.defaultOpacity,
+      blendMode: 'normal',
+      visible: true,
+    },
+    anchors: {
+      primary: 10, // Head top
+      secondary: [338, 151, 337], // Head landmarks
+      offset: { x: 0, y: -0.1 },
+    },
+    scaling: {
+      base: 1.0,
+      widthFactor: 1.0,
+      heightFactor: 1.0,
+    },
+  };
+};
+
+/**
  * Initial overlay state
  */
 const initialState: OverlayState = {
-  availableOverlays: AVAILABLE_GLASSES.map(convertGlassesToOverlayConfig),
+  availableOverlays: [
+    ...AVAILABLE_GLASSES.map(convertGlassesToOverlayConfig),
+    ...AVAILABLE_HATS.map(convertHatToOverlayConfig),
+  ],
   activeOverlays: [],
   removedOverlaysCache: new Map(),
   isEnabled: false,
