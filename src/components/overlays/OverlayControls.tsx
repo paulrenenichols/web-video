@@ -97,14 +97,20 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
    * Handle glasses selection - only one pair at a time
    */
   const handleGlassesSelect = (glassesId: string) => {
-    if (selectedGlasses === glassesId) {
-      // Deselect if already selected
-      setSelectedGlasses(null);
-      const activeGlasses = activeOverlays.find(
-        overlay => overlay.config.id === glassesId
-      );
-      if (activeGlasses) {
-        removeOverlay(glassesId);
+    const existingOverlay = activeOverlays.find(
+      overlay => overlay.config.id === glassesId
+    );
+
+    if (existingOverlay) {
+      // If overlay exists, just toggle it instead of removing/re-adding
+      console.log('🔄 Toggling existing glasses overlay:', glassesId);
+      toggleOverlay(glassesId);
+      
+      // Update selectedGlasses state based on enabled state
+      if (existingOverlay.enabled) {
+        setSelectedGlasses(null); // Deselect if turning off
+      } else {
+        setSelectedGlasses(glassesId); // Select if turning on
       }
     } else {
       // Clear any existing glasses first
@@ -120,7 +126,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
         option => option.id === glassesId
       );
       if (glassesConfig) {
-        console.log('Adding glasses overlay:', glassesConfig);
+        console.log('Adding new glasses overlay:', glassesConfig);
         addOverlay(glassesConfig);
       }
     }
