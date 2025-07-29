@@ -167,17 +167,24 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
     
     if (!canvas || !video) {
       console.log('❌ Cannot update canvas size - missing canvas or video ref');
-      return;
+      return false;
     }
 
     // Wait for video to be ready
     if (video.videoWidth === 0 || video.videoHeight === 0) {
       console.log('⏳ Video not ready yet, waiting...');
-      return;
+      return false;
     }
 
     // Get video display size
     const rect = video.getBoundingClientRect();
+    
+    // Check if we have valid display dimensions
+    if (rect.width === 0 || rect.height === 0) {
+      console.log('⏳ Video display not ready yet, waiting...');
+      return false;
+    }
+    
     canvas.width = rect.width;
     canvas.height = rect.height;
     
@@ -188,6 +195,8 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
       videoVideoWidth: video.videoWidth,
       videoVideoHeight: video.videoHeight
     });
+    
+    return true;
   }, [videoRef]);
 
   /**
@@ -202,6 +211,17 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    // Check if canvas is properly sized
+    if (canvas.width === 0 || canvas.height === 0) {
+      console.log('⏳ Canvas not sized yet, trying to update...');
+      const success = updateCanvasSize();
+      if (!success) {
+        // Try again next frame
+        animationFrameRef.current = requestAnimationFrame(render);
+        return;
+      }
+    }
 
     // Clear previous frame
     clearCanvas();
@@ -235,19 +255,38 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
 
     // Continue animation
     animationFrameRef.current = requestAnimationFrame(render);
-  }, [isVisible, status, faceDetection, facialLandmarks, clearCanvas, drawBoundingBox, drawLandmarks]);
+  }, [isVisible, status, faceDetection, facialLandmarks, clearCanvas, drawBoundingBox, drawLandmarks, updateCanvasSize]);
 
   // Handle canvas size updates
   useEffect(() => {
-    updateCanvasSize();
-    
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleVideoReady = () => {
+      console.log('🎥 Video ready event fired');
+      updateCanvasSize();
+    };
+
     const handleResize = () => {
       updateCanvasSize();
     };
 
+    // Listen for video ready events
+    video.addEventListener('loadedmetadata', handleVideoReady);
+    video.addEventListener('canplay', handleVideoReady);
+    
+    // Also try to update immediately
+    updateCanvasSize();
+    
+    // Listen for window resize
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [updateCanvasSize]);
+    
+    return () => {
+      video.removeEventListener('loadedmetadata', handleVideoReady);
+      video.removeEventListener('canplay', handleVideoReady);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [updateCanvasSize, videoRef]);
 
   // Handle rendering
   useEffect(() => {
