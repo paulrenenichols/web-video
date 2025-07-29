@@ -147,9 +147,15 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
        ctx.strokeStyle = '#ff0000';
        ctx.lineWidth = 2;
 
-                keyLandmarks.forEach(index => {
+                // Debug: Check visibility of first few landmarks
+         console.log('🔍 Landmark visibility check:', {
+           totalLandmarks: landmarks.length,
+           firstFew: landmarks.slice(0, 5).map((l, i) => ({ index: i, visibility: l?.visibility }))
+         });
+
+         keyLandmarks.forEach(index => {
            const landmark = landmarks[index];
-           if (landmark && landmark.visibility > 0.3) { // Only draw visible landmarks
+           if (landmark && landmark.visibility > 0.1) { // Lower threshold to see more landmarks
              // Convert normalized coordinates (0-1) to canvas coordinates
              // Check if video is mirrored (front-facing camera)
              const isMirrored = video.style.transform?.includes('scaleX(-1)') || false;
