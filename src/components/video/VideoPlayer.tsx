@@ -27,7 +27,7 @@ export const VideoPlayer = forwardRef<HTMLVideoElement, VideoPlayerProps>(({
   const videoRef = useRef<HTMLVideoElement>(null);
   
   // Expose video element to parent
-  useImperativeHandle(ref, () => videoRef.current!, []);
+  useImperativeHandle(ref, () => videoRef.current || null, [videoRef.current]);
 
   useEffect(() => {
     const video = videoRef.current;

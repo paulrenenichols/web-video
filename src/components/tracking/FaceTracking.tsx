@@ -165,7 +165,16 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
     const canvas = canvasRef.current;
     const video = videoRef.current;
     
-    if (!canvas || !video) return;
+    if (!canvas || !video) {
+      console.log('❌ Cannot update canvas size - missing canvas or video ref');
+      return;
+    }
+
+    // Wait for video to be ready
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      console.log('⏳ Video not ready yet, waiting...');
+      return;
+    }
 
     // Get video display size
     const rect = video.getBoundingClientRect();
