@@ -150,10 +150,15 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
         }
 
         // Convert normalized coordinates to canvas coordinates
-        const canvasX = positionResult.position.x * canvasWidth;
+        let canvasX = positionResult.position.x * canvasWidth;
         const canvasY = positionResult.position.y * canvasHeight;
         const canvasWidth_px = positionResult.position.width * canvasWidth;
         const canvasHeight_px = positionResult.position.height * canvasHeight;
+
+        // Mirror the x coordinate if video is mirrored (same as tracking visualization)
+        if (isMirrored) {
+          canvasX = canvasWidth - canvasX;
+        }
 
         console.log('🎨 Rendering overlay - Name:', overlay.config.name);
         console.log('🎨 Rendering overlay - Normalized position:', positionResult.position.x.toFixed(3), positionResult.position.y.toFixed(3));
