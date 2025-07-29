@@ -173,11 +173,9 @@ export class OverlayService {
       const eyeCenterX = (leftEye.x + rightEye.x) / 2;
       const eyeCenterY = (leftEye.y + rightEye.y) / 2;
       
-      console.log('🔍 Glasses positioning:', {
-        leftEye: { x: leftEye.x, y: leftEye.y, visibility: leftEye.visibility },
-        rightEye: { x: rightEye.x, y: rightEye.y, visibility: rightEye.visibility },
-        center: { x: eyeCenterX, y: eyeCenterY }
-      });
+      console.log('🔍 Glasses positioning - Left Eye:', leftEye.x.toFixed(3), leftEye.y.toFixed(3), 'visibility:', leftEye.visibility.toFixed(3));
+      console.log('🔍 Glasses positioning - Right Eye:', rightEye.x.toFixed(3), rightEye.y.toFixed(3), 'visibility:', rightEye.visibility.toFixed(3));
+      console.log('🔍 Glasses positioning - Center:', eyeCenterX.toFixed(3), eyeCenterY.toFixed(3));
       
       return {
         ...position,
