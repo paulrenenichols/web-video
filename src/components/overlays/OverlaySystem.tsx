@@ -202,6 +202,7 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
             console.log('🎯 Red eye tracking - Right eye:', rightEyeX.toFixed(1), rightEyeY.toFixed(1));
             console.log('🎯 Red eye tracking - Center:', canvasX.toFixed(1), canvasY.toFixed(1));
             console.log('🎯 Red eye tracking - Width:', canvasWidth_px.toFixed(1));
+            console.log('🎯 Red eye tracking - Landmark data timestamp:', Date.now());
           } else {
             // Fallback to overlay service positioning
             canvasX = positionResult.position.x * canvasWidth;
@@ -315,6 +316,7 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
             console.log('👁️ Eye center calculation - Right eye:', rightEyeX.toFixed(1), rightEyeY.toFixed(1));
             console.log('👁️ Eye center calculation - Center point:', eyeCenterCanvasX.toFixed(1), eyeCenterCanvasY.toFixed(1));
             console.log('👁️ Eye center calculation - Green rectangle position:', canvasX.toFixed(1), canvasY.toFixed(1));
+            console.log('👁️ Eye center calculation - Landmark data timestamp:', Date.now());
 
             // Draw eye span line (from outer edge to outer edge)
             if (leftEyeOuter && rightEyeOuter && leftEyeOuter.visibility > 0.5 && rightEyeOuter.visibility > 0.5) {
