@@ -151,12 +151,10 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
         const canvasWidth_px = positionResult.position.width * canvasWidth;
         const canvasHeight_px = positionResult.position.height * canvasHeight;
 
-        console.log('🎨 Rendering overlay:', {
-          name: overlay.config.name,
-          canvasCoords: { x: canvasX.toFixed(1), y: canvasY.toFixed(1) },
-          dimensions: { width: canvasWidth_px.toFixed(1), height: canvasHeight_px.toFixed(1) },
-          canvasSize: { width: canvasWidth, height: canvasHeight }
-        });
+        console.log('🎨 Rendering overlay - Name:', overlay.config.name);
+        console.log('🎨 Rendering overlay - Position:', canvasX.toFixed(1), canvasY.toFixed(1));
+        console.log('🎨 Rendering overlay - Size:', canvasWidth_px.toFixed(1), 'x', canvasHeight_px.toFixed(1));
+        console.log('🎨 Rendering overlay - Canvas:', canvasWidth, 'x', canvasHeight);
 
         // Set rendering properties
         ctx.globalAlpha = overlay.rendering.opacity;
