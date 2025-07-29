@@ -200,13 +200,24 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
 
         // Draw eye circles for debugging (red circles around eyes)
         if (overlay.config.type === 'glasses') {
-          // Get eye landmarks
+          // Use the SAME landmarks that the overlay service used for positioning
           const leftEye = facialLandmarks.landmarks[159]; // Left eye center
           const rightEye = facialLandmarks.landmarks[386]; // Right eye center
           const leftEyeOuter = facialLandmarks.landmarks[33]; // Left eye outer corner
           const rightEyeOuter = facialLandmarks.landmarks[263]; // Right eye outer corner
 
           if (leftEye && rightEye && leftEye.visibility > 0.5 && rightEye.visibility > 0.5) {
+            // Calculate the SAME center position that the overlay service used
+            const eyeCenterX = (leftEye.x + rightEye.x) / 2;
+            const eyeCenterY = (leftEye.y + rightEye.y) / 2;
+            
+            // Convert to canvas coordinates using the SAME method as the overlay
+            let eyeCenterCanvasX = eyeCenterX * canvasWidth;
+            const eyeCenterCanvasY = eyeCenterY * canvasHeight;
+            if (isMirrored) {
+              eyeCenterCanvasX = canvasWidth - eyeCenterCanvasX;
+            }
+            
             // Draw left eye circle
             let leftEyeX = leftEye.x * canvasWidth;
             const leftEyeY = leftEye.y * canvasHeight;
@@ -232,6 +243,17 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
             ctx.strokeStyle = '#ff0000';
             ctx.lineWidth = 2;
             ctx.stroke();
+            
+            // Draw center point (where green rectangle should be)
+            ctx.beginPath();
+            ctx.arc(eyeCenterCanvasX, eyeCenterCanvasY, 4, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ff0000';
+            ctx.fill();
+            
+            console.log('👁️ Eye center calculation - Left eye:', leftEyeX.toFixed(1), leftEyeY.toFixed(1));
+            console.log('👁️ Eye center calculation - Right eye:', rightEyeX.toFixed(1), rightEyeY.toFixed(1));
+            console.log('👁️ Eye center calculation - Center point:', eyeCenterCanvasX.toFixed(1), eyeCenterCanvasY.toFixed(1));
+            console.log('👁️ Eye center calculation - Green rectangle position:', canvasX.toFixed(1), canvasY.toFixed(1));
 
             // Draw eye span line (from outer edge to outer edge)
             if (leftEyeOuter && rightEyeOuter && leftEyeOuter.visibility > 0.5 && rightEyeOuter.visibility > 0.5) {
