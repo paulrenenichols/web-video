@@ -65,8 +65,8 @@ const VideoRecorderApp: React.FC = () => {
         defaultPosition: {
           x: 0.5,
           y: 0.4,
-          width: 0.3,
-          height: 0.1,
+          width: 0.35, // Increased from 0.3 to 0.35 (35% of canvas width)
+          height: 0.08, // Slightly reduced height
           rotation: 0,
           scale: 1,
           zIndex: 1,
