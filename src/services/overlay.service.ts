@@ -188,7 +188,7 @@ export class OverlayService {
         const eyeCenterY = (leftEye.y + rightEye.y) / 2;
 
         // Calculate glasses width based on eye span
-        const glassesWidth = eyeSpan * 1.1; // 10% wider than eye span for comfortable fit
+        const glassesWidth = eyeSpan * 1.3; // 30% wider than eye span to sit outside eye circles
 
         console.log('🔍 Glasses positioning - Left Eye Center:', leftEye.x.toFixed(3), leftEye.y.toFixed(3), 'visibility:', leftEye.visibility.toFixed(3));
         console.log('🔍 Glasses positioning - Right Eye Center:', rightEye.x.toFixed(3), rightEye.y.toFixed(3), 'visibility:', rightEye.visibility.toFixed(3));
