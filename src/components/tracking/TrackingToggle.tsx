@@ -25,8 +25,11 @@ export const TrackingToggle: React.FC<TrackingToggleProps> = ({
   disabled = false,
 }) => {
   const handleToggle = () => {
+    console.log('🎛️ TrackingToggle clicked:', { isVisible, isTracking, disabled });
     if (!disabled) {
       onToggle(!isVisible);
+    } else {
+      console.log('❌ TrackingToggle disabled, cannot toggle');
     }
   };
 

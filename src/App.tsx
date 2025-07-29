@@ -42,6 +42,19 @@ const VideoRecorderApp: React.FC = () => {
   
   // Step 3: Tracking visualization state
   const [showTracking, setShowTracking] = React.useState(false);
+  
+  // Debug tracking state
+  React.useEffect(() => {
+    console.log('🔍 Tracking state debug:', {
+      showTracking,
+      isInitialized,
+      trackingState: {
+        status: trackingState.status,
+        isTracking: trackingState.isTracking,
+        isInitialized: trackingState.isInitialized
+      }
+    });
+  }, [showTracking, isInitialized, trackingState.status, trackingState.isTracking, trackingState.isInitialized]);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const {
