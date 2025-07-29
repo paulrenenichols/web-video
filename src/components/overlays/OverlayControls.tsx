@@ -317,25 +317,33 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
               {/* Single Opacity Control for All Glasses */}
               <div className="space-y-1 pt-2 border-t border-gray-100">
                 <label className="text-xs text-gray-600">Glasses Opacity</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={activeOverlays.filter(o => o.config.type === OverlayType.GLASSES).length > 0 
-                    ? activeOverlays.filter(o => o.config.type === OverlayType.GLASSES)[0].rendering.opacity 
-                    : 0.9}
-                  onChange={e =>
-                    handleGlassesOpacityChange(parseFloat(e.target.value))
-                  }
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                />
+                {(() => {
+                  const allGlassesOverlays = activeOverlays.filter(o => o.config.type === OverlayType.GLASSES);
+                  const currentOpacity = allGlassesOverlays.length > 0 ? allGlassesOverlays[0].rendering.opacity : 0.9;
+                  console.log('🎨 Opacity control - All glasses overlays:', allGlassesOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled })));
+                  console.log('🎨 Opacity control - Current opacity value:', currentOpacity);
+                  return (
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={currentOpacity}
+                      onChange={e =>
+                        handleGlassesOpacityChange(parseFloat(e.target.value))
+                      }
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                  );
+                })()}
                 <div className="flex justify-between text-xs text-gray-500">
                   <span>0%</span>
                   <span>
-                    {activeOverlays.filter(o => o.config.type === OverlayType.GLASSES).length > 0 
-                      ? Math.round(activeOverlays.filter(o => o.config.type === OverlayType.GLASSES)[0].rendering.opacity * 100)
-                      : 90}%
+                    {(() => {
+                      const allGlassesOverlays = activeOverlays.filter(o => o.config.type === OverlayType.GLASSES);
+                      const currentOpacity = allGlassesOverlays.length > 0 ? allGlassesOverlays[0].rendering.opacity : 0.9;
+                      return Math.round(currentOpacity * 100);
+                    })()}%
                   </span>
                   <span>100%</span>
                 </div>
