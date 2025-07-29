@@ -149,7 +149,7 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
 
                 keyLandmarks.forEach(index => {
            const landmark = landmarks[index];
-           if (landmark) {
+           if (landmark && landmark.visibility > 0.3) { // Only draw visible landmarks
              // Convert normalized coordinates (0-1) to canvas coordinates
              // Check if video is mirrored (front-facing camera)
              const isMirrored = video.style.transform?.includes('scaleX(-1)') || false;
