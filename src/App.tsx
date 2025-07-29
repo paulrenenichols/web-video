@@ -106,6 +106,13 @@ const VideoRecorderApp: React.FC = () => {
     }
   }, [showOverlays]);
 
+  // Auto-hide basic tracking when overlays are enabled
+  React.useEffect(() => {
+    if (showOverlays) {
+      setShowTracking(false);
+    }
+  }, [showOverlays]);
+
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
