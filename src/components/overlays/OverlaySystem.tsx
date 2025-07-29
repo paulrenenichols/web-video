@@ -108,6 +108,10 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
 
     // Check if video is mirrored
     const isMirrored = video.style.transform?.includes('scaleX(-1)') || false;
+    
+    // Debug mirroring detection
+    console.log('🔍 Mirroring check - Video transform:', video.style.transform);
+    console.log('🔍 Mirroring check - isMirrored:', isMirrored);
 
     // Calculate face orientation
     const orientation = calculateFaceOrientation(facialLandmarks.landmarks);

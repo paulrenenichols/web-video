@@ -73,6 +73,7 @@ export class OverlayService {
       // Mirror position if video is mirrored
       if (isMirrored) {
         adjustedPosition.x = 1 - adjustedPosition.x;
+        console.log('🔍 Mirroring applied - Original:', (1 - adjustedPosition.x).toFixed(3), 'Mirrored:', adjustedPosition.x.toFixed(3));
       }
 
       // Calculate confidence based on landmark visibility
