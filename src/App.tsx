@@ -13,6 +13,7 @@ import { VideoPlayer } from '@/components/video/VideoPlayer';
 import { ControlPanel } from '@/components/controls/ControlPanel';
 import { useCamera } from '@/hooks/useCamera';
 import { useRecording } from '@/hooks/useRecording';
+import { useMediaPipe } from '@/hooks/useMediaPipe';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 const VideoRecorderApp: React.FC = () => {
@@ -29,6 +30,9 @@ const VideoRecorderApp: React.FC = () => {
     clearError,
   } = useCamera();
 
+  // Initialize MediaPipe for Step 1 testing
+  const { initialize, isInitialized } = useMediaPipe();
+
   const {
     isRecording,
     isProcessing,
@@ -44,6 +48,15 @@ const VideoRecorderApp: React.FC = () => {
 
   const handleStartCamera = async (): Promise<void> => {
     await startCamera(selectedDeviceId || undefined);
+    
+    // Initialize MediaPipe when camera starts (for Step 1 testing)
+    if (!isInitialized) {
+      try {
+        await initialize();
+      } catch (error) {
+        console.error('Failed to initialize MediaPipe:', error);
+      }
+    }
   };
 
   const handleStopCamera = (): void => {
