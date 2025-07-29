@@ -18,7 +18,8 @@
     "test:coverage": "vitest --coverage",
     "docker:dev": "docker-compose up -d",
     "docker:stop": "docker-compose down",
-    "docker:logs": "docker-compose logs -f"
+    "docker:logs": "docker-compose logs -f",
+    "browser-tools-server": "npx @agentdeskai/browser-tools-server@1.2.0"
   },
   "dependencies": {
     "@mediapipe/camera_utils": "^0.3.1675466862",

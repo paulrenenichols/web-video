@@ -25,7 +25,11 @@ export const TrackingToggle: React.FC<TrackingToggleProps> = ({
   disabled = false,
 }) => {
   const handleToggle = () => {
-    console.log('🎛️ TrackingToggle clicked:', { isVisible, isTracking, disabled });
+    console.log('🎛️ TrackingToggle clicked:', {
+      isVisible,
+      isTracking,
+      disabled,
+    });
     if (!disabled) {
       onToggle(!isVisible);
     } else {
@@ -44,11 +48,7 @@ export const TrackingToggle: React.FC<TrackingToggleProps> = ({
             ? 'bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200'
             : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
         }
-        ${
-          disabled
-            ? 'opacity-50 cursor-not-allowed'
-            : 'cursor-pointer'
-        }
+        ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         dark:bg-gray-800 dark:border-gray-700
       `}
       title={isVisible ? 'Hide face tracking' : 'Show face tracking'}
@@ -77,9 +77,7 @@ export const TrackingToggle: React.FC<TrackingToggleProps> = ({
           <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
         )}
       </div>
-      <span>
-        {isVisible ? 'Hide Tracking' : 'Show Tracking'}
-      </span>
+      <span>{isVisible ? 'Hide Tracking' : 'Show Tracking'}</span>
     </button>
   );
-}; 
+};

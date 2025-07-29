@@ -36,13 +36,13 @@ const VideoRecorderApp: React.FC = () => {
 
   // Initialize MediaPipe for Step 1 testing
   const { initialize, isInitialized, processVideo } = useMediaPipe();
-  
+
   // Get tracking state for Step 2 testing
   const trackingState = useTrackingStore();
-  
+
   // Step 3: Tracking visualization state
   const [showTracking, setShowTracking] = React.useState(false);
-  
+
   // Debug tracking state
   React.useEffect(() => {
     console.log('🔍 Tracking state debug:', {
@@ -51,10 +51,16 @@ const VideoRecorderApp: React.FC = () => {
       trackingState: {
         status: trackingState.status,
         isTracking: trackingState.isTracking,
-        isInitialized: trackingState.isInitialized
-      }
+        isInitialized: trackingState.isInitialized,
+      },
     });
-  }, [showTracking, isInitialized, trackingState.status, trackingState.isTracking, trackingState.isInitialized]);
+  }, [
+    showTracking,
+    isInitialized,
+    trackingState.status,
+    trackingState.isTracking,
+    trackingState.isInitialized,
+  ]);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const {
@@ -72,7 +78,7 @@ const VideoRecorderApp: React.FC = () => {
 
   const handleStartCamera = async (): Promise<void> => {
     await startCamera(selectedDeviceId || undefined);
-    
+
     // Initialize MediaPipe when camera starts (for Step 1 testing)
     if (!isInitialized) {
       try {
@@ -84,8 +90,15 @@ const VideoRecorderApp: React.FC = () => {
   };
 
   // Handle MediaPipe video processing for Step 1 testing
-  const handleVideoProcess = async (videoElement: HTMLVideoElement): Promise<void> => {
-    console.log('🎯 handleVideoProcess called, isInitialized:', isInitialized, 'isActive:', isActive);
+  const handleVideoProcess = async (
+    videoElement: HTMLVideoElement
+  ): Promise<void> => {
+    console.log(
+      '🎯 handleVideoProcess called, isInitialized:',
+      isInitialized,
+      'isActive:',
+      isActive
+    );
     if (isActive) {
       await processVideo(videoElement);
     } else {
@@ -138,9 +151,9 @@ const VideoRecorderApp: React.FC = () => {
                 Camera Feed
               </h2>
               <div className="relative">
-                <VideoPlayer 
-                  stream={stream} 
-                  className="aspect-video w-full" 
+                <VideoPlayer
+                  stream={stream}
+                  className="aspect-video w-full"
                   onVideoProcess={handleVideoProcess}
                   ref={videoRef}
                 />
@@ -160,24 +173,47 @@ const VideoRecorderApp: React.FC = () => {
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Controls
               </h2>
-              
+
               {/* Step 2: Tracking State Display */}
               <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-4">
                 <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                   Tracking State (Step 2)
                 </h3>
                 <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                  <div>Status: <span className="font-mono">{trackingState.status}</span></div>
-                  <div>Face Count: <span className="font-mono">{trackingState.faceCount}</span></div>
-                  <div>Confidence: <span className="font-mono">{(trackingState.confidence * 100).toFixed(1)}%</span></div>
-                  <div>Tracking: <span className="font-mono">{trackingState.isTracking ? 'Yes' : 'No'}</span></div>
-                  <div>Initialized: <span className="font-mono">{trackingState.isInitialized ? 'Yes' : 'No'}</span></div>
+                  <div>
+                    Status:{' '}
+                    <span className="font-mono">{trackingState.status}</span>
+                  </div>
+                  <div>
+                    Face Count:{' '}
+                    <span className="font-mono">{trackingState.faceCount}</span>
+                  </div>
+                  <div>
+                    Confidence:{' '}
+                    <span className="font-mono">
+                      {(trackingState.confidence * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <div>
+                    Tracking:{' '}
+                    <span className="font-mono">
+                      {trackingState.isTracking ? 'Yes' : 'No'}
+                    </span>
+                  </div>
+                  <div>
+                    Initialized:{' '}
+                    <span className="font-mono">
+                      {trackingState.isInitialized ? 'Yes' : 'No'}
+                    </span>
+                  </div>
                   {trackingState.error && (
-                    <div className="text-red-500">Error: {trackingState.error}</div>
+                    <div className="text-red-500">
+                      Error: {trackingState.error}
+                    </div>
                   )}
                 </div>
               </div>
-              
+
               {/* Step 3: Tracking Controls */}
               <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-4">
                 <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
