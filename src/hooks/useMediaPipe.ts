@@ -30,7 +30,7 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
    * Initialize MediaPipe service
    */
   const initialize = useCallback(async (): Promise<void> => {
-    if (isInitialized) {
+    if (mediaPipeRef.current && isInitialized) {
       console.log('MediaPipe already initialized');
       return;
     }
@@ -62,7 +62,7 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
       setStatus('error');
       throw error;
     }
-  }, [options]);
+  }, [options, updateFaceDetection, updateFacialLandmarks, setInitialized, setError, setStatus]);
 
   /**
    * Process video element with MediaPipe
@@ -88,7 +88,7 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
     } catch (error) {
       console.error('Error processing video with MediaPipe:', error);
     }
-  }, [initialize, isInitialized]);
+  }, [initialize]);
 
   /**
    * Start continuous processing
@@ -115,7 +115,7 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
     } catch (error) {
       console.error('Error starting MediaPipe processing:', error);
     }
-  }, [initialize, isInitialized]);
+  }, [initialize]);
 
   /**
    * Get current MediaPipe state
