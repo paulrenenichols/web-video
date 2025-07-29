@@ -38,6 +38,14 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
     overlay => overlay.config.type === OverlayType.GLASSES && overlay.enabled
   );
 
+  // Debug logging
+  console.log('🔍 GlassesOverlay - isVisible:', isVisible);
+  console.log('🔍 GlassesOverlay - isEnabled:', isEnabled);
+  console.log('🔍 GlassesOverlay - activeOverlays count:', activeOverlays.length);
+  console.log('🔍 GlassesOverlay - glassesOverlays count:', glassesOverlays.length);
+  console.log('🔍 GlassesOverlay - status:', status);
+  console.log('🔍 GlassesOverlay - facialLandmarks:', !!facialLandmarks);
+
   /**
    * Update canvas size to match video
    */
@@ -160,7 +168,7 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
   /**
    * Render glasses overlays
    */
-  const renderGlasses = useCallback(() => {
+  const renderGlasses = useCallback(async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -204,8 +212,8 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
     }
 
     // Render each glasses overlay
-    glassesOverlays.forEach(async (overlay) => {
-      if (!overlay.rendering.visible) return;
+    for (const overlay of glassesOverlays) {
+      if (!overlay.rendering.visible) continue;
 
       try {
         // Set rendering properties
@@ -268,7 +276,7 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
         
         ctx.restore();
       }
-    });
+    }
 
     // Reset global properties
     ctx.globalAlpha = 1;
@@ -287,7 +295,7 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
   /**
    * Main render loop
    */
-  const render = useCallback(() => {
+  const render = useCallback(async () => {
     // Update canvas size if needed
     if (!updateCanvasSize()) {
       animationFrameRef.current = requestAnimationFrame(render);
@@ -295,7 +303,7 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
     }
 
     // Render glasses
-    renderGlasses();
+    await renderGlasses();
 
     // Continue animation
     animationFrameRef.current = requestAnimationFrame(render);

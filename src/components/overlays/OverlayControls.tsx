@@ -88,7 +88,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
   );
 
   /**
-   * Handle glasses selection
+   * Handle glasses selection - only one pair at a time
    */
   const handleGlassesSelect = (glassesId: string) => {
     if (selectedGlasses === glassesId) {
@@ -101,12 +101,20 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
         removeOverlay(glassesId);
       }
     } else {
+      // Clear any existing glasses first
+      activeOverlays.forEach(overlay => {
+        if (overlay.config.type === OverlayType.GLASSES) {
+          removeOverlay(overlay.config.id);
+        }
+      });
+      
       // Select new glasses
       setSelectedGlasses(glassesId);
       const glassesConfig = GLASSES_OPTIONS.find(
         option => option.id === glassesId
       );
       if (glassesConfig) {
+        console.log('Adding glasses overlay:', glassesConfig);
         addOverlay(glassesConfig);
       }
     }
