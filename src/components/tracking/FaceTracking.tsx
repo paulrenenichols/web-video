@@ -8,6 +8,7 @@
 
 import React, { useRef, useEffect, useCallback } from 'react';
 import { useTrackingStore } from '@/stores/tracking-store';
+import { getKeyLandmarks } from '@/utils/tracking';
 
 interface FaceTrackingProps {
   /** Whether tracking visualization is visible */
@@ -131,17 +132,14 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
       const canvasWidth = canvas.width;
       const canvasHeight = canvas.height;
 
-             // Draw key landmarks for better facial tracking visualization
-       const keyLandmarks = [
-         10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10,  // Face outline
-         33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 33,  // Right eyebrow
-         362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398, 362,  // Left eyebrow
-         61, 84, 17, 314, 405, 320, 307, 375, 321, 308, 324, 318, 78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 61,  // Right eye
-         291, 409, 270, 269, 267, 0, 37, 39, 40, 185, 61, 146, 91, 181, 84, 17, 314, 405, 320, 307, 375, 321, 308, 324, 318, 78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 291,  // Left eye
-         78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308, 324, 318, 78,  // Nose
-         0, 267, 37, 39, 40, 185, 61, 146, 91, 181, 84, 17, 314, 405, 320, 307, 375, 321, 308, 324, 318, 78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 0,  // Mouth outer
-         78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 78,  // Mouth inner
-       ];
+             // Get key landmarks using utility function
+             const keyLandmarksData = getKeyLandmarks(landmarks);
+             const keyLandmarks = [
+               ...keyLandmarksData.faceOutline,
+               ...keyLandmarksData.eyes,
+               ...keyLandmarksData.nose,
+               ...keyLandmarksData.mouth
+             ];
 
        ctx.fillStyle = '#ff0000';
        ctx.strokeStyle = '#ff0000';
@@ -166,7 +164,7 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
          keyLandmarks.forEach(index => {
            const landmark = landmarks[index];
            
-           if (landmark) { // Temporarily remove visibility check to see all landmarks
+           if (landmark && landmark.visibility > 0.5) { // Only draw landmarks with good visibility
              // Convert normalized coordinates (0-1) to canvas coordinates
              // Check if video is mirrored (front-facing camera)
              const isMirrored = video.style.transform?.includes('scaleX(-1)') || false;

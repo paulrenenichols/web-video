@@ -17,6 +17,7 @@ import {
   FacialLandmarks,
   LandmarkPoint,
 } from '@/types/tracking';
+import { calculateLandmarkConfidence, getLandmarkStats } from '@/utils/tracking';
 
 /**
  * MediaPipe service class for facial tracking
@@ -201,29 +202,26 @@ export class MediaPipeService {
 
     const landmarks = results.multiFaceLandmarks[0];
     
-    // Debug: Check the structure of the first landmark
-    if (landmarks.length > 0) {
-      console.log('🔍 First landmark structure:', {
-        point: landmarks[0],
-        keys: Object.keys(landmarks[0]),
-        hasVisibility: 'visibility' in landmarks[0],
-        hasPresence: 'presence' in landmarks[0],
-        hasZ: 'z' in landmarks[0]
-      });
-    }
+
     
     const landmarkPoints: LandmarkPoint[] = landmarks.map((point: any) => ({
       x: point.x,
       y: point.y,
       z: point.z,
-      visibility: point.visibility || point.presence || 1.0, // Try different property names or default to 1.0
+      visibility: point.visibility || 1.0, // Use visibility if available, otherwise default to 1.0
     }));
 
+    // Calculate confidence based on landmark quality
+    const confidence = calculateLandmarkConfidence(landmarkPoints);
+    const stats = getLandmarkStats(landmarkPoints);
+    
     const facialLandmarks: FacialLandmarks = {
       landmarks: landmarkPoints,
-      confidence: 1.0, // Face mesh doesn't provide confidence, assume high confidence if detected
+      confidence,
       timestamp: Date.now(),
     };
+
+    console.log('📊 Landmark statistics:', stats);
 
     // Calculate bounding box from landmarks
     const boundingBox = this.calculateBoundingBoxFromLandmarks(landmarkPoints);
