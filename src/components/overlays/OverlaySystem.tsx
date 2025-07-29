@@ -149,24 +149,85 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
           return;
         }
 
-        // Convert normalized coordinates to canvas coordinates
-        let canvasX = positionResult.position.x * canvasWidth;
-        const canvasY = positionResult.position.y * canvasHeight;
-        const canvasWidth_px = positionResult.position.width * canvasWidth;
-        const canvasHeight_px = positionResult.position.height * canvasHeight;
+        // For glasses overlays, use the red eye tracking as the source of truth
+        let canvasX: number;
+        let canvasY: number;
+        let canvasWidth_px: number;
+        let canvasHeight_px: number;
 
-        // Mirror the x coordinate if video is mirrored (same as tracking visualization)
-        if (isMirrored) {
-          canvasX = canvasWidth - canvasX;
+        if (overlay.config.type === 'glasses') {
+          // Get eye landmarks
+          const leftEye = facialLandmarks.landmarks[159]; // Left eye center
+          const rightEye = facialLandmarks.landmarks[386]; // Right eye center
+          const leftEyeOuter = facialLandmarks.landmarks[33]; // Left eye outer corner
+          const rightEyeOuter = facialLandmarks.landmarks[263]; // Right eye outer corner
+
+          if (leftEye && rightEye && leftEye.visibility > 0.5 && rightEye.visibility > 0.5) {
+            // Calculate eye positions using the same method as red circles
+            let leftEyeX = leftEye.x * canvasWidth;
+            const leftEyeY = leftEye.y * canvasHeight;
+            let rightEyeX = rightEye.x * canvasWidth;
+            const rightEyeY = rightEye.y * canvasHeight;
+            
+            if (isMirrored) {
+              leftEyeX = canvasWidth - leftEyeX;
+              rightEyeX = canvasWidth - rightEyeX;
+            }
+
+            // Calculate center between eyes (same as red center point)
+            canvasX = (leftEyeX + rightEyeX) / 2;
+            canvasY = (leftEyeY + rightEyeY) / 2;
+
+            // Calculate width based on eye span
+            if (leftEyeOuter && rightEyeOuter && leftEyeOuter.visibility > 0.5 && rightEyeOuter.visibility > 0.5) {
+              let leftOuterX = leftEyeOuter.x * canvasWidth;
+              let rightOuterX = rightEyeOuter.x * canvasWidth;
+              
+              if (isMirrored) {
+                leftOuterX = canvasWidth - leftOuterX;
+                rightOuterX = canvasWidth - rightOuterX;
+              }
+              
+              const eyeSpan = Math.abs(rightOuterX - leftOuterX);
+              canvasWidth_px = eyeSpan * 1.3; // 130% of eye span
+            } else {
+              // Fallback to overlay service width
+              canvasWidth_px = positionResult.position.width * canvasWidth;
+            }
+            
+            canvasHeight_px = positionResult.position.height * canvasHeight;
+            
+            console.log('🎯 Using red eye tracking for green rectangle positioning');
+            console.log('🎯 Red eye tracking - Left eye:', leftEyeX.toFixed(1), leftEyeY.toFixed(1));
+            console.log('🎯 Red eye tracking - Right eye:', rightEyeX.toFixed(1), rightEyeY.toFixed(1));
+            console.log('🎯 Red eye tracking - Center:', canvasX.toFixed(1), canvasY.toFixed(1));
+            console.log('🎯 Red eye tracking - Width:', canvasWidth_px.toFixed(1));
+          } else {
+            // Fallback to overlay service positioning
+            canvasX = positionResult.position.x * canvasWidth;
+            canvasY = positionResult.position.y * canvasHeight;
+            canvasWidth_px = positionResult.position.width * canvasWidth;
+            canvasHeight_px = positionResult.position.height * canvasHeight;
+            
+            if (isMirrored) {
+              canvasX = canvasWidth - canvasX;
+            }
+          }
+        } else {
+          // For non-glasses overlays, use the original overlay service positioning
+          canvasX = positionResult.position.x * canvasWidth;
+          canvasY = positionResult.position.y * canvasHeight;
+          canvasWidth_px = positionResult.position.width * canvasWidth;
+          canvasHeight_px = positionResult.position.height * canvasHeight;
+
+          if (isMirrored) {
+            canvasX = canvasWidth - canvasX;
+          }
         }
 
         console.log('🎨 Rendering overlay - Name:', overlay.config.name);
-        console.log('🎨 Rendering overlay - Before mirroring:', (positionResult.position.x * canvasWidth).toFixed(1));
-        console.log('🎨 Rendering overlay - After mirroring:', canvasX.toFixed(1));
-        console.log('🎨 Rendering overlay - Normalized position:', positionResult.position.x.toFixed(3), positionResult.position.y.toFixed(3));
         console.log('🎨 Rendering overlay - Canvas position:', canvasX.toFixed(1), canvasY.toFixed(1));
         console.log('🎨 Rendering overlay - Size:', canvasWidth_px.toFixed(1), 'x', canvasHeight_px.toFixed(1));
-        console.log('🎨 Rendering overlay - Canvas:', canvasWidth, 'x', canvasHeight);
 
         // Set rendering properties
         ctx.globalAlpha = overlay.rendering.opacity;
