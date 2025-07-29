@@ -221,6 +221,10 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
             const deltaY = rightEyeY - leftEyeY;
             const rotationAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
             
+            console.log('🎯 Rotation calculation - DeltaX:', deltaX.toFixed(1), 'DeltaY:', deltaY.toFixed(1));
+            console.log('🎯 Rotation calculation - Raw angle (radians):', Math.atan2(deltaY, deltaX).toFixed(3));
+            console.log('🎯 Rotation calculation - Final angle (degrees):', rotationAngle.toFixed(1));
+            
             console.log('🎯 Using red eye tracking for green rectangle positioning');
             console.log('🎯 Red eye tracking - Left eye:', leftEyeX.toFixed(1), leftEyeY.toFixed(1));
             console.log('🎯 Red eye tracking - Right eye:', rightEyeX.toFixed(1), rightEyeY.toFixed(1));
@@ -270,6 +274,7 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
         
         // Use calculated rotation for glasses, overlay service rotation for others
         const rotationToUse = overlay.config.type === 'glasses' ? rotationAngle : positionResult.position.rotation;
+        console.log('🎨 Rotation application - Type:', overlay.config.type, 'Rotation used:', rotationToUse.toFixed(1), 'degrees');
         ctx.rotate((rotationToUse * Math.PI) / 180);
         ctx.scale(positionResult.position.scale, positionResult.position.scale);
 
