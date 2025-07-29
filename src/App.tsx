@@ -45,6 +45,13 @@ const VideoRecorderApp: React.FC = () => {
   const [showTracking, setShowTracking] = React.useState(false);
   const [showEnhancedTracking, setShowEnhancedTracking] = React.useState(false);
 
+  // Auto-hide enhanced tracking when basic tracking is disabled
+  React.useEffect(() => {
+    if (!showTracking) {
+      setShowEnhancedTracking(false);
+    }
+  }, [showTracking]);
+
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
