@@ -172,8 +172,9 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Clear canvas completely
+    // Clear canvas completely and reset context
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform matrix
 
     // Check if we have valid tracking data
     if (
@@ -208,12 +209,16 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
       return;
     }
 
-    // Debug: Log position to check if coordinates are reasonable
-    console.log('Glasses position:', {
-      x: glassesPosition.x,
-      y: glassesPosition.y,
-      width: glassesPosition.width,
-      height: glassesPosition.height,
+    // Debug: Log position and overlay count
+    console.log('Glasses rendering:', {
+      overlayCount: glassesOverlays.length,
+      overlays: glassesOverlays.map(o => ({ id: o.config.id, name: o.config.name })),
+      position: {
+        x: glassesPosition.x,
+        y: glassesPosition.y,
+        width: glassesPosition.width,
+        height: glassesPosition.height,
+      },
       canvasWidth,
       canvasHeight,
     });
@@ -304,6 +309,14 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
    * Main render function
    */
   const render = useCallback(async () => {
+    console.log('Glasses render called:', {
+      isVisible,
+      status,
+      hasLandmarks: !!facialLandmarks,
+      hasFaceDetection: !!faceDetection,
+      overlayCount: glassesOverlays.length,
+    });
+
     if (
       !isVisible ||
       status !== 'detected' ||
@@ -334,6 +347,7 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
     faceDetection,
     updateCanvasSize,
     renderGlasses,
+    glassesOverlays.length,
   ]);
 
   // Handle canvas size updates
