@@ -124,6 +124,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
     removeOverlay,
     toggleOverlay,
     updateOverlayRendering,
+    updateOverlayPosition,
     clearOverlays,
     setEnabled,
   } = useOverlayStore();
