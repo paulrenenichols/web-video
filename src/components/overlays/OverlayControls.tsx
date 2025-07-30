@@ -344,14 +344,19 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
     >
       <div className="space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-800">
-            Overlay Controls
-          </h3>
-          <div className="flex items-center space-x-2">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-800">
+              Overlay Controls
+            </h3>
+          </div>
+          
+          {/* Control Buttons - Organized in logical groups */}
+          <div className="grid grid-cols-3 gap-2">
+            {/* System Control Group */}
             <button
               onClick={handleToggleOverlayControls}
-              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+              className={`w-full px-3 py-2 rounded text-sm font-medium transition-colors ${
                 isOverlayControlsEnabled
                   ? 'bg-blue-500 text-white hover:bg-blue-600'
                   : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
@@ -361,7 +366,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
             </button>
             <button
               onClick={handleToggleGlassesOverlaySystem}
-              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+              className={`w-full px-3 py-2 rounded text-sm font-medium transition-colors ${
                 glassesOverlaySystemEnabled
                   ? 'bg-green-500 text-white hover:bg-green-600'
                   : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
@@ -371,7 +376,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
             </button>
             <button
               onClick={handleToggleHatOverlaySystem}
-              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+              className={`w-full px-3 py-2 rounded text-sm font-medium transition-colors ${
                 hatOverlaySystemEnabled
                   ? 'bg-green-500 text-white hover:bg-green-600'
                   : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
@@ -379,9 +384,13 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
             >
               {hatOverlaySystemEnabled ? 'Hats On' : 'Hats Off'}
             </button>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-2">
+            {/* Management Control Group */}
             <button
               onClick={handleToggleOverlaySystem}
-              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+              className={`w-full px-3 py-2 rounded text-sm font-medium transition-colors ${
                 isEnabled
                   ? 'bg-purple-500 text-white hover:bg-purple-600'
                   : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
@@ -391,13 +400,13 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
             </button>
             <button
               onClick={handleResetOverlays}
-              className="px-3 py-1 rounded text-sm font-medium bg-yellow-500 text-white hover:bg-yellow-600 transition-colors"
+              className="w-full px-3 py-2 rounded text-sm font-medium bg-yellow-500 text-white hover:bg-yellow-600 transition-colors"
             >
               Reset
             </button>
             <button
               onClick={handleClearOverlays}
-              className="px-3 py-1 rounded text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors"
+              className="w-full px-3 py-2 rounded text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors"
             >
               Clear All
             </button>
