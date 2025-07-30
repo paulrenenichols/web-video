@@ -340,14 +340,15 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
 
   return (
     <div
-      className={`bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg ${className}`}
+      className={`bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg border border-gray-200/50 ${className}`}
     >
       <div className="space-y-4">
         {/* Header */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-800">
-              Overlay Controls
+            <h3 className="text-lg font-semibold text-gray-800 flex items-center space-x-2">
+              <span>🎭</span>
+              <span>Overlay Controls</span>
             </h3>
           </div>
           
@@ -356,33 +357,42 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
             {/* System Control Group */}
             <button
               onClick={handleToggleOverlayControls}
-              className={`w-full px-3 py-2 rounded text-sm font-medium transition-colors ${
+              className={`w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 shadow-sm ${
                 isOverlayControlsEnabled
-                  ? 'bg-blue-500 text-white hover:bg-blue-600'
-                  : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 shadow-blue-200'
+                  : 'bg-gradient-to-r from-gray-200 to-gray-300 text-gray-700 hover:from-gray-300 hover:to-gray-400'
               }`}
             >
-              {isOverlayControlsEnabled ? 'Active' : 'Inactive'}
+              <span className="flex items-center justify-center space-x-1">
+                <span>{isOverlayControlsEnabled ? '🟢' : '⚪'}</span>
+                <span>{isOverlayControlsEnabled ? 'Active' : 'Inactive'}</span>
+              </span>
             </button>
             <button
               onClick={handleToggleGlassesOverlaySystem}
-              className={`w-full px-3 py-2 rounded text-sm font-medium transition-colors ${
+              className={`w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 shadow-sm ${
                 glassesOverlaySystemEnabled
-                  ? 'bg-green-500 text-white hover:bg-green-600'
-                  : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                  ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-green-200'
+                  : 'bg-gradient-to-r from-gray-200 to-gray-300 text-gray-700 hover:from-gray-300 hover:to-gray-400'
               }`}
             >
-              {glassesOverlaySystemEnabled ? 'Glasses On' : 'Glasses Off'}
+              <span className="flex items-center justify-center space-x-1">
+                <span>👓</span>
+                <span>{glassesOverlaySystemEnabled ? 'On' : 'Off'}</span>
+              </span>
             </button>
             <button
               onClick={handleToggleHatOverlaySystem}
-              className={`w-full px-3 py-2 rounded text-sm font-medium transition-colors ${
+              className={`w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 shadow-sm ${
                 hatOverlaySystemEnabled
-                  ? 'bg-green-500 text-white hover:bg-green-600'
-                  : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                  ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-green-200'
+                  : 'bg-gradient-to-r from-gray-200 to-gray-300 text-gray-700 hover:from-gray-300 hover:to-gray-400'
               }`}
             >
-              {hatOverlaySystemEnabled ? 'Hats On' : 'Hats Off'}
+              <span className="flex items-center justify-center space-x-1">
+                <span>🎩</span>
+                <span>{hatOverlaySystemEnabled ? 'On' : 'Off'}</span>
+              </span>
             </button>
           </div>
           
@@ -390,25 +400,34 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
             {/* Management Control Group */}
             <button
               onClick={handleToggleOverlaySystem}
-              className={`w-full px-3 py-2 rounded text-sm font-medium transition-colors ${
+              className={`w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 shadow-sm ${
                 isEnabled
-                  ? 'bg-purple-500 text-white hover:bg-purple-600'
-                  : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                  ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 shadow-purple-200'
+                  : 'bg-gradient-to-r from-gray-200 to-gray-300 text-gray-700 hover:from-gray-300 hover:to-gray-400'
               }`}
             >
-              {isEnabled ? 'System On' : 'System Off'}
+              <span className="flex items-center justify-center space-x-1">
+                <span>⚙️</span>
+                <span>{isEnabled ? 'System On' : 'System Off'}</span>
+              </span>
             </button>
             <button
               onClick={handleResetOverlays}
-              className="w-full px-3 py-2 rounded text-sm font-medium bg-yellow-500 text-white hover:bg-yellow-600 transition-colors"
+              className="w-full px-3 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-yellow-500 to-yellow-600 text-white hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 shadow-sm shadow-yellow-200"
             >
-              Reset
+              <span className="flex items-center justify-center space-x-1">
+                <span>🔄</span>
+                <span>Reset</span>
+              </span>
             </button>
             <button
               onClick={handleClearOverlays}
-              className="w-full px-3 py-2 rounded text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors"
+              className="w-full px-3 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 shadow-sm shadow-red-200"
             >
-              Clear All
+              <span className="flex items-center justify-center space-x-1">
+                <span>🗑️</span>
+                <span>Clear All</span>
+              </span>
             </button>
           </div>
         </div>
@@ -416,10 +435,17 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
         {/* Glasses Section */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h4 className="text-md font-medium text-gray-700">Glasses</h4>
+            <h4 className="text-md font-medium text-gray-700 flex items-center space-x-2">
+              <span>👓</span>
+              <span>Glasses</span>
+            </h4>
             <div className="flex items-center space-x-2">
-              <div className={`w-2 h-2 rounded-full ${glassesOverlaySystemEnabled ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-              <span className="text-xs text-gray-500">
+              <div className={`w-3 h-3 rounded-full transition-all duration-300 ease-in-out ${
+                glassesOverlaySystemEnabled 
+                  ? 'bg-green-500 shadow-lg shadow-green-200' 
+                  : 'bg-gray-300'
+              }`}></div>
+              <span className="text-xs text-gray-500 font-medium">
                 {glassesOverlaySystemEnabled ? 'System Active' : 'System Inactive'}
               </span>
             </div>
@@ -427,7 +453,9 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
 
           {/* Glasses Options */}
           <div
-            className={`grid grid-cols-1 gap-2 ${!isOverlayControlsEnabled ? 'opacity-50 pointer-events-none' : ''}`}
+            className={`grid grid-cols-1 gap-3 transition-all duration-300 ease-in-out ${
+              !isOverlayControlsEnabled ? 'opacity-50 pointer-events-none' : ''
+            }`}
           >
             {GLASSES_OPTIONS.map(glasses => {
               const isActive = activeGlasses.some(
@@ -438,41 +466,49 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
               return (
                 <div
                   key={glasses.id}
-                  className={`p-3 rounded-lg border-2 transition-all ${isOverlayControlsEnabled ? 'cursor-pointer' : 'cursor-not-allowed'} ${
+                  className={`p-4 rounded-xl border-2 transition-all duration-200 ease-in-out transform hover:scale-102 hover:shadow-md ${
+                    isOverlayControlsEnabled ? 'cursor-pointer' : 'cursor-not-allowed'
+                  } ${
                     isSelected
-                      ? 'border-blue-500 bg-blue-50'
+                      ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 shadow-blue-200'
                       : isActive
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+                        ? 'border-green-500 bg-gradient-to-r from-green-50 to-green-100 shadow-green-200'
+                        : 'border-gray-200 bg-gradient-to-r from-gray-50 to-white hover:border-gray-300 hover:shadow-gray-200'
                   }`}
                   onClick={() =>
                     isOverlayControlsEnabled && handleGlassesSelect(glasses.id)
                   }
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center overflow-hidden">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center overflow-hidden shadow-sm border border-gray-200 transition-all duration-200 hover:shadow-md">
                         <img
                           src={glasses.imageUrl}
                           alt={glasses.name}
-                          className="w-full h-full object-contain"
+                          className="w-full h-full object-contain p-1"
                           onError={(e) => {
                             // Fallback to emoji if image fails to load
                             const target = e.target as HTMLImageElement;
                             target.style.display = 'none';
-                            target.parentElement!.innerHTML = '<span class="text-xs text-gray-600">👓</span>';
+                            target.parentElement!.innerHTML = '<span class="text-lg text-gray-600">👓</span>';
                           }}
                         />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-800">
+                        <p className="font-semibold text-gray-800 text-sm">
                           {glasses.name}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 mt-1">
                           {isActive ? (
-                            <span className="text-green-600 font-medium">✓ Active on face</span>
+                            <span className="text-green-600 font-medium flex items-center space-x-1">
+                              <span>✓</span>
+                              <span>Active on face</span>
+                            </span>
                           ) : (
-                            'Click to add to face'
+                            <span className="flex items-center space-x-1">
+                              <span>👆</span>
+                              <span>Click to add to face</span>
+                            </span>
                           )}
                         </p>
                       </div>

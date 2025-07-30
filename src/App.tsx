@@ -159,7 +159,6 @@ const VideoRecorderApp: React.FC = () => {
   };
 
   const handleStartRecording = async (): Promise<void> => {
-    console.log('handleStartRecording called!'); // Test if function is called
     if (stream && videoRef.current) {
       // Collect overlay canvas elements
       const overlayCanvases: HTMLCanvasElement[] = [];

@@ -29,6 +29,8 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number>();
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   // Get tracking state
   const { status, faceDetection, facialLandmarks, confidence, faceCount } =
@@ -349,12 +351,55 @@ export const FaceTracking: React.FC<FaceTrackingProps> = ({
   }
 
   return (
-    <canvas
-      ref={canvasRef}
-      className={`absolute inset-0 pointer-events-none ${className}`}
-      style={{
-        zIndex: 10,
-      }}
-    />
+    <div className={`absolute inset-0 pointer-events-none ${className}`}>
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full"
+        style={{
+          zIndex: 10,
+        }}
+      />
+      
+      {/* Loading State */}
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+          <div className="bg-white/90 rounded-lg p-4 shadow-lg flex items-center space-x-3">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+            <span className="text-sm font-medium text-gray-700">Initializing tracking...</span>
+          </div>
+        </div>
+      )}
+      
+      {/* Error State */}
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-red-500/20 backdrop-blur-sm">
+          <div className="bg-white/90 rounded-lg p-4 shadow-lg max-w-sm">
+            <div className="flex items-center space-x-2 text-red-600 mb-2">
+              <span>⚠️</span>
+              <span className="font-medium">Tracking Error</span>
+            </div>
+            <p className="text-sm text-gray-700 mb-3">{error}</p>
+            <button
+              onClick={() => setError(null)}
+              className="w-full px-3 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition-colors"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Status Indicator */}
+      {status === 'detected' && faceCount > 0 && (
+        <div className="absolute top-2 right-2 bg-green-500/90 backdrop-blur-sm rounded-lg px-3 py-1 shadow-lg">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
+            <span className="text-xs font-medium text-white">
+              {faceCount} face{faceCount > 1 ? 's' : ''} detected
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };

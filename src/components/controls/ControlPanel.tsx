@@ -58,29 +58,36 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onClearRecording,
 }) => {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+    <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-6 shadow-lg animate-fade-in">
       <div className="space-y-6">
         {/* Camera Controls */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Camera Controls
+        <div className="space-y-4 animate-slide-up">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
+            <span>📹</span>
+            <span>Camera Controls</span>
           </h3>
 
           <div className="flex flex-col sm:flex-row gap-4">
             <button
               onClick={isActive ? onStopCamera : onStartCamera}
               disabled={isLoading}
-              className="btn btn-primary flex-1"
+              className="btn btn-primary flex-1 transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
             >
               {isLoading ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Loading...</span>
+                  <span>Initializing...</span>
                 </div>
               ) : isActive ? (
-                'Stop Camera'
+                <span className="flex items-center space-x-2">
+                  <span>⏹️</span>
+                  <span>Stop Camera</span>
+                </span>
               ) : (
-                'Start Camera'
+                <span className="flex items-center space-x-2">
+                  <span>▶️</span>
+                  <span>Start Camera</span>
+                </span>
               )}
             </button>
           </div>
@@ -88,9 +95,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
         {/* Recording Controls */}
         {isActive && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Recording Controls
+          <div className="space-y-4 animate-slide-up">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
+              <span>🎬</span>
+              <span>Recording Controls</span>
             </h3>
 
             <div className="space-y-4">

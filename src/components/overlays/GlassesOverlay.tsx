@@ -381,18 +381,8 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
   }, [isVisible, isEnabled, glassesOverlays.length, render, clearCanvas]);
 
   if (!isVisible || !isEnabled || glassesOverlays.length === 0) {
-    console.log('GlassesOverlay returning null:', {
-      isVisible,
-      isEnabled,
-      glassesOverlaysLength: glassesOverlays.length,
-    });
     return null;
   }
-
-  console.log(
-    'GlassesOverlay rendering canvas with data-overlay:',
-    dataOverlay
-  );
   return (
     <canvas
       ref={canvasRef}
