@@ -403,11 +403,6 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
     }
   }, [isVisible, isEnabled, glassesOverlays.length, render, clearCanvas]);
 
-  // Render on changes
-  useEffect(() => {
-    render();
-  }, [render, activeOverlays, isVisible]);
-
   if (!isVisible || !isEnabled || glassesOverlays.length === 0) {
     return null;
   }
