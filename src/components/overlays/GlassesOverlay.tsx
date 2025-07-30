@@ -6,7 +6,7 @@
  * head movement tracking.
  */
 
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useMemo } from 'react';
 import { useOverlayStore } from '@/stores/overlay-store';
 import { useTrackingStore } from '@/stores/tracking-store';
 import { OverlayType } from '@/types/overlay';
@@ -22,7 +22,7 @@ interface GlassesOverlayProps {
   'data-overlay'?: string;
 }
 
-export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
+export const GlassesOverlay: React.FC<GlassesOverlayProps> = React.memo(({
   isVisible,
   videoRef,
   className = '',
@@ -399,4 +399,4 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
       data-overlay={dataOverlay}
     />
   );
-};
+});

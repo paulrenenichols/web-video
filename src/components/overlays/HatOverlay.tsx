@@ -5,7 +5,7 @@
  * specifically using head landmarks for positioning.
  */
 
-import React, { useRef, useCallback, useEffect } from 'react';
+import React, { useRef, useCallback, useEffect, useMemo } from 'react';
 import { useOverlayStore } from '@/stores/overlay-store';
 import { useTrackingStore } from '@/stores/tracking-store';
 import { OverlayType } from '@/types/overlay';
@@ -21,7 +21,7 @@ interface HatOverlayProps {
   'data-overlay'?: string;
 }
 
-export const HatOverlay: React.FC<HatOverlayProps> = ({
+export const HatOverlay: React.FC<HatOverlayProps> = React.memo(({
   isVisible,
   videoRef,
   className = '',
@@ -357,4 +357,4 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
       data-overlay={dataOverlay}
     />
   );
-};
+});

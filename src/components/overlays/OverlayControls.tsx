@@ -5,7 +5,7 @@
  * glasses and other facial overlays with real-time preview.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useOverlayStore } from '@/stores/overlay-store';
 import { OverlayType, OverlayConfig } from '@/types/overlay';
 import { AVAILABLE_GLASSES } from '@/constants/glasses';
@@ -107,7 +107,7 @@ interface OverlayControlsProps {
   onToggleHatOverlaySystem?: (enabled: boolean) => void;
 }
 
-export const OverlayControls: React.FC<OverlayControlsProps> = ({
+export const OverlayControls: React.FC<OverlayControlsProps> = React.memo(({
   className = '',
   glassesOverlaySystemEnabled = false,
   onToggleGlassesOverlaySystem,
@@ -133,14 +133,18 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
   const [isOverlayControlsEnabled, setIsOverlayControlsEnabled] =
     useState(true);
 
-  // Get active glasses overlays
-  const activeGlasses = activeOverlays.filter(
-    overlay => overlay.config.type === OverlayType.GLASSES
+  // Get active glasses overlays with memoization
+  const activeGlasses = useMemo(() => 
+    activeOverlays.filter(
+      overlay => overlay.config.type === OverlayType.GLASSES
+    ), [activeOverlays]
   );
 
-  // Get active hat overlays
-  const activeHats = activeOverlays.filter(
-    overlay => overlay.config.type === OverlayType.HAT
+  // Get active hat overlays with memoization
+  const activeHats = useMemo(() => 
+    activeOverlays.filter(
+      overlay => overlay.config.type === OverlayType.HAT
+    ), [activeOverlays]
   );
 
   /**
@@ -891,4 +895,4 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
       </div>
     </div>
   );
-};
+});
