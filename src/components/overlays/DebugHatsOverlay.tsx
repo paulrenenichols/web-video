@@ -74,13 +74,13 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
     console.log('🎩 DebugHatsOverlay - Total landmarks available:', landmarks.length);
     console.log('🎩 DebugHatsOverlay - Sample landmarks 0-10:', landmarks.slice(0, 10).map((lm, i) => `[${i}]: ${lm ? 'exists' : 'missing'}`));
 
-    // Use forehead and head landmarks for better hat positioning
-    // These landmarks represent the top of the head and forehead area
+    // Use more reliable landmarks for hat positioning
+    // These landmarks are known to work well in MediaPipe face mesh
     const foreheadLandmarks = [
-      landmarks[10],   // Forehead center
-      landmarks[338],  // Forehead left
-      landmarks[297],  // Forehead right
-      landmarks[332],  // Top of head
+      landmarks[10],   // Forehead center (nose bridge)
+      landmarks[151],  // Forehead left
+      landmarks[337],  // Forehead right
+      landmarks[9],    // Forehead top
     ];
 
     // Use eye landmarks for width calculation and rotation
@@ -143,7 +143,7 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
     if (!hatPosition) return;
 
     // Draw forehead landmarks (red dots)
-    const foreheadLandmarks = [10, 338, 297, 332];
+    const foreheadLandmarks = [10, 151, 337, 9];
     ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
     foreheadLandmarks.forEach(landmarkIndex => {
       const landmark = facialLandmarks.landmarks[landmarkIndex];
@@ -280,6 +280,12 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
       !facialLandmarks ||
       !faceDetection
     ) {
+      return;
+    }
+
+    // Only render if we have valid facial landmarks with confidence
+    if (facialLandmarks.confidence < 0.5) {
+      console.log('🎩 DebugHatsOverlay - Low confidence landmarks:', facialLandmarks.confidence);
       return;
     }
 
