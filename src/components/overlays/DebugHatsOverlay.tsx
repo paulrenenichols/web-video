@@ -120,11 +120,15 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
   const renderDebugHatsVisualization = useCallback(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
+    const video = videoRef.current;
 
-    if (!canvas || !ctx || !facialLandmarks) return;
+    if (!canvas || !ctx || !facialLandmarks || !video) return;
 
     // Clear canvas
     clearCanvas();
+
+    // Check if video is mirrored
+    const isMirrored = video.style.transform?.includes('scaleX(-1)') || false;
 
     // Calculate hat position
     const hatPosition = calculateHatPosition(facialLandmarks);
@@ -136,14 +140,16 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
     headLandmarks.forEach(landmarkIndex => {
       const landmark = facialLandmarks.landmarks[landmarkIndex];
       if (landmark) {
+        let x = landmark.x * canvas.width;
+        const y = landmark.y * canvas.height;
+        
+        // Apply mirroring if needed
+        if (isMirrored) {
+          x = canvas.width - x;
+        }
+        
         ctx.beginPath();
-        ctx.arc(
-          landmark.x * canvas.width,
-          landmark.y * canvas.height,
-          3,
-          0,
-          2 * Math.PI
-        );
+        ctx.arc(x, y, 3, 0, 2 * Math.PI);
         ctx.fill();
       }
     });
@@ -151,8 +157,13 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
     // Draw center point between head landmarks (only if all landmarks exist)
     const existingLandmarks = headLandmarks.filter(index => facialLandmarks.landmarks[index]);
     if (existingLandmarks.length === headLandmarks.length) {
-      const centerX = existingLandmarks.reduce((sum, index) => sum + facialLandmarks.landmarks[index].x, 0) / existingLandmarks.length;
+      let centerX = existingLandmarks.reduce((sum, index) => sum + facialLandmarks.landmarks[index].x, 0) / existingLandmarks.length;
       const centerY = existingLandmarks.reduce((sum, index) => sum + facialLandmarks.landmarks[index].y, 0) / existingLandmarks.length;
+      
+      // Apply mirroring to center point if needed
+      if (isMirrored) {
+        centerX = 1 - centerX;
+      }
       
       ctx.fillStyle = 'rgba(255, 255, 0, 0.8)';
       ctx.beginPath();
@@ -167,22 +178,27 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
     }
 
     // Draw hat bounding box (green rectangle)
+    let hatX = hatPosition.x * canvas.width;
+    const hatY = hatPosition.y * canvas.height;
+    const hatWidth = hatPosition.width * canvas.width;
+    const hatHeight = hatPosition.height * canvas.height;
+    
+    // Apply mirroring to hat position if needed
+    if (isMirrored) {
+      hatX = canvas.width - hatX - hatWidth;
+    }
+    
     ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
     ctx.lineWidth = 2;
-    ctx.strokeRect(
-      hatPosition.x * canvas.width,
-      hatPosition.y * canvas.height,
-      hatPosition.width * canvas.width,
-      hatPosition.height * canvas.height
-    );
+    ctx.strokeRect(hatX, hatY, hatWidth, hatHeight);
 
     // Draw hat label
     ctx.fillStyle = 'rgba(0, 255, 0, 0.8)';
     ctx.font = '12px Arial';
     ctx.fillText(
       'Hat Position',
-      hatPosition.x * canvas.width,
-      hatPosition.y * canvas.height - 5
+      hatX,
+      hatY - 5
     );
   }, [canvasRef, facialLandmarks, calculateHatPosition, clearCanvas]);
 
