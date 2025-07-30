@@ -70,7 +70,7 @@ const VideoRecorderApp: React.FC = () => {
   const [debugHatsOverlayEnabled, setDebugHatsOverlayEnabled] =
     React.useState(false);
   const [glassesOverlaySystemEnabled, setGlassesOverlaySystemEnabled] =
-    React.useState(false);
+    React.useState(true);
 
   // Initialize overlay system when component mounts
   React.useEffect(() => {
