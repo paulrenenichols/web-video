@@ -228,6 +228,9 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
     ctx.translate(hatCenterX, hatCenterY);
     ctx.rotate((rotationAngle * Math.PI) / 180);
     
+    // Rotate text 180 degrees so it reads left to right from viewer's perspective
+    ctx.rotate(Math.PI);
+    
     ctx.fillStyle = 'rgba(0, 255, 0, 0.8)';
     ctx.font = '12px Arial';
     ctx.fillText(
