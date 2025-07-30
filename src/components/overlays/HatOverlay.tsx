@@ -106,86 +106,50 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
   );
 
   /**
-   * Calculate hat position based on head landmarks (using DebugHatsOverlay logic)
+   * Calculate hat position based on head landmarks (exactly like DebugHatsOverlay)
    */
   const calculateHatPosition = useCallback((landmarks: any) => {
     if (!landmarks || landmarks.length < 468) return null;
 
+    // Use exactly 4 landmarks for hat positioning as specified (exactly like DebugHatsOverlay)
+    // Center forehead above eyebrows (2 dots), top of forehead, above eyes
+    const foreheadLandmarks = [
+      landmarks[108], // Center forehead above eyebrows (left)
+      landmarks[337], // Center forehead above eyebrows (right)
+      landmarks[9], // Top of forehead
+      landmarks[10], // Above eyes (nose bridge)
+    ];
+
     // Use forehead landmarks for centering (exactly like DebugHatsOverlay)
-    const foreheadLandmarks = [108, 337, 9, 10]; // Left forehead, right forehead, top forehead, above eyes
     const foreheadLeft = landmarks[108]; // Left forehead
     const foreheadRight = landmarks[337]; // Right forehead
 
     // Check if we have enough landmarks (exactly like DebugHatsOverlay)
     const allLandmarks = [...foreheadLandmarks, foreheadLeft, foreheadRight];
-    const missingLandmarks = allLandmarks.map((lm, i) => ({ index: [108, 337, 9, 10, 108, 337][i], exists: !!lm }));
     if (allLandmarks.some(lm => !lm)) {
-      console.log('🎩 Missing landmarks for hat positioning:', missingLandmarks);
-      
-      // Try fallback landmarks if primary landmarks are missing
-      const fallbackLeft = landmarks[151]; // Left head side
-      const fallbackRight = landmarks[337]; // Right head side
-      const fallbackTop = landmarks[10]; // Head top
-      
-      if (fallbackLeft && fallbackRight && fallbackTop) {
-        console.log('🎩 Using fallback landmarks for hat positioning');
-        const headCenterX = (fallbackLeft.x + fallbackRight.x) / 2;
-        const headWidth = Math.abs(fallbackRight.x - fallbackLeft.x);
-        const hatWidth = headWidth * 1.2;
-        const hatHeight = headWidth * 0.8;
-        const hatX = headCenterX - hatWidth / 2;
-        const hatY = fallbackTop.y - hatHeight * 0.5;
-        
-        return {
-          x: hatX,
-          y: hatY,
-          width: hatWidth,
-          height: hatHeight,
-          rotation: 0,
-          scale: 1.0,
-        };
-      }
-      
-      // If even fallback landmarks fail, use a simple fixed position
-      console.log('🎩 Using fixed position fallback for hat positioning');
-      return {
-        x: 0.4, // 40% from left
-        y: 0.1, // 10% from top
-        width: 0.2, // 20% of screen width
-        height: 0.15, // 15% of screen height
-        rotation: 0,
-        scale: 1.0,
-      };
-      
-      return null; // Return null if all landmarks missing
+      console.log(
+        '🎩 HatOverlay - Missing landmarks:',
+        allLandmarks.map((lm, i) =>
+          lm ? 'exists' : `missing at index ${[108, 337, 9, 10, 108, 337][i]}`
+        )
+      );
+      return null; // Return null if landmarks missing, exactly like DebugHatsOverlay
     }
 
-    // Use face detection bounding box for accurate head width (same as DebugHatsOverlay)
+    // Use face detection bounding box for accurate head width (exactly like DebugHatsOverlay)
     const headWidth = faceDetection?.boundingBox?.width || 0.3; // Fallback to 30% of screen width
 
-    // Calculate head height from forehead to chin (same as DebugHatsOverlay)
+    // Calculate head height from forehead to chin (exactly like DebugHatsOverlay)
     const foreheadY = Math.min(...foreheadLandmarks.map(lm => lm.y));
     const chinY = Math.max(...landmarks.slice(0, 50).map(lm => lm.y)); // Use first 50 landmarks for chin
     const headHeight = chinY - foreheadY;
 
-    // Check for invalid calculations
-    if (isNaN(foreheadY) || isNaN(chinY) || isNaN(headHeight) || headHeight <= 0) {
-      console.log('🎩 Invalid head height calculation:', { foreheadY, chinY, headHeight });
-      return null;
-    }
-
-    // Position hat above the forehead (same as DebugHatsOverlay)
+    // Position hat above the forehead (exactly like DebugHatsOverlay)
     const hatY = foreheadY - headHeight * 0.4; // 40% above forehead
     const hatHeight = headHeight * 0.6; // 60% of head height
     const hatWidth = headWidth * 1.1; // 110% of head width for hat coverage
 
-    // Final validation
-    if (isNaN(hatY) || isNaN(hatHeight) || isNaN(hatWidth)) {
-      console.log('🎩 Invalid hat position calculation:', { hatY, hatHeight, hatWidth });
-      return null;
-    }
-
-    // Center the hat horizontally using forehead landmarks (same as DebugHatsOverlay)
+    // Center the hat horizontally using forehead landmarks (exactly like DebugHatsOverlay)
     const headCenterX = (foreheadLeft.x + foreheadRight.x) / 2;
     const hatX = headCenterX - hatWidth / 2;
 
@@ -194,8 +158,8 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
       y: hatY,
       width: hatWidth,
       height: hatHeight,
-                rotation: 0, // No rotation for now - match DebugHatsOverlay
-          scale: 1.0,
+      rotation: 0,
+      scale: 1.0,
     };
   }, [faceDetection]);
 
