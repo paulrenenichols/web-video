@@ -57,7 +57,15 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
    * Calculate hat position based on head landmarks
    */
   const calculateHatPosition = useCallback((landmarks: any) => {
-    if (!landmarks || landmarks.length < 468) return null;
+    // Check if landmarks is an array and has sufficient length
+    if (!landmarks || !Array.isArray(landmarks) || landmarks.length < 468) {
+      console.log('🎩 DebugHatsOverlay - Invalid landmarks:', {
+        exists: !!landmarks,
+        isArray: Array.isArray(landmarks),
+        length: landmarks?.length || 0
+      });
+      return null;
+    }
 
     // Debug: Check what landmarks are available
     console.log('🎩 DebugHatsOverlay - Total landmarks available:', landmarks.length);
