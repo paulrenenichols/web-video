@@ -182,8 +182,39 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
 
     // Check if we have enough landmarks
     const allLandmarks = [...foreheadLandmarks, foreheadLeft, foreheadRight];
-    if (allLandmarks.some(lm => !lm)) {
-      debugLog('HatOverlay - Missing landmarks');
+    const missingLandmarks = allLandmarks.map((lm, i) => ({ index: [108, 337, 9, 10, 108, 337][i], exists: !!lm }));
+    const hasMissing = allLandmarks.some(lm => !lm);
+    
+    if (hasMissing) {
+      debugLog('HatOverlay - Missing landmarks:', missingLandmarks);
+      
+      // Fallback: Try using different landmarks
+      debugLog('Trying fallback landmarks...');
+      const fallbackLeft = landmarks[151]; // Left head side
+      const fallbackRight = landmarks[337]; // Right head side
+      const fallbackTop = landmarks[10]; // Head top
+      
+      if (fallbackLeft && fallbackRight && fallbackTop) {
+        debugLog('Using fallback landmarks for positioning');
+        
+        // Simple fallback positioning
+        const headCenterX = (fallbackLeft.x + fallbackRight.x) / 2;
+        const headWidth = Math.abs(fallbackRight.x - fallbackLeft.x);
+        const hatWidth = headWidth * 1.2;
+        const hatHeight = headWidth * 0.8;
+        const hatX = headCenterX - hatWidth / 2;
+        const hatY = fallbackTop.y - hatHeight * 0.5;
+        
+        return {
+          x: hatX,
+          y: hatY,
+          width: hatWidth,
+          height: hatHeight,
+          rotation: 0,
+          scale: overlay.rendering.scale || 1.0,
+        };
+      }
+      
       return null;
     }
 
