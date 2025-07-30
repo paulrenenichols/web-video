@@ -124,11 +124,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
     setEnabled,
   } = useOverlayStore();
 
-  // Debug effect to track overlay state changes
-  React.useEffect(() => {
-    const glassesOverlays = activeOverlays.filter(o => o.config.type === OverlayType.GLASSES);
-    console.log('🔍 OverlayControls - Overlay state changed:', JSON.stringify(glassesOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled }))));
-  }, [activeOverlays]);
+
 
   // Local state for overlay controls - independent of overlay system visibility
   const [isOverlayControlsEnabled, setIsOverlayControlsEnabled] =
@@ -154,7 +150,6 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
 
     if (existingOverlay) {
       // If overlay exists, just toggle it instead of removing/re-adding
-      console.log('🔄 Toggling existing glasses overlay:', glassesId);
       toggleOverlay(glassesId);
       
       // Update selectedGlasses state based on enabled state
@@ -177,7 +172,6 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
         option => option.id === glassesId
       );
       if (glassesConfig) {
-        console.log('Adding new glasses overlay:', glassesConfig);
         addOverlay(glassesConfig);
       }
     }
@@ -245,12 +239,8 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
    * Handle hat opacity change for all hat overlays
    */
   const handleHatOpacityChange = (opacity: number) => {
-    console.log('🎨 Updating opacity for all hats to:', opacity);
     const allHatOverlays = activeOverlays.filter(o => o.config.type === OverlayType.HAT);
-    console.log('🎨 All hat overlays count:', allHatOverlays.length);
-    console.log('🎨 All hat overlays before update:', JSON.stringify(allHatOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled }))));
     allHatOverlays.forEach(hat => {
-      console.log('🎨 Updating opacity for hat:', hat.config.name, 'Current opacity:', hat.rendering.opacity, 'New opacity:', opacity, 'Enabled:', hat.enabled);
       updateOverlayRendering(hat.config.id, { opacity });
     });
   };
@@ -427,17 +417,10 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                       {glasses.config.name}
                     </span>
                     <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => {
-                          console.log('🔄 Toggling glasses:', glasses.config.name, 'Current enabled:', glasses.enabled);
-                          console.log('🔄 Current opacity before toggle:', glasses.rendering.opacity);
-                          console.log('🔄 All overlays before toggle:', JSON.stringify(activeOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled }))));
-                          toggleOverlay(glasses.config.id);
-                          // Add a timeout to check the state after the toggle
-                          setTimeout(() => {
-                            console.log('🔄 After toggle - All overlays:', JSON.stringify(activeOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled }))));
-                          }, 100);
-                        }}
+                                              <button
+                          onClick={() => {
+                            toggleOverlay(glasses.config.id);
+                          }}
                         className={`text-xs px-2 py-1 rounded ${
                           glasses.enabled
                             ? 'bg-green-100 text-green-700'
@@ -574,17 +557,10 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                       {hat.config.name}
                     </span>
                     <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => {
-                          console.log('🔄 Toggling hat:', hat.config.name, 'Current enabled:', hat.enabled);
-                          console.log('🔄 Current opacity before toggle:', hat.rendering.opacity);
-                          console.log('🔄 All overlays before toggle:', JSON.stringify(activeOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled }))));
-                          toggleOverlay(hat.config.id);
-                          // Add a timeout to check the state after the toggle
-                          setTimeout(() => {
-                            console.log('🔄 After toggle - All overlays:', JSON.stringify(activeOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled }))));
-                          }, 100);
-                        }}
+                                                <button
+                            onClick={() => {
+                              toggleOverlay(hat.config.id);
+                            }}
                         className={`text-xs px-2 py-1 rounded ${
                           hat.enabled
                             ? 'bg-green-100 text-green-700'
@@ -610,12 +586,10 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
               {/* Single Opacity Control for All Hats */}
               <div className="space-y-1 pt-2 border-t border-gray-100">
                 <label className="text-xs text-gray-600">Hat Opacity</label>
-                {(() => {
-                  const allHatOverlays = activeOverlays.filter(o => o.config.type === OverlayType.HAT);
-                  const currentOpacity = allHatOverlays.length > 0 ? allHatOverlays[0].rendering.opacity : 0.9;
-                  console.log('🎨 Opacity control - All hat overlays:', JSON.stringify(allHatOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled }))));
-                  console.log('🎨 Opacity control - Current opacity value:', currentOpacity);
-                  return (
+                                      {(() => {
+                        const allHatOverlays = activeOverlays.filter(o => o.config.type === OverlayType.HAT);
+                        const currentOpacity = allHatOverlays.length > 0 ? allHatOverlays[0].rendering.opacity : 0.9;
+                        return (
                     <input
                       type="range"
                       min="0"
