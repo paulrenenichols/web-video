@@ -304,8 +304,13 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
    * Toggle hat overlay system visibility
    */
   const handleToggleHatOverlaySystem = () => {
+    console.log('🎩 Toggle hat system clicked. Current state:', hatOverlaySystemEnabled);
     if (onToggleHatOverlaySystem) {
-      onToggleHatOverlaySystem(!hatOverlaySystemEnabled);
+      const newState = !hatOverlaySystemEnabled;
+      console.log('🎩 Setting hat system to:', newState);
+      onToggleHatOverlaySystem(newState);
+    } else {
+      console.log('🎩 No onToggleHatOverlaySystem callback provided');
     }
   };
 
@@ -323,19 +328,30 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
    */
   const handleResetOverlays = () => {
     activeOverlays.forEach(overlay => {
+      // Reset opacity to default
       updateOverlayRendering(overlay.config.id, {
         opacity: overlay.config.defaultRendering.opacity,
-        blendMode: overlay.config.defaultRendering.blendMode,
-        visible: overlay.config.defaultRendering.visible,
       });
     });
   };
 
   /**
-   * Toggle overlay system enabled state
+   * Toggle overlay system enabled state - controls both hat and glasses systems
    */
   const handleToggleOverlaySystem = () => {
-    setEnabled(!isEnabled);
+    const newEnabledState = !isEnabled;
+    console.log('🎩 Toggle system clicked. Current state:', isEnabled, 'New state:', newEnabledState);
+    setEnabled(newEnabledState);
+    
+    // Also toggle both hat and glasses systems to match
+    if (onToggleGlassesOverlaySystem) {
+      console.log('🎩 Setting glasses system to:', newEnabledState);
+      onToggleGlassesOverlaySystem(newEnabledState);
+    }
+    if (onToggleHatOverlaySystem) {
+      console.log('🎩 Setting hat system to:', newEnabledState);
+      onToggleHatOverlaySystem(newEnabledState);
+    }
   };
 
   return (
