@@ -74,40 +74,48 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
     console.log('🎩 DebugHatsOverlay - Total landmarks available:', landmarks.length);
     console.log('🎩 DebugHatsOverlay - Sample landmarks 0-10:', landmarks.slice(0, 10).map((lm, i) => `[${i}]: ${lm ? 'exists' : 'missing'}`));
 
-    // Use eye landmarks and forehead landmarks for hat positioning
-    // These landmarks are known to exist in MediaPipe face mesh
-    const headLandmarks = [
-      landmarks[159],  // Left eye center
-      landmarks[386],  // Right eye center
-      landmarks[33],   // Left eye outer corner
-      landmarks[263],  // Right eye outer corner
+    // Use forehead and head landmarks for better hat positioning
+    // These landmarks represent the top of the head and forehead area
+    const foreheadLandmarks = [
+      landmarks[10],   // Forehead center
+      landmarks[338],  // Forehead left
+      landmarks[297],  // Forehead right
+      landmarks[332],  // Top of head
     ];
 
-    // Check if all head landmarks exist
-    if (headLandmarks.some(lm => !lm)) {
-      console.log('🎩 DebugHatsOverlay - Missing head landmarks:', headLandmarks.map((lm, i) => lm ? 'exists' : `missing at index ${[159, 386, 33, 263][i]}`));
+    // Use eye landmarks for width calculation and rotation
+    const eyeLandmarks = [
+      landmarks[159],  // Left eye center
+      landmarks[386],  // Right eye center
+    ];
+
+    // Check if we have enough landmarks
+    const allLandmarks = [...foreheadLandmarks, ...eyeLandmarks];
+    if (allLandmarks.some(lm => !lm)) {
+      console.log('🎩 DebugHatsOverlay - Missing landmarks:', allLandmarks.map((lm, i) => lm ? 'exists' : `missing at index ${[10, 338, 297, 332, 159, 386][i]}`));
       return null;
     }
 
-    // Calculate head bounding box
-    const xCoords = headLandmarks.map(lm => lm.x);
-    const yCoords = headLandmarks.map(lm => lm.y);
+    // Calculate head width from eye span
+    const eyeWidth = Math.abs(eyeLandmarks[1].x - eyeLandmarks[0].x);
+    const headWidth = eyeWidth * 2.5; // Head is typically 2.5x eye span
 
-    const minX = Math.min(...xCoords);
-    const maxX = Math.max(...xCoords);
-    const minY = Math.min(...yCoords);
-    const maxY = Math.max(...yCoords);
+    // Calculate head height from forehead to chin
+    const foreheadY = Math.min(...foreheadLandmarks.map(lm => lm.y));
+    const chinY = Math.max(...landmarks.slice(0, 50).map(lm => lm.y)); // Use first 50 landmarks for chin
+    const headHeight = chinY - foreheadY;
 
-    const width = maxX - minX;
-    const height = maxY - minY;
+    // Position hat above the forehead
+    const hatY = foreheadY - headHeight * 0.4; // 40% above forehead
+    const hatHeight = headHeight * 0.6;        // 60% of head height
+    const hatWidth = headWidth * 1.1;          // 110% of head width
 
-    // Position hat above the head
-    const hatY = minY - height * 0.3; // 30% above the head
-    const hatHeight = height * 0.8;   // 80% of head height
-    const hatWidth = width * 1.2;     // 120% of head width
+    // Center the hat horizontally
+    const headCenterX = (eyeLandmarks[0].x + eyeLandmarks[1].x) / 2;
+    const hatX = headCenterX - hatWidth / 2;
 
     return {
-      x: minX - (hatWidth - width) / 2, // Center the hat
+      x: hatX,
       y: hatY,
       width: hatWidth,
       height: hatHeight,
@@ -134,10 +142,10 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
     const hatPosition = calculateHatPosition(facialLandmarks);
     if (!hatPosition) return;
 
-    // Draw head landmarks (red dots)
-    const headLandmarks = [159, 386, 33, 263];
+    // Draw forehead landmarks (red dots)
+    const foreheadLandmarks = [10, 338, 297, 332];
     ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
-    headLandmarks.forEach(landmarkIndex => {
+    foreheadLandmarks.forEach(landmarkIndex => {
       const landmark = facialLandmarks.landmarks[landmarkIndex];
       if (landmark) {
         let x = landmark.x * canvas.width;
@@ -154,11 +162,31 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
       }
     });
 
-    // Draw center point between head landmarks (only if all landmarks exist)
-    const existingLandmarks = headLandmarks.filter(index => facialLandmarks.landmarks[index]);
-    if (existingLandmarks.length === headLandmarks.length) {
-      let centerX = existingLandmarks.reduce((sum, index) => sum + facialLandmarks.landmarks[index].x, 0) / existingLandmarks.length;
-      const centerY = existingLandmarks.reduce((sum, index) => sum + facialLandmarks.landmarks[index].y, 0) / existingLandmarks.length;
+    // Draw eye landmarks (blue dots) for reference
+    const eyeLandmarks = [159, 386];
+    ctx.fillStyle = 'rgba(0, 0, 255, 0.8)';
+    eyeLandmarks.forEach(landmarkIndex => {
+      const landmark = facialLandmarks.landmarks[landmarkIndex];
+      if (landmark) {
+        let x = landmark.x * canvas.width;
+        const y = landmark.y * canvas.height;
+        
+        // Apply mirroring if needed
+        if (isMirrored) {
+          x = canvas.width - x;
+        }
+        
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+    });
+
+    // Draw center point between forehead landmarks (only if all landmarks exist)
+    const existingForeheadLandmarks = foreheadLandmarks.filter(index => facialLandmarks.landmarks[index]);
+    if (existingForeheadLandmarks.length === foreheadLandmarks.length) {
+      let centerX = existingForeheadLandmarks.reduce((sum, index) => sum + facialLandmarks.landmarks[index].x, 0) / existingForeheadLandmarks.length;
+      const centerY = existingForeheadLandmarks.reduce((sum, index) => sum + facialLandmarks.landmarks[index].y, 0) / existingForeheadLandmarks.length;
       
       // Apply mirroring to center point if needed
       if (isMirrored) {
