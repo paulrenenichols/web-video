@@ -223,6 +223,24 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
       canvasHeight,
     });
 
+    // Check if position is within bounds
+    if (
+      glassesPosition.x < 0 ||
+      glassesPosition.y < 0 ||
+      glassesPosition.x + glassesPosition.width > canvasWidth ||
+      glassesPosition.y + glassesPosition.height > canvasHeight
+    ) {
+      console.warn('Glasses position outside canvas bounds:', {
+        x: glassesPosition.x,
+        y: glassesPosition.y,
+        width: glassesPosition.width,
+        height: glassesPosition.height,
+        canvasWidth,
+        canvasHeight,
+      });
+      return; // Don't render if outside bounds
+    }
+
     // Render each glasses overlay
     for (const overlay of glassesOverlays) {
       if (!overlay.rendering.visible) continue;
@@ -405,6 +423,7 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
         left: 0,
         width: '100%',
         height: '100%',
+        overflow: 'hidden', // Prevent content from extending beyond bounds
       }}
       data-overlay={dataOverlay}
     />
