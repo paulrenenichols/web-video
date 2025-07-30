@@ -70,7 +70,7 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
 
     // Check if all head landmarks exist
     if (headLandmarks.some(lm => !lm)) {
-      console.log('🎩 DebugHatsOverlay - Missing head landmarks:', headLandmarks.map((lm, i) => lm ? 'exists' : `missing at index ${[10, 338, 151, 337][i]}`));
+      console.log('🎩 DebugHatsOverlay - Missing head landmarks:', headLandmarks.map((lm, i) => lm ? 'exists' : `missing at index ${[159, 386, 33, 263][i]}`));
       return null;
     }
 
