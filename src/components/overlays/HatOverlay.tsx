@@ -108,12 +108,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
   /**
    * Calculate hat position based on head landmarks (exactly like DebugHatsOverlay)
    */
-  const calculateHatPosition = useCallback((
-    landmarks: any,
-    canvasWidth: number,
-    canvasHeight: number,
-    isMirrored: boolean
-  ) => {
+  const calculateHatPosition = useCallback((landmarks: any) => {
     if (!landmarks || landmarks.length < 468) return null;
 
     // Use exactly 4 landmarks for hat positioning as specified (exactly like DebugHatsOverlay)
@@ -149,13 +144,8 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     const hatWidth = headWidth * 1.1; // 110% of head width for hat coverage
 
     // Center the hat horizontally using forehead landmarks (exactly like DebugHatsOverlay)
-    let headCenterX = (foreheadLeft.x + foreheadRight.x) / 2;
-    let hatX = headCenterX - hatWidth / 2;
-
-    // Handle mirroring by transforming coordinates
-    if (isMirrored) {
-      hatX = 1 - hatX - hatWidth;
-    }
+    const headCenterX = (foreheadLeft.x + foreheadRight.x) / 2;
+    const hatX = headCenterX - hatWidth / 2;
 
     return {
       x: hatX,
@@ -206,12 +196,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
 
     for (const overlay of hatOverlays) {
       try {
-        const position = calculateHatPosition(
-          facialLandmarks.landmarks,
-          canvas.width,
-          canvas.height,
-          isMirrored
-        );
+        const position = calculateHatPosition(facialLandmarks.landmarks);
         if (!position) {
           continue;
         }
