@@ -27,6 +27,19 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number>();
   const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
+  const debugLogsRef = useRef<string[]>([]);
+
+  // Debug logging function that also stores logs
+  const debugLog = useCallback((message: string, data?: any) => {
+    const logMessage = `🎩 ${message}${data ? ': ' + JSON.stringify(data, null, 2) : ''}`;
+    console.log(logMessage);
+    
+    // Store last 10 logs for UI display
+    debugLogsRef.current.push(logMessage);
+    if (debugLogsRef.current.length > 10) {
+      debugLogsRef.current.shift();
+    }
+  }, []);
 
   // Get overlay and tracking state
   const { activeOverlays, isEnabled } = useOverlayStore();
@@ -39,14 +52,14 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
 
   // TEST: Manually add a hat overlay for debugging if none exist
   useEffect(() => {
-    console.log('🎩 TEST: useEffect triggered - hatOverlays.length:', hatOverlays.length, 'isVisible:', isVisible, 'isEnabled:', isEnabled);
+    debugLog('useEffect triggered - hatOverlays.length:', hatOverlays.length, 'isVisible:', isVisible, 'isEnabled:', isEnabled);
     
     if (hatOverlays.length === 0 && isVisible) {
-      console.log('🎩 TEST: No hat overlays found, checking if we should add a test hat');
+      debugLog('No hat overlays found, checking if we should add a test hat');
       
       // Force enable the overlay system if it's not enabled
       if (!isEnabled) {
-        console.log('🎩 TEST: Overlay system not enabled, forcing enable');
+        debugLog('Overlay system not enabled, forcing enable');
         useOverlayStore.getState().setEnabled(true);
       }
       
@@ -63,13 +76,13 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
         scaling: { base: 1.0, widthFactor: 1.0, heightFactor: 1.0 }
       };
       
-      console.log('🎩 TEST: Adding test hat overlay manually');
+      debugLog('Adding test hat overlay manually');
       addOverlay(testHatConfig);
     }
   }, [hatOverlays.length, isVisible, isEnabled]);
 
   // Debug logging
-  console.log('🎩 HatOverlay Debug:', {
+  debugLog('HatOverlay Debug:', {
     isVisible,
     isEnabled,
     activeOverlaysCount: activeOverlays.length,
@@ -81,7 +94,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
   });
 
   // More detailed state logging
-  console.log('🎩 HatOverlay State Details:', {
+  debugLog('HatOverlay State Details:', {
     'isVisible (prop)': isVisible,
     'isEnabled (store)': isEnabled,
     'status (tracking)': status,
@@ -93,7 +106,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
 
   // Additional debugging for overlay state
   if (activeOverlays.length > 0) {
-    console.log('🎩 All active overlays:', activeOverlays.map(o => ({
+    debugLog('All active overlays:', activeOverlays.map(o => ({
       id: o.config.id,
       type: o.config.type,
       enabled: o.enabled,
@@ -170,7 +183,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     // Check if we have enough landmarks
     const allLandmarks = [...foreheadLandmarks, foreheadLeft, foreheadRight];
     if (allLandmarks.some(lm => !lm)) {
-      console.log('🎩 HatOverlay - Missing landmarks');
+      debugLog('HatOverlay - Missing landmarks');
       return null;
     }
 
@@ -216,7 +229,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
    * Render hat overlays on canvas
    */
   const renderHats = useCallback(async () => {
-    console.log('🎩 renderHats called:', {
+    debugLog('renderHats called:', {
       hasCanvas: !!canvasRef.current,
       hasCtx: !!canvasRef.current?.getContext('2d'),
       hasVideo: !!videoRef.current,
@@ -237,7 +250,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
       !isVisible ||
       hatOverlays.length === 0
     ) {
-      console.log('🎩 renderHats early return - missing requirements');
+      debugLog('renderHats early return - missing requirements');
       return;
     }
 
@@ -254,9 +267,9 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
         if (!position) continue;
 
         // Load hat image
-        console.log('🎩 Loading hat image:', overlay.config.imageUrl);
+        debugLog('Loading hat image:', overlay.config.imageUrl);
         const img = await preloadImage(overlay.config.imageUrl);
-        console.log('🎩 Hat image loaded successfully:', img.width, 'x', img.height);
+        debugLog('Hat image loaded successfully:', img.width, 'x', img.height);
 
         // Apply opacity
         ctx.globalAlpha = overlay.rendering.opacity;
@@ -272,7 +285,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
           drawX = canvas.width - drawX - drawWidth;
         }
         
-        console.log('🎩 Drawing hat at:', { drawX, drawY, drawWidth, drawHeight, isMirrored });
+        debugLog('Drawing hat at:', { drawX, drawY, drawWidth, drawHeight, isMirrored });
         
         // Apply transformations for rotation
         ctx.save();
@@ -388,10 +401,24 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
 
   // Return canvas element
   return (
-    <canvas
-      ref={canvasRef}
-      className={`absolute inset-0 w-full h-full pointer-events-none ${className}`}
-      style={{ zIndex: 10 }}
-    />
+    <div className="relative">
+      <canvas
+        ref={canvasRef}
+        className={`absolute inset-0 w-full h-full pointer-events-none ${className}`}
+        style={{ zIndex: 10 }}
+      />
+      
+      {/* Debug Panel */}
+      {isVisible && (
+        <div className="absolute top-0 left-0 bg-black/80 text-white p-2 text-xs max-w-md max-h-40 overflow-y-auto z-20">
+          <div className="font-bold mb-1">HatOverlay Debug Logs:</div>
+          {debugLogsRef.current.map((log, index) => (
+            <div key={index} className="mb-1 break-all">
+              {log}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
