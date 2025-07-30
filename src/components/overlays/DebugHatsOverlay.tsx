@@ -59,13 +59,13 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
   const calculateHatPosition = useCallback((landmarks: any) => {
     if (!landmarks || landmarks.length < 468) return null;
 
-    // Use head landmarks for hat positioning
-    // Landmarks 10, 338, 151, 337 define the head area
+    // Use eye landmarks and forehead landmarks for hat positioning
+    // These landmarks are known to exist in MediaPipe face mesh
     const headLandmarks = [
-      landmarks[10],   // Top of head
-      landmarks[338],  // Top of head (right)
-      landmarks[151],  // Top of head (left)
-      landmarks[337],  // Top of head (center)
+      landmarks[159],  // Left eye center
+      landmarks[386],  // Right eye center
+      landmarks[33],   // Left eye outer corner
+      landmarks[263],  // Right eye outer corner
     ];
 
     // Check if all head landmarks exist
@@ -116,7 +116,7 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
     if (!hatPosition) return;
 
     // Draw head landmarks (red dots)
-    const headLandmarks = [10, 338, 151, 337];
+    const headLandmarks = [159, 386, 33, 263];
     ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
     headLandmarks.forEach(landmarkIndex => {
       const landmark = facialLandmarks[landmarkIndex];
