@@ -133,17 +133,13 @@ export class MediaPipeService {
     }
 
     try {
-      console.log('📹 Processing frame with MediaPipe...');
-      
       // Process with face detection
       if (this.faceDetection) {
-        console.log('🔍 Sending frame to face detection...');
         await this.faceDetection.send({ image: videoElement });
       }
 
       // Process with face mesh
       if (this.faceMesh) {
-        console.log('🎭 Sending frame to face mesh...');
         await this.faceMesh.send({ image: videoElement });
       }
     } catch (error) {
@@ -233,7 +229,7 @@ export class MediaPipeService {
       timestamp: Date.now(),
     };
 
-          console.log('📍 Facial landmarks detected:', facialLandmarks.landmarks.length, 'points');
+
     
     this.onLandmarksCallback?.(facialLandmarks);
     this.onDetectionCallback?.(faceDetection);
@@ -305,10 +301,7 @@ export class MediaPipeService {
     const x = minX + width / 2;
     const y = minY + height / 2;
 
-    console.log('🔍 Bounding box calculation - Face landmarks used:', faceLandmarkIndices.length);
-    console.log('🔍 Bounding box calculation - Min/Max X:', minX.toFixed(3), maxX.toFixed(3));
-    console.log('🔍 Bounding box calculation - Min/Max Y:', minY.toFixed(3), maxY.toFixed(3));
-    console.log('🔍 Bounding box calculation - Width/Height:', width.toFixed(3), height.toFixed(3));
+
 
     return { x, y, width, height };
   }

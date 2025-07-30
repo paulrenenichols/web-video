@@ -37,8 +37,6 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     overlay => overlay.config.type === OverlayType.HAT && overlay.enabled
   );
 
-
-
   /**
    * Update canvas size to match video
    */
