@@ -68,6 +68,12 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
       landmarks[337],  // Top of head (center)
     ];
 
+    // Check if all head landmarks exist
+    if (headLandmarks.some(lm => !lm)) {
+      console.log('🎩 DebugHatsOverlay - Missing head landmarks:', headLandmarks.map((lm, i) => lm ? 'exists' : `missing at index ${[10, 338, 151, 337][i]}`));
+      return null;
+    }
+
     // Calculate head bounding box
     const xCoords = headLandmarks.map(lm => lm.x);
     const yCoords = headLandmarks.map(lm => lm.y);
@@ -127,20 +133,23 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
       }
     });
 
-    // Draw center point between head landmarks
-    const centerX = headLandmarks.reduce((sum, index) => sum + facialLandmarks[index].x, 0) / headLandmarks.length;
-    const centerY = headLandmarks.reduce((sum, index) => sum + facialLandmarks[index].y, 0) / headLandmarks.length;
-    
-    ctx.fillStyle = 'rgba(255, 255, 0, 0.8)';
-    ctx.beginPath();
-    ctx.arc(
-      centerX * canvas.width,
-      centerY * canvas.height,
-      4,
-      0,
-      2 * Math.PI
-    );
-    ctx.fill();
+    // Draw center point between head landmarks (only if all landmarks exist)
+    const existingLandmarks = headLandmarks.filter(index => facialLandmarks[index]);
+    if (existingLandmarks.length === headLandmarks.length) {
+      const centerX = existingLandmarks.reduce((sum, index) => sum + facialLandmarks[index].x, 0) / existingLandmarks.length;
+      const centerY = existingLandmarks.reduce((sum, index) => sum + facialLandmarks[index].y, 0) / existingLandmarks.length;
+      
+      ctx.fillStyle = 'rgba(255, 255, 0, 0.8)';
+      ctx.beginPath();
+      ctx.arc(
+        centerX * canvas.width,
+        centerY * canvas.height,
+        4,
+        0,
+        2 * Math.PI
+      );
+      ctx.fill();
+
 
     // Draw hat bounding box (green rectangle)
     ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
