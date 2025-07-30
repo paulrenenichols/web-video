@@ -49,6 +49,16 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     hasFaceDetection: !!faceDetection
   });
 
+  // Additional debugging for overlay state
+  if (activeOverlays.length > 0) {
+    console.log('🎩 All active overlays:', activeOverlays.map(o => ({
+      id: o.config.id,
+      type: o.config.type,
+      enabled: o.enabled,
+      name: o.config.name
+    })));
+  }
+
   /**
    * Update canvas size to match video
    */
@@ -186,19 +196,6 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
       hatOverlays.length === 0
     ) {
       console.log('🎩 renderHats early return - missing requirements');
-      
-      // Test: Draw a visible rectangle to show the component is working
-      if (canvas && ctx && isVisible) {
-        console.log('🎩 Drawing test rectangle to verify component is working');
-        ctx.save();
-        ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
-        ctx.fillRect(50, 50, 100, 50);
-        ctx.fillStyle = 'rgba(255, 0, 0, 1)';
-        ctx.font = '12px Arial';
-        ctx.fillText('Hat Overlay Test', 50, 40);
-        ctx.restore();
-      }
-      
       return;
     }
 
