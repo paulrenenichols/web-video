@@ -418,7 +418,15 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
 
         {/* Glasses Section */}
         <div className="space-y-3">
-          <h4 className="text-md font-medium text-gray-700">Glasses</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-md font-medium text-gray-700">Glasses</h4>
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${glassesOverlaySystemEnabled ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+              <span className="text-xs text-gray-500">
+                {glassesOverlaySystemEnabled ? 'System Active' : 'System Inactive'}
+              </span>
+            </div>
+          </div>
 
           {/* Glasses Options */}
           <div
@@ -464,7 +472,11 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                           {glasses.name}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {isActive ? 'Active' : 'Click to add'}
+                          {isActive ? (
+                            <span className="text-green-600 font-medium">✓ Active on face</span>
+                          ) : (
+                            'Click to add to face'
+                          )}
                         </p>
                       </div>
                     </div>
@@ -605,7 +617,15 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
 
         {/* Hats Section */}
         <div className="space-y-3">
-          <h4 className="text-md font-medium text-gray-700">Hats</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-md font-medium text-gray-700">Hats</h4>
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${hatOverlaySystemEnabled ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+              <span className="text-xs text-gray-500">
+                {hatOverlaySystemEnabled ? 'System Active' : 'System Inactive'}
+              </span>
+            </div>
+          </div>
 
           {/* Hat Options */}
           <div
@@ -649,7 +669,11 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                       <div>
                         <p className="font-medium text-gray-800">{hat.name}</p>
                         <p className="text-xs text-gray-500">
-                          {isActive ? 'Active' : 'Click to add'}
+                          {isActive ? (
+                            <span className="text-green-600 font-medium">✓ Active on head</span>
+                          ) : (
+                            'Click to add to head'
+                          )}
                         </p>
                       </div>
                     </div>
