@@ -118,8 +118,35 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
 
     // Check if we have enough landmarks (exactly like DebugHatsOverlay)
     const allLandmarks = [...foreheadLandmarks, foreheadLeft, foreheadRight];
+    const missingLandmarks = allLandmarks.map((lm, i) => ({ index: [108, 337, 9, 10, 108, 337][i], exists: !!lm }));
     if (allLandmarks.some(lm => !lm)) {
-      return null; // Return null if landmarks missing, just like DebugHatsOverlay
+      console.log('🎩 Missing landmarks for hat positioning:', missingLandmarks);
+      
+      // Try fallback landmarks if primary landmarks are missing
+      const fallbackLeft = landmarks[151]; // Left head side
+      const fallbackRight = landmarks[337]; // Right head side
+      const fallbackTop = landmarks[10]; // Head top
+      
+      if (fallbackLeft && fallbackRight && fallbackTop) {
+        console.log('🎩 Using fallback landmarks for hat positioning');
+        const headCenterX = (fallbackLeft.x + fallbackRight.x) / 2;
+        const headWidth = Math.abs(fallbackRight.x - fallbackLeft.x);
+        const hatWidth = headWidth * 1.2;
+        const hatHeight = headWidth * 0.8;
+        const hatX = headCenterX - hatWidth / 2;
+        const hatY = fallbackTop.y - hatHeight * 0.5;
+        
+        return {
+          x: hatX,
+          y: hatY,
+          width: hatWidth,
+          height: hatHeight,
+          rotation: 0,
+          scale: overlay.rendering.scale || 1.0,
+        };
+      }
+      
+      return null; // Return null if all landmarks missing
     }
 
     // Use face detection bounding box for accurate head width (same as DebugHatsOverlay)
@@ -189,7 +216,10 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     for (const overlay of hatOverlays) {
       try {
         const position = calculateHatPosition(facialLandmarks, overlay);
-        if (!position) continue;
+        if (!position) {
+          console.log('🎩 Hat position calculation failed for:', overlay.config.name);
+          continue;
+        }
 
         // Load hat image
         const img = await preloadImage(overlay.config.imageUrl);
