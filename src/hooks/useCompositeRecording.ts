@@ -32,6 +32,9 @@ export const useCompositeRecording = () => {
     },
   });
 
+  // Store the filename once when recording is completed
+  const [recordingFilename, setRecordingFilename] = useState<string>('');
+
   const recordingServiceRef = useRef<CompositeRecordingService | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -128,6 +131,10 @@ export const useCompositeRecording = () => {
       const duration = state.elapsedTime;
       const size = blob.size;
 
+      // Generate filename once and store it
+      const filename = FileService.generateDefaultFilename(state.config.format);
+      setRecordingFilename(filename);
+
       setState(prev => ({
         ...prev,
         isRecording: false,
@@ -139,7 +146,7 @@ export const useCompositeRecording = () => {
       return {
         success: true,
         blob,
-        filename: FileService.generateDefaultFilename(state.config.format),
+        filename,
         duration,
         size,
       };
@@ -177,7 +184,8 @@ export const useCompositeRecording = () => {
     }
 
     try {
-      const defaultFilename = FileService.generateDefaultFilename(
+      // Use the stored filename instead of generating a new one
+      const defaultFilename = recordingFilename || FileService.generateDefaultFilename(
         state.config.format
       );
       const filename = FileService.promptForFilename(defaultFilename);
@@ -192,11 +200,12 @@ export const useCompositeRecording = () => {
         quality: state.config.quality,
       });
 
-      // Clear the recording blob after successful download
+      // Clear the recording blob and filename after successful download
       setState(prev => ({
         ...prev,
         recordingBlob: null,
       }));
+      setRecordingFilename('');
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to download recording';
@@ -216,6 +225,7 @@ export const useCompositeRecording = () => {
       recordingBlob: null,
       error: null,
     }));
+    setRecordingFilename('');
   }, []);
 
   /**
@@ -279,6 +289,7 @@ export const useCompositeRecording = () => {
     recordingBlob: state.recordingBlob,
     error: state.error,
     config: state.config,
+    recordingFilename,
 
     // Actions
     startRecording,

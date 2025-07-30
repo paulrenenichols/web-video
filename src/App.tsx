@@ -117,6 +117,7 @@ const VideoRecorderApp: React.FC = () => {
     elapsedTime,
     recordingBlob,
     error: recordingError,
+    recordingFilename,
     startRecording,
     stopRecording,
     downloadRecording,
@@ -332,7 +333,7 @@ const VideoRecorderApp: React.FC = () => {
                           ? {
                               success: true,
                               blob: recordingBlob,
-                              filename: `recording-${Date.now()}.webm`,
+                              filename: recordingFilename || `recording-${Date.now()}.webm`,
                               duration: elapsedTime,
                               size: recordingBlob.size,
                             }
