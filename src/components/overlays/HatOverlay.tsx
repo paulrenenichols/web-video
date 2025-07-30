@@ -17,12 +17,15 @@ interface HatOverlayProps {
   videoRef: React.RefObject<HTMLVideoElement>;
   /** Container className */
   className?: string;
+  /** Data attribute for overlay type */
+  'data-overlay'?: string;
 }
 
 export const HatOverlay: React.FC<HatOverlayProps> = ({
   isVisible,
   videoRef,
   className = '',
+  'data-overlay': dataOverlay,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number | undefined>(undefined);
@@ -351,6 +354,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
       ref={canvasRef}
       className={`absolute inset-0 w-full h-full pointer-events-none ${className}`}
       style={{ zIndex: 10 }}
+      data-overlay={dataOverlay}
     />
   );
 };

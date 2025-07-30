@@ -249,20 +249,18 @@ const VideoRecorderApp: React.FC = () => {
                 />
 
                 {/* Individual overlay components for specific functionality */}
-                <div data-overlay="glasses">
-                  <GlassesOverlay
-                    isVisible={glassesOverlaySystemEnabled}
-                    videoRef={videoRef}
-                    className="aspect-video w-full"
-                  />
-                </div>
-                <div data-overlay="hat">
-                  <HatOverlay
-                    isVisible={hatOverlaySystemEnabled}
-                    videoRef={videoRef}
-                    className="aspect-video w-full"
-                  />
-                </div>
+                <GlassesOverlay
+                  isVisible={glassesOverlaySystemEnabled}
+                  videoRef={videoRef}
+                  className="aspect-video w-full"
+                  data-overlay="glasses"
+                />
+                <HatOverlay
+                  isVisible={hatOverlaySystemEnabled}
+                  videoRef={videoRef}
+                  className="aspect-video w-full"
+                  data-overlay="hat"
+                />
                 {/* Main overlay system for combination logic (currently showing placeholders) */}
                 {/* <OverlaySystem
                   isVisible={

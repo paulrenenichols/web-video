@@ -18,12 +18,15 @@ interface GlassesOverlayProps {
   videoRef: React.RefObject<HTMLVideoElement | null>;
   /** Container className */
   className?: string;
+  /** Data attribute for overlay type */
+  'data-overlay'?: string;
 }
 
 export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
   isVisible,
   videoRef,
   className = '',
+  'data-overlay': dataOverlay,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number>();
@@ -389,6 +392,7 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
         width: '100%',
         height: '100%',
       }}
+      data-overlay={dataOverlay}
     />
   );
 }; 
