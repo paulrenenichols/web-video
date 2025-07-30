@@ -56,16 +56,19 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
   /**
    * Calculate hat position based on head landmarks
    */
-  const calculateHatPosition = useCallback((landmarks: any) => {
-    // Check if landmarks is an array and has sufficient length
-    if (!landmarks || !Array.isArray(landmarks) || landmarks.length < 468) {
-      console.log('🎩 DebugHatsOverlay - Invalid landmarks:', {
-        exists: !!landmarks,
-        isArray: Array.isArray(landmarks),
-        length: landmarks?.length || 0
+  const calculateHatPosition = useCallback((facialLandmarksData: any) => {
+    // Check if we have facial landmarks data and it has the landmarks array
+    if (!facialLandmarksData || !facialLandmarksData.landmarks || !Array.isArray(facialLandmarksData.landmarks) || facialLandmarksData.landmarks.length < 468) {
+      console.log('🎩 DebugHatsOverlay - Invalid facial landmarks data:', {
+        exists: !!facialLandmarksData,
+        hasLandmarks: !!facialLandmarksData?.landmarks,
+        isArray: Array.isArray(facialLandmarksData?.landmarks),
+        length: facialLandmarksData?.landmarks?.length || 0
       });
       return null;
     }
+
+    const landmarks = facialLandmarksData.landmarks;
 
     // Debug: Check what landmarks are available
     console.log('🎩 DebugHatsOverlay - Total landmarks available:', landmarks.length);
@@ -131,7 +134,7 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
     const headLandmarks = [159, 386, 33, 263];
     ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
     headLandmarks.forEach(landmarkIndex => {
-      const landmark = facialLandmarks[landmarkIndex];
+      const landmark = facialLandmarks.landmarks[landmarkIndex];
       if (landmark) {
         ctx.beginPath();
         ctx.arc(
@@ -146,10 +149,10 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
     });
 
     // Draw center point between head landmarks (only if all landmarks exist)
-    const existingLandmarks = headLandmarks.filter(index => facialLandmarks[index]);
+    const existingLandmarks = headLandmarks.filter(index => facialLandmarks.landmarks[index]);
     if (existingLandmarks.length === headLandmarks.length) {
-      const centerX = existingLandmarks.reduce((sum, index) => sum + facialLandmarks[index].x, 0) / existingLandmarks.length;
-      const centerY = existingLandmarks.reduce((sum, index) => sum + facialLandmarks[index].y, 0) / existingLandmarks.length;
+      const centerX = existingLandmarks.reduce((sum, index) => sum + facialLandmarks.landmarks[index].x, 0) / existingLandmarks.length;
+      const centerY = existingLandmarks.reduce((sum, index) => sum + facialLandmarks.landmarks[index].y, 0) / existingLandmarks.length;
       
       ctx.fillStyle = 'rgba(255, 255, 0, 0.8)';
       ctx.beginPath();
