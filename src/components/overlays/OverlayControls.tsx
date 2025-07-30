@@ -183,18 +183,6 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
    * Handle hat selection - only one hat at a time
    */
   const handleHatSelect = (hatId: string) => {
-    console.log('🎩 Hat selection clicked:', hatId);
-    console.log('🎩 Hat overlay system enabled:', hatOverlaySystemEnabled);
-    console.log(
-      '🎩 Current active overlays:',
-      JSON.stringify(
-        activeOverlays.map(o => ({
-          id: o.config.id,
-          type: o.config.type,
-          enabled: o.enabled,
-        }))
-      )
-    );
 
     const existingOverlay = activeOverlays.find(
       overlay => overlay.config.id === hatId
@@ -202,34 +190,23 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
 
     if (existingOverlay) {
       // If overlay exists, just toggle it instead of removing/re-adding
-      console.log(
-        '🔄 Toggling existing hat overlay:',
-        hatId,
-        'Current enabled:',
-        existingOverlay.enabled
-      );
       toggleOverlay(hatId);
 
       // Update selectedHat state based on enabled state
       if (existingOverlay.enabled) {
         setSelectedHat(null); // Deselect if turning off
-        console.log('🎩 Deselecting hat:', hatId);
       } else {
         setSelectedHat(hatId); // Select if turning on
-        console.log('🎩 Selecting hat:', hatId);
         
         // Auto-enable hat overlay system if not already enabled
         if (!hatOverlaySystemEnabled && onToggleHatOverlaySystem) {
-          console.log('🎩 Auto-enabling hat overlay system');
           onToggleHatOverlaySystem(true);
         }
       }
     } else {
       // Clear any existing hats first
-      console.log('🎩 Clearing existing hats before adding new one');
       activeOverlays.forEach(overlay => {
         if (overlay.config.type === OverlayType.HAT) {
-          console.log('🎩 Removing existing hat:', overlay.config.id);
           removeOverlay(overlay.config.id);
         }
       });
@@ -238,12 +215,10 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
       setSelectedHat(hatId);
       const hatConfig = HAT_OPTIONS.find(option => option.id === hatId);
       if (hatConfig) {
-        console.log('🎩 Adding new hat overlay:', hatConfig);
         addOverlay(hatConfig);
         
         // Auto-enable hat overlay system if not already enabled
         if (!hatOverlaySystemEnabled && onToggleHatOverlaySystem) {
-          console.log('🎩 Auto-enabling hat overlay system');
           onToggleHatOverlaySystem(true);
         }
       } else {
