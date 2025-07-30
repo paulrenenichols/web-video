@@ -12,7 +12,7 @@ import { Footer } from '@/components/layout/Footer';
 import { VideoPlayer } from '@/components/video/VideoPlayer';
 import { ControlPanel } from '@/components/controls/ControlPanel';
 import { useCamera } from '@/hooks/useCamera';
-import { useRecording } from '@/hooks/useRecording';
+import { useCompositeRecording } from '@/hooks/useCompositeRecording';
 import { useMediaPipe } from '@/hooks/useMediaPipe';
 import { useTrackingStore } from '@/stores/tracking-store';
 import { TrackingToggle } from '@/components/tracking/TrackingToggle';
@@ -123,8 +123,8 @@ const VideoRecorderApp: React.FC = () => {
     stopRecording,
     downloadRecording,
     clearError: clearRecordingError,
-    reset: resetRecording,
-  } = useRecording();
+    clearRecording,
+  } = useCompositeRecording();
 
   const handleStartCamera = async (): Promise<void> => {
     await startCamera(selectedDeviceId || undefined);
@@ -161,8 +161,27 @@ const VideoRecorderApp: React.FC = () => {
   };
 
   const handleStartRecording = async (): Promise<void> => {
-    if (stream) {
-      await startRecording(stream);
+    if (stream && videoRef.current) {
+      // Collect overlay canvas elements
+      const overlayCanvases: HTMLCanvasElement[] = [];
+      
+      // Get glasses overlay canvas
+      if (glassesOverlaySystemEnabled) {
+        const glassesCanvas = document.querySelector('[data-overlay="glasses"] canvas') as HTMLCanvasElement;
+        if (glassesCanvas) {
+          overlayCanvases.push(glassesCanvas);
+        }
+      }
+      
+      // Get hat overlay canvas
+      if (hatOverlaySystemEnabled) {
+        const hatCanvas = document.querySelector('[data-overlay="hat"] canvas') as HTMLCanvasElement;
+        if (hatCanvas) {
+          overlayCanvases.push(hatCanvas);
+        }
+      }
+      
+      await startRecording(videoRef.current, overlayCanvases);
     }
   };
 
@@ -175,7 +194,7 @@ const VideoRecorderApp: React.FC = () => {
   };
 
   const handleClearRecording = (): void => {
-    resetRecording();
+    clearRecording();
   };
 
   const currentError = error || recordingError;
@@ -230,16 +249,20 @@ const VideoRecorderApp: React.FC = () => {
                 />
 
                 {/* Individual overlay components for specific functionality */}
-                <GlassesOverlay
-                  isVisible={glassesOverlaySystemEnabled}
-                  videoRef={videoRef}
-                  className="aspect-video w-full"
-                />
-                <HatOverlay
-                  isVisible={hatOverlaySystemEnabled}
-                  videoRef={videoRef}
-                  className="aspect-video w-full"
-                />
+                <div data-overlay="glasses">
+                  <GlassesOverlay
+                    isVisible={glassesOverlaySystemEnabled}
+                    videoRef={videoRef}
+                    className="aspect-video w-full"
+                  />
+                </div>
+                <div data-overlay="hat">
+                  <HatOverlay
+                    isVisible={hatOverlaySystemEnabled}
+                    videoRef={videoRef}
+                    className="aspect-video w-full"
+                  />
+                </div>
                 {/* Main overlay system for combination logic (currently showing placeholders) */}
                 {/* <OverlaySystem
                   isVisible={
