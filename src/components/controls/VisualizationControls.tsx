@@ -16,11 +16,13 @@ interface VisualizationControlsProps {
   showTracking: boolean;
   showEnhancedTracking: boolean;
   showOverlays: boolean;
+  showHatsOverlays: boolean;
   
   // Individual toggle handlers
   onToggleTracking: (enabled: boolean) => void;
   onToggleEnhancedTracking: (enabled: boolean) => void;
   onToggleOverlays: (enabled: boolean) => void;
+  onToggleHatsOverlays: (enabled: boolean) => void;
   
   // Tracking state
   isTrackingInitialized: boolean;
@@ -41,9 +43,11 @@ export const VisualizationControls: React.FC<VisualizationControlsProps> = ({
   showTracking,
   showEnhancedTracking,
   showOverlays,
+  showHatsOverlays,
   onToggleTracking,
   onToggleEnhancedTracking,
   onToggleOverlays,
+  onToggleHatsOverlays,
   isTrackingInitialized,
   isTracking,
   trackingStatus,
@@ -134,6 +138,25 @@ export const VisualizationControls: React.FC<VisualizationControlsProps> = ({
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400">
                 Debug visualization for glasses positioning - {activeOverlaysCount} active
+              </div>
+            </div>
+          </label>
+
+          {/* Debug Hats Overlay */}
+          <label className="flex items-center space-x-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showHatsOverlays}
+              onChange={(e) => onToggleHatsOverlays(e.target.checked)}
+              disabled={isDisabled}
+              className="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+            />
+            <div className="flex-1">
+              <div className="text-sm font-medium text-gray-900 dark:text-white">
+                Debug Hats Overlay
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">
+                Debug visualization for hats positioning
               </div>
             </div>
           </label>

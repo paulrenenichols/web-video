@@ -20,6 +20,7 @@ import { TrackingStatusIndicator } from '@/components/tracking/TrackingStatus';
 import { FaceTracking } from '@/components/tracking/FaceTracking';
 import { TrackingVisualization } from '@/components/tracking/TrackingVisualization';
 import { DebugGlassesOverlay } from '@/components/overlays/DebugGlassesOverlay';
+import { DebugHatsOverlay } from '@/components/overlays/DebugHatsOverlay';
 import { GlassesOverlay } from '@/components/overlays/GlassesOverlay';
 import { HatOverlay } from '@/components/overlays/HatOverlay';
 import { OverlayControls } from '@/components/overlays/OverlayControls';
@@ -64,6 +65,8 @@ const VideoRecorderApp: React.FC = () => {
 
   // Separate state for debug controls overlay system (independent of overlay controls)
   const [debugGlassesOverlayEnabled, setDebugGlassesOverlayEnabled] =
+    React.useState(false);
+  const [debugHatsOverlayEnabled, setDebugHatsOverlayEnabled] =
     React.useState(false);
   const [glassesOverlaySystemEnabled, setGlassesOverlaySystemEnabled] =
     React.useState(false);
@@ -201,6 +204,11 @@ const VideoRecorderApp: React.FC = () => {
                 {/* Debug glasses overlay */}
                 <DebugGlassesOverlay
                   isVisible={debugGlassesOverlayEnabled}
+                  videoRef={videoRef}
+                  className="aspect-video w-full"
+                />
+                <DebugHatsOverlay
+                  isVisible={debugHatsOverlayEnabled}
                   videoRef={videoRef}
                   className="aspect-video w-full"
                 />
@@ -373,10 +381,14 @@ const VideoRecorderApp: React.FC = () => {
                       showTracking={showTracking}
                       showEnhancedTracking={showEnhancedTracking}
                       showOverlays={debugGlassesOverlayEnabled}
+                      showHatsOverlays={debugHatsOverlayEnabled}
                       onToggleTracking={setShowTracking}
                       onToggleEnhancedTracking={setShowEnhancedTracking}
                       onToggleOverlays={enabled => {
                         setDebugGlassesOverlayEnabled(enabled);
+                      }}
+                      onToggleHatsOverlays={enabled => {
+                        setDebugHatsOverlayEnabled(enabled);
                       }}
                       isTrackingInitialized={trackingState.isInitialized}
                       isTracking={trackingState.isTracking}
