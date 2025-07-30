@@ -213,11 +213,12 @@ const VideoRecorderApp: React.FC = () => {
                   videoRef={videoRef}
                   className="aspect-video w-full"
                 />
-                <DebugHatsOverlay
+                {/* Temporarily disabled DebugHatsOverlay to test HatOverlay controls */}
+                {/* <DebugHatsOverlay
                   isVisible={debugHatsOverlayEnabled}
                   videoRef={videoRef}
                   className="aspect-video w-full"
-                />
+                /> */}
 
                 {/* Individual overlay components for specific functionality */}
                 <GlassesOverlay
