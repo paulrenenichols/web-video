@@ -105,41 +105,60 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
   );
 
   /**
-   * Calculate hat position based on head landmarks
+   * Calculate hat position based on head landmarks (using DebugHatsOverlay logic)
    */
   const calculateHatPosition = useCallback((landmarks: any, overlay: any) => {
     if (!landmarks || landmarks.length < 468) return null;
 
-    // Use head landmarks for hat positioning
-    // Landmarks 10, 338 for head top, 151, 337 for head sides
-    const headTop = landmarks[10];
-    const headTopRight = landmarks[338];
-    const headLeft = landmarks[151];
-    const headRight = landmarks[337];
+    // Use forehead landmarks for centering (same as DebugHatsOverlay)
+    const foreheadLandmarks = [108, 337, 9, 10]; // Left forehead, right forehead, top forehead, above eyes
+    const foreheadLeft = landmarks[108]; // Left forehead
+    const foreheadRight = landmarks[337]; // Right forehead
 
-    if (!headTop || !headTopRight || !headLeft || !headRight) return null;
+    // Check if we have enough landmarks
+    const allLandmarks = [...foreheadLandmarks, foreheadLeft, foreheadRight];
+    if (allLandmarks.some(lm => !lm)) {
+      console.log('🎩 HatOverlay - Missing landmarks');
+      return null;
+    }
 
-    // Calculate head center and size
-    const headCenterX = (headLeft.x + headRight.x) / 2;
-    const headCenterY = (headTop.y + headTopRight.y) / 2;
-    const headWidth = Math.abs(headRight.x - headLeft.x);
-    const headHeight = Math.abs(headTop.y - headTopRight.y);
+    // Use face detection bounding box for accurate head width (same as DebugHatsOverlay)
+    const headWidth = faceDetection?.boundingBox?.width || 0.3; // Fallback to 30% of screen width
 
-    // Position hat above the head
-    const hatX = headCenterX;
-    const hatY = headTop.y - headHeight * 0.3; // Position above head
-    const hatWidth = headWidth * 1.2; // Slightly wider than head
-    const hatHeight = headHeight * 0.8; // Proportional to head height
+    // Calculate head height from forehead to chin (same as DebugHatsOverlay)
+    const foreheadY = Math.min(...foreheadLandmarks.map(lm => lm.y));
+    const chinY = Math.max(...landmarks.slice(0, 50).map(lm => lm.y)); // Use first 50 landmarks for chin
+    const headHeight = chinY - foreheadY;
+
+    // Position hat above the forehead (same as DebugHatsOverlay)
+    const hatY = foreheadY - headHeight * 0.4; // 40% above forehead
+    const hatHeight = headHeight * 0.6; // 60% of head height
+    const hatWidth = headWidth * 1.1; // 110% of head width for hat coverage
+
+    // Center the hat horizontally using forehead landmarks (same as DebugHatsOverlay)
+    const headCenterX = (foreheadLeft.x + foreheadRight.x) / 2;
+    const hatX = headCenterX - hatWidth / 2;
+
+    // Calculate rotation angle from forehead landmarks (same as DebugHatsOverlay)
+    const canvas = canvasRef.current;
+    const canvasWidth = canvas?.width || 640; // Default fallback
+    const canvasHeight = canvas?.height || 480; // Default fallback
+    
+    const leftX = foreheadLeft.x * canvasWidth;
+    const rightX = foreheadRight.x * canvasWidth;
+    const deltaX = rightX - leftX;
+    const deltaY = (foreheadRight.y - foreheadLeft.y) * canvasHeight;
+    const rotationAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
 
     return {
-      x: hatX - hatWidth / 2,
-      y: hatY - hatHeight / 2,
+      x: hatX,
+      y: hatY,
       width: hatWidth,
       height: hatHeight,
-      rotation: 0,
+      rotation: rotationAngle,
       scale: overlay.rendering.scale || 1.0,
     };
-  }, []);
+  }, [faceDetection]);
 
   /**
    * Render hat overlays on canvas
@@ -187,6 +206,9 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     ctx.save();
     ctx.globalCompositeOperation = 'source-over';
 
+    // Check if video is mirrored (same as DebugHatsOverlay)
+    const isMirrored = video.style.transform?.includes('scaleX(-1)') || false;
+
     for (const overlay of hatOverlays) {
       try {
         const position = calculateHatPosition(facialLandmarks, overlay);
@@ -200,21 +222,34 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
         // Apply opacity
         ctx.globalAlpha = overlay.rendering.opacity;
 
-        // Draw hat image
-        const drawX = position.x * canvas.width;
+        // Calculate drawing coordinates
+        let drawX = position.x * canvas.width;
         const drawY = position.y * canvas.height;
         const drawWidth = position.width * canvas.width;
         const drawHeight = position.height * canvas.height;
         
-        console.log('🎩 Drawing hat at:', { drawX, drawY, drawWidth, drawHeight });
+        // Apply mirroring if needed (same as DebugHatsOverlay)
+        if (isMirrored) {
+          drawX = canvas.width - drawX - drawWidth;
+        }
+        
+        console.log('🎩 Drawing hat at:', { drawX, drawY, drawWidth, drawHeight, isMirrored });
+        
+        // Apply transformations for rotation
+        ctx.save();
+        ctx.translate(drawX + drawWidth / 2, drawY + drawHeight / 2);
+        ctx.rotate((position.rotation * Math.PI) / 180);
+        ctx.scale(position.scale, position.scale);
         
         ctx.drawImage(
           img,
-          drawX,
-          drawY,
+          -drawWidth / 2,
+          -drawHeight / 2,
           drawWidth,
           drawHeight
         );
+        
+        ctx.restore();
 
         // Draw label for debugging
         ctx.fillStyle = 'rgba(0, 255, 0, 0.7)';
