@@ -177,7 +177,27 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
       ctx.fill();
     }
 
-    // Draw hat bounding box (green rectangle)
+    // Calculate rotation angle from eye positions for hat orientation
+    const leftEye = facialLandmarks.landmarks[159]; // Left eye center
+    const rightEye = facialLandmarks.landmarks[386]; // Right eye center
+    
+    let rotationAngle = 0;
+    if (leftEye && rightEye && leftEye.visibility > 0.5 && rightEye.visibility > 0.5) {
+      let leftEyeX = leftEye.x * canvas.width;
+      let rightEyeX = rightEye.x * canvas.width;
+      
+      // Apply mirroring to eye positions if needed
+      if (isMirrored) {
+        leftEyeX = canvas.width - leftEyeX;
+        rightEyeX = canvas.width - rightEyeX;
+      }
+      
+      const deltaX = rightEyeX - leftEyeX;
+      const deltaY = (rightEye.y - leftEye.y) * canvas.height;
+      rotationAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+    }
+
+    // Draw hat bounding box (green rectangle) with rotation
     let hatX = hatPosition.x * canvas.width;
     const hatY = hatPosition.y * canvas.height;
     const hatWidth = hatPosition.width * canvas.width;
@@ -188,18 +208,35 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
       hatX = canvas.width - hatX - hatWidth;
     }
     
+    // Calculate hat center for rotation
+    const hatCenterX = hatX + hatWidth / 2;
+    const hatCenterY = hatY + hatHeight / 2;
+    
+    // Draw rotated hat bounding box
+    ctx.save();
+    ctx.translate(hatCenterX, hatCenterY);
+    ctx.rotate((rotationAngle * Math.PI) / 180);
+    
     ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
     ctx.lineWidth = 2;
-    ctx.strokeRect(hatX, hatY, hatWidth, hatHeight);
+    ctx.strokeRect(-hatWidth / 2, -hatHeight / 2, hatWidth, hatHeight);
+    
+    ctx.restore();
 
-    // Draw hat label
+    // Draw hat label (also rotated)
+    ctx.save();
+    ctx.translate(hatCenterX, hatCenterY);
+    ctx.rotate((rotationAngle * Math.PI) / 180);
+    
     ctx.fillStyle = 'rgba(0, 255, 0, 0.8)';
     ctx.font = '12px Arial';
     ctx.fillText(
       'Hat Position',
-      hatX,
-      hatY - 5
+      -hatWidth / 2,
+      -hatHeight / 2 - 5
     );
+    
+    ctx.restore();
   }, [canvasRef, facialLandmarks, calculateHatPosition, clearCanvas]);
 
   /**
