@@ -41,8 +41,6 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
     overlay => overlay.config.type === OverlayType.GLASSES && overlay.enabled
   );
 
-
-
   /**
    * Update canvas size to match video
    */
@@ -66,22 +64,25 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
   /**
    * Preload image if not already cached
    */
-  const preloadImage = useCallback((imageUrl: string): Promise<HTMLImageElement> => {
-    return new Promise((resolve, reject) => {
-      if (imageCache.current.has(imageUrl)) {
-        resolve(imageCache.current.get(imageUrl)!);
-        return;
-      }
+  const preloadImage = useCallback(
+    (imageUrl: string): Promise<HTMLImageElement> => {
+      return new Promise((resolve, reject) => {
+        if (imageCache.current.has(imageUrl)) {
+          resolve(imageCache.current.get(imageUrl)!);
+          return;
+        }
 
-      const img = new Image();
-      img.onload = () => {
-        imageCache.current.set(imageUrl, img);
-        resolve(img);
-      };
-      img.onerror = reject;
-      img.src = imageUrl;
-    });
-  }, []);
+        const img = new Image();
+        img.onload = () => {
+          imageCache.current.set(imageUrl, img);
+          resolve(img);
+        };
+        img.onerror = reject;
+        img.src = imageUrl;
+      });
+    },
+    []
+  );
 
   /**
    * Clear canvas
@@ -99,68 +100,71 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
   /**
    * Calculate glasses position based on eye landmarks
    */
-  const calculateGlassesPosition = useCallback((
-    landmarks: any[],
-    canvasWidth: number,
-    canvasHeight: number,
-    isMirrored: boolean
-  ) => {
-    // Get eye landmarks
-    const leftEye = landmarks[159]; // Left eye center
-    const rightEye = landmarks[386]; // Right eye center
-    const leftEyeOuter = landmarks[33]; // Left eye outer corner
-    const rightEyeOuter = landmarks[263]; // Right eye outer corner
+  const calculateGlassesPosition = useCallback(
+    (
+      landmarks: any[],
+      canvasWidth: number,
+      canvasHeight: number,
+      isMirrored: boolean
+    ) => {
+      // Get eye landmarks
+      const leftEye = landmarks[159]; // Left eye center
+      const rightEye = landmarks[386]; // Right eye center
+      const leftEyeOuter = landmarks[33]; // Left eye outer corner
+      const rightEyeOuter = landmarks[263]; // Right eye outer corner
 
-    if (!leftEye || !rightEye || !leftEyeOuter || !rightEyeOuter) {
-      return null;
-    }
+      if (!leftEye || !rightEye || !leftEyeOuter || !rightEyeOuter) {
+        return null;
+      }
 
-    if (leftEye.visibility < 0.5 || rightEye.visibility < 0.5) {
-      return null;
-    }
+      if (leftEye.visibility < 0.5 || rightEye.visibility < 0.5) {
+        return null;
+      }
 
-    // Calculate eye positions
-    let leftEyeX = leftEye.x * canvasWidth;
-    const leftEyeY = leftEye.y * canvasHeight;
-    let rightEyeX = rightEye.x * canvasWidth;
-    const rightEyeY = rightEye.y * canvasHeight;
+      // Calculate eye positions
+      let leftEyeX = leftEye.x * canvasWidth;
+      const leftEyeY = leftEye.y * canvasHeight;
+      let rightEyeX = rightEye.x * canvasWidth;
+      const rightEyeY = rightEye.y * canvasHeight;
 
-    // Handle mirroring
-    if (isMirrored) {
-      leftEyeX = canvasWidth - leftEyeX;
-      rightEyeX = canvasWidth - rightEyeX;
-    }
+      // Handle mirroring
+      if (isMirrored) {
+        leftEyeX = canvasWidth - leftEyeX;
+        rightEyeX = canvasWidth - rightEyeX;
+      }
 
-    // Calculate center between eyes
-    const centerX = (leftEyeX + rightEyeX) / 2;
-    const centerY = (leftEyeY + rightEyeY) / 2;
+      // Calculate center between eyes
+      const centerX = (leftEyeX + rightEyeX) / 2;
+      const centerY = (leftEyeY + rightEyeY) / 2;
 
-    // Calculate eye span for width
-    let leftOuterX = leftEyeOuter.x * canvasWidth;
-    let rightOuterX = rightEyeOuter.x * canvasWidth;
-    
-    if (isMirrored) {
-      leftOuterX = canvasWidth - leftOuterX;
-      rightOuterX = canvasWidth - rightOuterX;
-    }
+      // Calculate eye span for width
+      let leftOuterX = leftEyeOuter.x * canvasWidth;
+      let rightOuterX = rightEyeOuter.x * canvasWidth;
 
-    const eyeSpan = Math.abs(rightOuterX - leftOuterX);
-    const glassesWidth = eyeSpan * 1.3; // 30% wider than eye span
-    const glassesHeight = glassesWidth * 0.4; // Aspect ratio for glasses
+      if (isMirrored) {
+        leftOuterX = canvasWidth - leftOuterX;
+        rightOuterX = canvasWidth - rightOuterX;
+      }
 
-    // Calculate rotation from eye positions
-    const deltaX = rightEyeX - leftEyeX;
-    const deltaY = rightEyeY - leftEyeY;
-    const rotation = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+      const eyeSpan = Math.abs(rightOuterX - leftOuterX);
+      const glassesWidth = eyeSpan * 1.3; // 30% wider than eye span
+      const glassesHeight = glassesWidth * 0.4; // Aspect ratio for glasses
 
-    return {
-      x: centerX,
-      y: centerY,
-      width: glassesWidth,
-      height: glassesHeight,
-      rotation,
-    };
-  }, []);
+      // Calculate rotation from eye positions
+      const deltaX = rightEyeX - leftEyeX;
+      const deltaY = rightEyeY - leftEyeY;
+      const rotation = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+
+      return {
+        x: centerX,
+        y: centerY,
+        width: glassesWidth,
+        height: glassesHeight,
+        rotation,
+      };
+    },
+    []
+  );
 
   /**
    * Render glasses overlays
@@ -209,20 +213,6 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
       return;
     }
 
-    // Debug: Log position and overlay count
-    console.log('Glasses rendering:', {
-      overlayCount: glassesOverlays.length,
-      overlays: glassesOverlays.map(o => ({ id: o.config.id, name: o.config.name })),
-      position: {
-        x: glassesPosition.x,
-        y: glassesPosition.y,
-        width: glassesPosition.width,
-        height: glassesPosition.height,
-      },
-      canvasWidth,
-      canvasHeight,
-    });
-
     // Check if position is within bounds
     if (
       glassesPosition.x < 0 ||
@@ -230,14 +220,6 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
       glassesPosition.x + glassesPosition.width > canvasWidth ||
       glassesPosition.y + glassesPosition.height > canvasHeight
     ) {
-      console.warn('Glasses position outside canvas bounds:', {
-        x: glassesPosition.x,
-        y: glassesPosition.y,
-        width: glassesPosition.width,
-        height: glassesPosition.height,
-        canvasWidth,
-        canvasHeight,
-      });
       return; // Don't render if outside bounds
     }
 
@@ -258,12 +240,12 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
 
         // Get cached image or load it
         const img = await preloadImage(overlay.config.imageUrl);
-        
+
         // Calculate aspect ratio to maintain proportions
         const aspectRatio = img.width / img.height;
         const targetWidth = glassesPosition.width;
         const targetHeight = targetWidth / aspectRatio;
-        
+
         // Draw the image
         ctx.drawImage(
           img,
@@ -275,16 +257,18 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
 
         // Restore context
         ctx.restore();
-
       } catch (error) {
-        console.error(`Error rendering glasses overlay ${overlay.config.name}:`, error);
-        
+        console.error(
+          `Error rendering glasses overlay ${overlay.config.name}:`,
+          error
+        );
+
         // Fallback to green rectangle if image fails to load
         ctx.save();
         ctx.translate(glassesPosition.x, glassesPosition.y);
         ctx.rotate((glassesPosition.rotation * Math.PI) / 180);
         ctx.scale(overlay.position.scale, overlay.position.scale);
-        
+
         ctx.strokeStyle = '#00ff00';
         ctx.lineWidth = 3;
         ctx.strokeRect(
@@ -293,17 +277,13 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
           glassesPosition.width,
           glassesPosition.height
         );
-        
+
         // Draw glasses label
         ctx.fillStyle = '#00ff00';
         ctx.font = '14px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(
-          overlay.config.name,
-          0,
-          -glassesPosition.height / 2 - 10
-        );
-        
+        ctx.fillText(overlay.config.name, 0, -glassesPosition.height / 2 - 10);
+
         ctx.restore();
       }
     }
@@ -327,14 +307,6 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
    * Main render function
    */
   const render = useCallback(async () => {
-    console.log('Glasses render called:', {
-      isVisible,
-      status,
-      hasLandmarks: !!facialLandmarks,
-      hasFaceDetection: !!faceDetection,
-      overlayCount: glassesOverlays.length,
-    });
-
     if (
       !isVisible ||
       status !== 'detected' ||
@@ -345,7 +317,12 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
       if (canvasRef.current) {
         const ctx = canvasRef.current.getContext('2d');
         if (ctx) {
-          ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+          ctx.clearRect(
+            0,
+            0,
+            canvasRef.current.width,
+            canvasRef.current.height
+          );
         }
       }
       return;
@@ -404,9 +381,18 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
   }, [isVisible, isEnabled, glassesOverlays.length, render, clearCanvas]);
 
   if (!isVisible || !isEnabled || glassesOverlays.length === 0) {
+    console.log('GlassesOverlay returning null:', {
+      isVisible,
+      isEnabled,
+      glassesOverlaysLength: glassesOverlays.length,
+    });
     return null;
   }
 
+  console.log(
+    'GlassesOverlay rendering canvas with data-overlay:',
+    dataOverlay
+  );
   return (
     <canvas
       ref={canvasRef}
@@ -423,4 +409,4 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
       data-overlay={dataOverlay}
     />
   );
-}; 
+};

@@ -56,12 +56,12 @@ export class CompositeRecordingService {
     height: number
   ): void {
     this.videoElement = videoElement;
-    
+
     // Create composite canvas
     this.compositeCanvas = document.createElement('canvas');
     this.compositeCanvas.width = width;
     this.compositeCanvas.height = height;
-    
+
     this.compositeCtx = this.compositeCanvas.getContext('2d');
     if (!this.compositeCtx) {
       throw new Error('Failed to get canvas context for composite recording');
@@ -91,7 +91,12 @@ export class CompositeRecordingService {
     }
 
     // Clear canvas
-    this.compositeCtx.clearRect(0, 0, this.compositeCanvas.width, this.compositeCanvas.height);
+    this.compositeCtx.clearRect(
+      0,
+      0,
+      this.compositeCanvas.width,
+      this.compositeCanvas.height
+    );
 
     // Check if video is mirrored
     const isMirrored = this.isVideoMirrored();
@@ -118,15 +123,12 @@ export class CompositeRecordingService {
     // Draw overlay canvases on top
     // Overlays are already rendered with mirroring applied for display,
     // so we draw them directly without additional mirroring
-    console.log('Composite recording - overlay count:', this.overlayCanvasElements.length);
-    this.overlayCanvasElements.forEach((overlayCanvas, index) => {
-      if (overlayCanvas && overlayCanvas.width > 0 && overlayCanvas.height > 0) {
-        console.log(`Drawing overlay ${index}:`, {
-          width: overlayCanvas.width,
-          height: overlayCanvas.height,
-          compositeWidth: this.compositeCanvas!.width,
-          compositeHeight: this.compositeCanvas!.height,
-        });
+    this.overlayCanvasElements.forEach(overlayCanvas => {
+      if (
+        overlayCanvas &&
+        overlayCanvas.width > 0 &&
+        overlayCanvas.height > 0
+      ) {
         this.compositeCtx!.drawImage(
           overlayCanvas,
           0,
@@ -134,12 +136,6 @@ export class CompositeRecordingService {
           this.compositeCanvas!.width,
           this.compositeCanvas!.height
         );
-      } else {
-        console.log(`Overlay ${index} invalid:`, {
-          exists: !!overlayCanvas,
-          width: overlayCanvas?.width,
-          height: overlayCanvas?.height,
-        });
       }
     });
   }
@@ -179,7 +175,9 @@ export class CompositeRecordingService {
       }
 
       // Create composite stream from canvas
-      const compositeStream = this.compositeCanvas!.captureStream(defaultConfig.frameRate);
+      const compositeStream = this.compositeCanvas!.captureStream(
+        defaultConfig.frameRate
+      );
 
       const options: MediaRecorderOptions = {
         mimeType,
@@ -224,7 +222,7 @@ export class CompositeRecordingService {
       }
       this.animationFrameId = requestAnimationFrame(renderFrame);
     };
-    
+
     this.animationFrameId = requestAnimationFrame(renderFrame);
   }
 
@@ -298,14 +296,14 @@ export class CompositeRecordingService {
    */
   cleanup(): void {
     this.stopCompositeRendering();
-    
+
     if (this.mediaRecorder) {
       if (this.mediaRecorder.state !== 'inactive') {
         this.mediaRecorder.stop();
       }
       this.mediaRecorder = null;
     }
-    
+
     this.recordedChunks = [];
     this.compositeCanvas = null;
     this.compositeCtx = null;
@@ -352,4 +350,4 @@ export class CompositeRecordingService {
     }
     return 'unknown';
   }
-} 
+}

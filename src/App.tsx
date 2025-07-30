@@ -93,11 +93,9 @@ const VideoRecorderApp: React.FC = () => {
         console.error('Failed to auto-start camera:', error);
       }
     };
-    
+
     autoStartCamera();
   }, []); // Empty dependency array means this runs once on mount
-
-
 
   // Unified visualization logic
   React.useEffect(() => {
@@ -161,18 +159,21 @@ const VideoRecorderApp: React.FC = () => {
   };
 
   const handleStartRecording = async (): Promise<void> => {
+    console.log('handleStartRecording called!'); // Test if function is called
     if (stream && videoRef.current) {
       // Collect overlay canvas elements
       const overlayCanvases: HTMLCanvasElement[] = [];
-      
+
       console.log('Starting recording with overlays:', {
         glassesEnabled: glassesOverlaySystemEnabled,
         hatEnabled: hatOverlaySystemEnabled,
       });
-      
+
       // Get glasses overlay canvas
       if (glassesOverlaySystemEnabled) {
-        const glassesCanvas = document.querySelector('[data-overlay="glasses"] canvas') as HTMLCanvasElement;
+        const glassesCanvas = document.querySelector(
+          'canvas[data-overlay="glasses"]'
+        ) as HTMLCanvasElement;
         console.log('Glasses canvas found:', {
           exists: !!glassesCanvas,
           width: glassesCanvas?.width,
@@ -182,10 +183,12 @@ const VideoRecorderApp: React.FC = () => {
           overlayCanvases.push(glassesCanvas);
         }
       }
-      
+
       // Get hat overlay canvas
       if (hatOverlaySystemEnabled) {
-        const hatCanvas = document.querySelector('[data-overlay="hat"] canvas') as HTMLCanvasElement;
+        const hatCanvas = document.querySelector(
+          'canvas[data-overlay="hat"]'
+        ) as HTMLCanvasElement;
         console.log('Hat canvas found:', {
           exists: !!hatCanvas,
           width: hatCanvas?.width,
@@ -195,7 +198,7 @@ const VideoRecorderApp: React.FC = () => {
           overlayCanvases.push(hatCanvas);
         }
       }
-      
+
       console.log('Total overlay canvases collected:', overlayCanvases.length);
       await startRecording(videoRef.current, overlayCanvases);
     }
