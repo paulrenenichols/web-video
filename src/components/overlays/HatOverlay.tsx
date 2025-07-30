@@ -37,6 +37,18 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     overlay => overlay.config.type === OverlayType.HAT && overlay.enabled
   );
 
+  // Debug logging
+  console.log('🎩 HatOverlay Debug:', {
+    isVisible,
+    isEnabled,
+    activeOverlaysCount: activeOverlays.length,
+    hatOverlaysCount: hatOverlays.length,
+    hatOverlays: hatOverlays.map(o => ({ id: o.config.id, enabled: o.enabled, imageUrl: o.config.imageUrl })),
+    status,
+    hasFacialLandmarks: !!facialLandmarks,
+    hasFaceDetection: !!faceDetection
+  });
+
   /**
    * Update canvas size to match video
    */
@@ -133,6 +145,15 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
    * Render hat overlays on canvas
    */
   const renderHats = useCallback(async () => {
+    console.log('🎩 renderHats called:', {
+      hasCanvas: !!canvasRef.current,
+      hasCtx: !!canvasRef.current?.getContext('2d'),
+      hasVideo: !!videoRef.current,
+      hasFacialLandmarks: !!facialLandmarks,
+      isVisible,
+      hatOverlaysLength: hatOverlays.length
+    });
+
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     const video = videoRef.current;
@@ -145,6 +166,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
       !isVisible ||
       hatOverlays.length === 0
     ) {
+      console.log('🎩 renderHats early return - missing requirements');
       return;
     }
 
@@ -158,18 +180,27 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
         if (!position) continue;
 
         // Load hat image
+        console.log('🎩 Loading hat image:', overlay.config.imageUrl);
         const img = await preloadImage(overlay.config.imageUrl);
+        console.log('🎩 Hat image loaded successfully:', img.width, 'x', img.height);
 
         // Apply opacity
         ctx.globalAlpha = overlay.rendering.opacity;
 
         // Draw hat image
+        const drawX = position.x * canvas.width;
+        const drawY = position.y * canvas.height;
+        const drawWidth = position.width * canvas.width;
+        const drawHeight = position.height * canvas.height;
+        
+        console.log('🎩 Drawing hat at:', { drawX, drawY, drawWidth, drawHeight });
+        
         ctx.drawImage(
           img,
-          position.x * canvas.width,
-          position.y * canvas.height,
-          position.width * canvas.width,
-          position.height * canvas.height
+          drawX,
+          drawY,
+          drawWidth,
+          drawHeight
         );
 
         // Draw label for debugging
