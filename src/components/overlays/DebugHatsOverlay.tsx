@@ -149,7 +149,7 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
         2 * Math.PI
       );
       ctx.fill();
-
+    }
 
     // Draw hat bounding box (green rectangle)
     ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
