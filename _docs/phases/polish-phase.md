@@ -58,6 +58,7 @@ This phase focuses on final refinements, performance optimizations, advanced fea
 4. Implement audio-video synchronization during recording
 5. Add audio effects and noise reduction capabilities
 6. Create audio mixing and multiple audio track support
+7. Implement multi-format video recording (WebM and MP4)
 
 **Acceptance Criteria**:
 
@@ -67,6 +68,7 @@ This phase focuses on final refinements, performance optimizations, advanced fea
 - Audio and video remain perfectly synchronized during recording
 - Audio effects and noise reduction work effectively
 - Multiple audio tracks can be mixed and managed
+- Videos can be recorded in both WebM and MP4 formats with proper codec support
 
 ### 3. Immersive UI with Maximized Video View
 
@@ -121,6 +123,7 @@ This phase focuses on final refinements, performance optimizations, advanced fea
 3. Create recording preview and thumbnail generation
 4. Implement recording metadata and tagging system
 5. Add batch recording and queue management
+6. Support multiple video formats (WebM and MP4) with format selection
 
 **Acceptance Criteria**:
 
@@ -129,6 +132,7 @@ This phase focuses on final refinements, performance optimizations, advanced fea
 - Preview thumbnails are generated accurately
 - Recording metadata is properly managed
 - Batch recording features work seamlessly
+- Users can choose between WebM and MP4 formats for recording
 
 ### 6. Enhanced User Experience
 
@@ -222,7 +226,8 @@ src/
 │   │   ├── EffectsPanel.tsx         # Video effects and filters
 │   │   ├── QualitySettings.tsx      # Recording quality controls
 │   │   ├── ExportPanel.tsx          # Export and sharing options
-│   │   └── AudioControls.tsx        # Audio recording controls
+│   │   ├── AudioControls.tsx        # Audio recording controls
+│   │   └── FormatSelector.tsx       # Video format selection controls
 │   ├── ui/
 │   │   ├── CollapsiblePanel.tsx     # Sliding control panels
 │   │   ├── FullscreenVideo.tsx      # Fullscreen video component
@@ -248,14 +253,16 @@ src/
 │   ├── export.service.ts            # Export and sharing
 │   ├── analytics.service.ts         # Analytics and tracking
 │   ├── audio.service.ts             # Audio recording and processing
-│   └── ui.service.ts                # UI state and layout management
+│   ├── ui.service.ts                # UI state and layout management
+│   └── format.service.ts            # Video format handling and conversion
 ├── utils/
 │   ├── performance.ts               # Performance utilities
 │   ├── effects.ts                   # Effects processing utilities
 │   ├── export.ts                    # Export utilities
 │   ├── analytics.ts                 # Analytics utilities
 │   ├── audio.ts                     # Audio processing utilities
-│   └── ui.ts                        # UI utilities and helpers
+│   ├── ui.ts                        # UI utilities and helpers
+│   └── format.ts                    # Format conversion utilities
 ├── workers/
 │   ├── tracking.worker.ts           # Background tracking processing
 │   ├── effects.worker.ts            # Background effects processing
@@ -265,7 +272,8 @@ src/
     ├── effects.ts                   # Effects configuration
     ├── analytics.ts                 # Analytics configuration
     ├── audio.ts                     # Audio configuration
-    └── ui.ts                        # UI configuration
+    ├── ui.ts                        # UI configuration
+    └── formats.ts                   # Video format configuration
 ```
 
 ### Key Components to Implement
@@ -295,6 +303,36 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
   // Level monitoring and visualization
   // Quality and effect settings
   // Microphone access management
+};
+```
+
+#### FormatSelector Component
+
+```typescript
+/**
+ * @fileoverview Video format selection component.
+ *
+ * Provides controls for selecting video recording formats
+ * (WebM and MP4) with quality and codec options.
+ */
+
+interface FormatSelectorProps {
+  selectedFormat: VideoFormat;
+  onFormatChange: (format: VideoFormat) => void;
+  availableFormats: VideoFormat[];
+  qualityOptions: QualityOption[];
+}
+
+export const FormatSelector: React.FC<FormatSelectorProps> = ({
+  selectedFormat,
+  onFormatChange,
+  availableFormats,
+  qualityOptions,
+}) => {
+  // Format selection controls
+  // Quality and codec options
+  // Format compatibility checking
+  // Quality recommendations
 };
 ```
 
@@ -403,6 +441,26 @@ export class UIService {
   // Keyboard shortcut processing
   // Auto-hide and show logic
   // Layout customization and persistence
+}
+```
+
+#### Format Service
+
+```typescript
+/**
+ * @fileoverview Video format handling and conversion service.
+ *
+ * Manages video format selection, codec support,
+ * format conversion, and compatibility checking.
+ */
+
+export class FormatService {
+  // Format detection and support checking
+  // Codec compatibility validation
+  // Format conversion capabilities
+  // Quality optimization for different formats
+  // Browser compatibility management
+  // Format-specific recording settings
 }
 ```
 
