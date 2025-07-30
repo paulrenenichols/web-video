@@ -39,8 +39,16 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
 
   // TEST: Manually add a hat overlay for debugging if none exist
   useEffect(() => {
-    if (hatOverlays.length === 0 && isVisible && isEnabled) {
+    console.log('🎩 TEST: useEffect triggered - hatOverlays.length:', hatOverlays.length, 'isVisible:', isVisible, 'isEnabled:', isEnabled);
+    
+    if (hatOverlays.length === 0 && isVisible) {
       console.log('🎩 TEST: No hat overlays found, checking if we should add a test hat');
+      
+      // Force enable the overlay system if it's not enabled
+      if (!isEnabled) {
+        console.log('🎩 TEST: Overlay system not enabled, forcing enable');
+        useOverlayStore.getState().setEnabled(true);
+      }
       
       // Manual test: Add a baseball hat overlay directly to the store
       const { addOverlay } = useOverlayStore.getState();
@@ -70,6 +78,17 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     status,
     hasFacialLandmarks: !!facialLandmarks,
     hasFaceDetection: !!faceDetection
+  });
+
+  // More detailed state logging
+  console.log('🎩 HatOverlay State Details:', {
+    'isVisible (prop)': isVisible,
+    'isEnabled (store)': isEnabled,
+    'status (tracking)': status,
+    'facialLandmarks exists': !!facialLandmarks,
+    'faceDetection exists': !!faceDetection,
+    'canvas exists': !!canvasRef.current,
+    'video exists': !!videoRef.current
   });
 
   // Additional debugging for overlay state

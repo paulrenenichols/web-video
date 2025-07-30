@@ -122,6 +122,7 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
        * Add overlay to active list with combination validation
        */
       addOverlay: (config: OverlayConfig) => {
+        console.log('🎩 Store: addOverlay called with config:', config);
         const state = get();
         const existingOverlay = state.activeOverlays.find(
           overlay => overlay.config.id === config.id
@@ -204,6 +205,7 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
             const newCache = new Map(state.removedOverlaysCache);
             newCache.delete(config.id);
 
+            console.log('🎩 Store: Successfully added overlay:', newOverlay.config.id, 'Total overlays:', state.activeOverlays.length + 1);
             return {
               activeOverlays: [...state.activeOverlays, newOverlay],
               removedOverlaysCache: newCache,
