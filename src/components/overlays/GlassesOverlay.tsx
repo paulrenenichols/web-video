@@ -38,13 +38,7 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
     overlay => overlay.config.type === OverlayType.GLASSES && overlay.enabled
   );
 
-  // Debug logging
-  console.log('🔍 GlassesOverlay - isVisible:', isVisible);
-  console.log('🔍 GlassesOverlay - isEnabled:', isEnabled);
-  console.log('🔍 GlassesOverlay - activeOverlays count:', activeOverlays.length);
-  console.log('🔍 GlassesOverlay - glassesOverlays count:', glassesOverlays.length);
-  console.log('🔍 GlassesOverlay - status:', status);
-  console.log('🔍 GlassesOverlay - facialLandmarks:', !!facialLandmarks);
+
 
   /**
    * Update canvas size to match video
