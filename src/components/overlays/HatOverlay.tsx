@@ -251,6 +251,19 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
       hatOverlays.length === 0
     ) {
       debugLog('renderHats early return - missing requirements');
+      
+      // Test: Draw a simple rectangle to verify canvas is working
+      if (canvas && ctx && isVisible) {
+        debugLog('Drawing test rectangle to verify canvas is working');
+        ctx.save();
+        ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+        ctx.fillRect(10, 10, 100, 50);
+        ctx.fillStyle = 'rgba(255, 0, 0, 1)';
+        ctx.font = '12px Arial';
+        ctx.fillText('Canvas Test', 10, 30);
+        ctx.restore();
+      }
+      
       return;
     }
 
@@ -311,13 +324,25 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
           position.x * canvas.width,
           position.y * canvas.height - 5
         );
+
+        // Draw a visible rectangle to show where the hat should be
+        ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(
+          position.x * canvas.width,
+          position.y * canvas.height,
+          position.width * canvas.width,
+          position.height * canvas.height
+        );
       } catch (error) {
         console.error('Error rendering hat overlay:', error);
 
         // Fallback: draw green rectangle
         const position = calculateHatPosition(facialLandmarks, overlay);
         if (position) {
-          ctx.fillStyle = 'rgba(0, 255, 0, 0.3)';
+          debugLog('Drawing fallback rectangle for hat:', overlay.config.name);
+          
+          ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
           ctx.fillRect(
             position.x * canvas.width,
             position.y * canvas.height,
@@ -325,12 +350,22 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
             position.height * canvas.height
           );
 
-          ctx.fillStyle = 'rgba(0, 255, 0, 0.8)';
-          ctx.font = '12px Arial';
+          ctx.fillStyle = 'rgba(0, 255, 0, 1)';
+          ctx.font = '14px Arial';
           ctx.fillText(
-            overlay.config.name,
+            `HAT: ${overlay.config.name}`,
             position.x * canvas.width,
             position.y * canvas.height - 5
+          );
+
+          // Draw border to make it more visible
+          ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(
+            position.x * canvas.width,
+            position.y * canvas.height,
+            position.width * canvas.width,
+            position.height * canvas.height
           );
         }
       }
