@@ -59,6 +59,10 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
   const calculateHatPosition = useCallback((landmarks: any) => {
     if (!landmarks || landmarks.length < 468) return null;
 
+    // Debug: Check what landmarks are available
+    console.log('🎩 DebugHatsOverlay - Total landmarks available:', landmarks.length);
+    console.log('🎩 DebugHatsOverlay - Sample landmarks 0-10:', landmarks.slice(0, 10).map((lm, i) => `[${i}]: ${lm ? 'exists' : 'missing'}`));
+
     // Use eye landmarks and forehead landmarks for hat positioning
     // These landmarks are known to exist in MediaPipe face mesh
     const headLandmarks = [
