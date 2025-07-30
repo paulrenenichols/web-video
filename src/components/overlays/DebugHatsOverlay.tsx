@@ -184,11 +184,13 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
       }
     });
 
-    // Draw center point between forehead landmarks (only if all landmarks exist)
-    const existingForeheadLandmarks = foreheadLandmarks.filter(index => facialLandmarks.landmarks[index]);
-    if (existingForeheadLandmarks.length === foreheadLandmarks.length) {
-      let centerX = existingForeheadLandmarks.reduce((sum, index) => sum + facialLandmarks.landmarks[index].x, 0) / existingForeheadLandmarks.length;
-      const centerY = existingForeheadLandmarks.reduce((sum, index) => sum + facialLandmarks.landmarks[index].y, 0) / existingForeheadLandmarks.length;
+    // Draw center point between key forehead landmarks (only if all landmarks exist)
+    // Use the 4 most important landmarks for center calculation
+    const keyForeheadLandmarks = [10, 151, 337, 9]; // Forehead center, left, right, top
+    const existingKeyLandmarks = keyForeheadLandmarks.filter(index => facialLandmarks.landmarks[index]);
+    if (existingKeyLandmarks.length === keyForeheadLandmarks.length) {
+      let centerX = existingKeyLandmarks.reduce((sum, index) => sum + facialLandmarks.landmarks[index].x, 0) / existingKeyLandmarks.length;
+      const centerY = existingKeyLandmarks.reduce((sum, index) => sum + facialLandmarks.landmarks[index].y, 0) / existingKeyLandmarks.length;
       
       // Apply mirroring to center point if needed
       if (isMirrored) {
