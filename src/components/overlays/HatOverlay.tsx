@@ -157,10 +157,22 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     const chinY = Math.max(...landmarks.slice(0, 50).map(lm => lm.y)); // Use first 50 landmarks for chin
     const headHeight = chinY - foreheadY;
 
+    // Check for invalid calculations
+    if (isNaN(foreheadY) || isNaN(chinY) || isNaN(headHeight) || headHeight <= 0) {
+      console.log('🎩 Invalid head height calculation:', { foreheadY, chinY, headHeight });
+      return null;
+    }
+
     // Position hat above the forehead (same as DebugHatsOverlay)
     const hatY = foreheadY - headHeight * 0.4; // 40% above forehead
     const hatHeight = headHeight * 0.6; // 60% of head height
     const hatWidth = headWidth * 1.1; // 110% of head width for hat coverage
+
+    // Final validation
+    if (isNaN(hatY) || isNaN(hatHeight) || isNaN(hatWidth)) {
+      console.log('🎩 Invalid hat position calculation:', { hatY, hatHeight, hatWidth });
+      return null;
+    }
 
     // Center the hat horizontally using forehead landmarks (same as DebugHatsOverlay)
     const headCenterX = (foreheadLeft.x + foreheadRight.x) / 2;
