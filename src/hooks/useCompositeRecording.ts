@@ -23,7 +23,7 @@ export const useCompositeRecording = () => {
     recordingBlob: null,
     error: null,
     config: {
-      quality: 0.8,
+      quality: 0.9,
       format: 'webm',
       includeAudio: false,
       width: 1280,

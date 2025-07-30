@@ -69,6 +69,13 @@ export class CompositeRecordingService {
   }
 
   /**
+   * Check if video is mirrored.
+   */
+  private isVideoMirrored(): boolean {
+    return this.videoElement?.style.transform?.includes('scaleX(-1)') || false;
+  }
+
+  /**
    * Set overlay canvas elements to be included in recording.
    */
   setOverlayCanvases(overlayCanvases: HTMLCanvasElement[]): void {
@@ -85,6 +92,16 @@ export class CompositeRecordingService {
 
     // Clear canvas
     this.compositeCtx.clearRect(0, 0, this.compositeCanvas.width, this.compositeCanvas.height);
+
+    // Check if video is mirrored
+    const isMirrored = this.isVideoMirrored();
+
+    // Apply mirroring transformation if needed
+    if (isMirrored) {
+      this.compositeCtx.save();
+      this.compositeCtx.scale(-1, 1);
+      this.compositeCtx.translate(-this.compositeCanvas.width, 0);
+    }
 
     // Draw video frame
     this.compositeCtx.drawImage(
@@ -107,6 +124,11 @@ export class CompositeRecordingService {
         );
       }
     });
+
+    // Restore transformation if mirrored
+    if (isMirrored) {
+      this.compositeCtx.restore();
+    }
   }
 
   /**
@@ -122,7 +144,7 @@ export class CompositeRecordingService {
       this.setOverlayCanvases(overlayCanvases);
 
       const defaultConfig: RecordingConfig = {
-        quality: 0.8,
+        quality: 0.9,
         format: 'webm',
         includeAudio: false,
         width: 1280,
@@ -177,11 +199,20 @@ export class CompositeRecordingService {
    * Start rendering composite frames for recording.
    */
   private startCompositeRendering(): void {
-    const renderFrame = () => {
-      this.renderCompositeFrame();
+    let lastFrameTime = 0;
+    const targetFrameRate = 30; // Match video frame rate
+    const frameInterval = 1000 / targetFrameRate;
+
+    const renderFrame = (currentTime: number) => {
+      // Throttle to target frame rate to reduce lag
+      if (currentTime - lastFrameTime >= frameInterval) {
+        this.renderCompositeFrame();
+        lastFrameTime = currentTime;
+      }
       this.animationFrameId = requestAnimationFrame(renderFrame);
     };
-    renderFrame();
+    
+    this.animationFrameId = requestAnimationFrame(renderFrame);
   }
 
   /**
