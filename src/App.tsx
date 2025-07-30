@@ -84,6 +84,19 @@ const VideoRecorderApp: React.FC = () => {
     useOverlayStore.getState().setEnabled(true);
   }, []);
 
+  // Auto-start camera when component mounts
+  React.useEffect(() => {
+    const autoStartCamera = async () => {
+      try {
+        await handleStartCamera();
+      } catch (error) {
+        console.error('Failed to auto-start camera:', error);
+      }
+    };
+    
+    autoStartCamera();
+  }, []); // Empty dependency array means this runs once on mount
+
 
 
   // Unified visualization logic
