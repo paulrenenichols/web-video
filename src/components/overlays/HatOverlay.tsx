@@ -108,7 +108,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
   /**
    * Calculate hat position based on head landmarks (using DebugHatsOverlay logic)
    */
-  const calculateHatPosition = useCallback((landmarks: any, overlay: any) => {
+  const calculateHatPosition = useCallback((landmarks: any) => {
     if (!landmarks || landmarks.length < 468) return null;
 
     // Use forehead landmarks for centering (exactly like DebugHatsOverlay)
@@ -142,7 +142,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
           width: hatWidth,
           height: hatHeight,
           rotation: 0,
-          scale: overlay.rendering.scale || 1.0,
+          scale: 1.0,
         };
       }
       
@@ -171,8 +171,8 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
       y: hatY,
       width: hatWidth,
       height: hatHeight,
-      rotation: 0, // No rotation for now - match DebugHatsOverlay
-      scale: overlay.rendering.scale || 1.0,
+                rotation: 0, // No rotation for now - match DebugHatsOverlay
+          scale: 1.0,
     };
   }, [faceDetection]);
 
@@ -215,7 +215,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
 
     for (const overlay of hatOverlays) {
       try {
-        const position = calculateHatPosition(facialLandmarks, overlay);
+        const position = calculateHatPosition(facialLandmarks.landmarks);
         if (!position) {
           console.log('🎩 Hat position calculation failed for:', overlay.config.name);
           continue;
