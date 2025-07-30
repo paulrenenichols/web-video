@@ -233,7 +233,7 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
     ctx.fillText(
       'Hat Position',
       -hatWidth / 2,
-      -hatHeight / 2 - 5
+      -hatHeight / 2 - 15
     );
     
     ctx.restore();
