@@ -2,12 +2,14 @@
 
 ## Overview
 
-This phase focuses on final refinements, performance optimizations, advanced features, and production readiness. The polish phase transforms the application into a production-ready, feature-rich video recording platform with advanced customization options and optimal performance.
+This phase focuses on final refinements, performance optimizations, advanced features, and production readiness. The polish phase transforms the application into a production-ready, feature-rich video recording platform with advanced customization options, audio recording capabilities, immersive UI design, and optimal performance.
 
 ## Phase Goals
 
 - Optimize performance and reduce bundle size
 - Add advanced overlay customization and effects
+- Implement audio recording from computer microphone
+- Create immersive UI with maximized video screen real estate
 - Implement advanced recording features and quality options
 - Enhance user experience with advanced UI features
 - Prepare application for production deployment
@@ -16,6 +18,8 @@ This phase focuses on final refinements, performance optimizations, advanced fea
 
 - Performance-optimized application with minimal bundle size
 - Advanced overlay customization system
+- Audio recording and synchronization capabilities
+- Immersive UI with collapsible controls and maximized video view
 - Enhanced recording features with quality controls
 - Polished user experience with advanced interactions
 - Production-ready application with comprehensive testing
@@ -42,7 +46,51 @@ This phase focuses on final refinements, performance optimizations, advanced fea
 - Performance metrics meet production standards
 - Application works well on lower-end devices
 
-### 2. Advanced Overlay Customization
+### 2. Audio Recording and Synchronization
+
+**Goal**: Add high-quality audio recording from computer microphone with video synchronization
+
+**Tasks**:
+
+1. Implement microphone access and audio stream capture
+2. Add audio quality settings and format options
+3. Create audio level monitoring and visualization
+4. Implement audio-video synchronization during recording
+5. Add audio effects and noise reduction capabilities
+6. Create audio mixing and multiple audio track support
+
+**Acceptance Criteria**:
+
+- Microphone access works across all supported browsers
+- Audio recording quality is configurable and high-quality
+- Audio levels are monitored and visualized in real-time
+- Audio and video remain perfectly synchronized during recording
+- Audio effects and noise reduction work effectively
+- Multiple audio tracks can be mixed and managed
+
+### 3. Immersive UI with Maximized Video View
+
+**Goal**: Create an immersive interface that maximizes video screen real estate with collapsible controls
+
+**Tasks**:
+
+1. Implement collapsible control panels that slide in/out from sides
+2. Add fullscreen video mode with minimal UI overlay
+3. Create gesture-based controls for mobile and touch devices
+4. Implement keyboard shortcuts for all major functions
+5. Add auto-hide controls that disappear during recording
+6. Create customizable UI layout and control positioning
+
+**Acceptance Criteria**:
+
+- Video takes up maximum available screen space
+- Controls slide smoothly in/out without blocking video
+- Fullscreen mode provides immersive recording experience
+- Gesture controls work intuitively on touch devices
+- Keyboard shortcuts provide quick access to all features
+- Auto-hide controls don't interfere with recording workflow
+
+### 4. Advanced Overlay Customization
 
 **Goal**: Add comprehensive overlay customization options
 
@@ -62,7 +110,7 @@ This phase focuses on final refinements, performance optimizations, advanced fea
 - Overlay animations are smooth and engaging
 - Customization options are intuitive and accessible
 
-### 3. Advanced Recording Features
+### 5. Advanced Recording Features
 
 **Goal**: Enhance recording capabilities with professional features
 
@@ -82,7 +130,7 @@ This phase focuses on final refinements, performance optimizations, advanced fea
 - Recording metadata is properly managed
 - Batch recording features work seamlessly
 
-### 4. Enhanced User Experience
+### 6. Enhanced User Experience
 
 **Goal**: Add advanced UI features and interactions
 
@@ -102,7 +150,7 @@ This phase focuses on final refinements, performance optimizations, advanced fea
 - User preferences are saved and restored correctly
 - Accessibility features work across all components
 
-### 5. Advanced Effects and Filters
+### 7. Advanced Effects and Filters
 
 **Goal**: Add visual effects and filters to enhance recordings
 
@@ -122,7 +170,7 @@ This phase focuses on final refinements, performance optimizations, advanced fea
 - Face enhancement features look natural
 - Animated effects enhance user experience
 
-### 6. Export and Sharing Features
+### 8. Export and Sharing Features
 
 **Goal**: Add advanced export and sharing capabilities
 
@@ -142,7 +190,7 @@ This phase focuses on final refinements, performance optimizations, advanced fea
 - Cloud storage integration is secure and functional
 - Basic video editing features work as expected
 
-### 7. Production Readiness
+### 9. Production Readiness
 
 **Goal**: Prepare application for production deployment
 
@@ -173,7 +221,13 @@ src/
 │   │   ├── OverlayCustomizer.tsx    # Advanced overlay controls
 │   │   ├── EffectsPanel.tsx         # Video effects and filters
 │   │   ├── QualitySettings.tsx      # Recording quality controls
-│   │   └── ExportPanel.tsx          # Export and sharing options
+│   │   ├── ExportPanel.tsx          # Export and sharing options
+│   │   └── AudioControls.tsx        # Audio recording controls
+│   ├── ui/
+│   │   ├── CollapsiblePanel.tsx     # Sliding control panels
+│   │   ├── FullscreenVideo.tsx      # Fullscreen video component
+│   │   ├── GestureControls.tsx      # Touch and gesture controls
+│   │   └── ImmersiveLayout.tsx      # Main immersive layout
 │   ├── onboarding/
 │   │   ├── Tutorial.tsx             # Interactive tutorial
 │   │   ├── Onboarding.tsx           # User onboarding flow
@@ -185,88 +239,170 @@ src/
 │   ├── usePerformance.ts            # Performance monitoring
 │   ├── useEffects.ts                # Video effects management
 │   ├── useExport.ts                 # Export functionality
-│   └── useAnalytics.ts              # Analytics tracking
+│   ├── useAnalytics.ts              # Analytics tracking
+│   ├── useAudio.ts                  # Audio recording and management
+│   └── useImmersiveUI.ts            # Immersive UI state management
 ├── services/
 │   ├── performance.service.ts       # Performance optimization
 │   ├── effects.service.ts           # Video effects processing
 │   ├── export.service.ts            # Export and sharing
-│   └── analytics.service.ts         # Analytics and tracking
+│   ├── analytics.service.ts         # Analytics and tracking
+│   ├── audio.service.ts             # Audio recording and processing
+│   └── ui.service.ts                # UI state and layout management
 ├── utils/
 │   ├── performance.ts               # Performance utilities
 │   ├── effects.ts                   # Effects processing utilities
 │   ├── export.ts                    # Export utilities
-│   └── analytics.ts                 # Analytics utilities
+│   ├── analytics.ts                 # Analytics utilities
+│   ├── audio.ts                     # Audio processing utilities
+│   └── ui.ts                        # UI utilities and helpers
 ├── workers/
 │   ├── tracking.worker.ts           # Background tracking processing
-│   └── effects.worker.ts            # Background effects processing
+│   ├── effects.worker.ts            # Background effects processing
+│   └── audio.worker.ts              # Background audio processing
 └── config/
     ├── performance.ts               # Performance configuration
     ├── effects.ts                   # Effects configuration
-    └── analytics.ts                 # Analytics configuration
+    ├── analytics.ts                 # Analytics configuration
+    ├── audio.ts                     # Audio configuration
+    └── ui.ts                        # UI configuration
 ```
 
 ### Key Components to Implement
 
-#### OverlayCustomizer Component
+#### AudioControls Component
 
 ```typescript
 /**
- * @fileoverview Advanced overlay customization component.
+ * @fileoverview Audio recording and management component.
  *
- * Provides comprehensive controls for overlay appearance,
- * positioning, effects, and animations.
+ * Provides controls for microphone access, audio quality settings,
+ * level monitoring, and audio effects.
  */
 
-interface OverlayCustomizerProps {
-  overlay: OverlayData;
-  onCustomizationChange: (customization: OverlayCustomization) => void;
-  availableEffects: EffectType[];
+interface AudioControlsProps {
+  audioStream: MediaStream | null;
+  onAudioSettingsChange: (settings: AudioSettings) => void;
+  onAudioLevelChange: (level: number) => void;
 }
 
-export const OverlayCustomizer: React.FC<OverlayCustomizerProps> = ({
-  overlay,
-  onCustomizationChange,
-  availableEffects,
+export const AudioControls: React.FC<AudioControlsProps> = ({
+  audioStream,
+  onAudioSettingsChange,
+  onAudioLevelChange,
 }) => {
-  // Advanced customization controls
-  // Real-time preview
-  // Effect application
+  // Audio recording controls
+  // Level monitoring and visualization
+  // Quality and effect settings
+  // Microphone access management
 };
 ```
 
-#### usePerformance Hook
+#### CollapsiblePanel Component
 
 ```typescript
 /**
- * @fileoverview Performance monitoring and optimization hook.
+ * @fileoverview Collapsible control panel component.
  *
- * Monitors application performance, manages resources,
- * and provides optimization recommendations.
+ * Provides sliding panels that can be hidden to maximize
+ * video screen real estate while maintaining easy access to controls.
  */
 
-export const usePerformance = () => {
-  // Performance monitoring
-  // Resource management
-  // Optimization suggestions
-  // Memory leak detection
+interface CollapsiblePanelProps {
+  position: 'left' | 'right' | 'top' | 'bottom';
+  isVisible: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}
+
+export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
+  position,
+  isVisible,
+  onToggle,
+  children,
+}) => {
+  // Smooth slide animations
+  // Touch and gesture support
+  // Auto-hide functionality
+  // Responsive behavior
 };
 ```
 
-#### Effects Service
+#### useAudio Hook
 
 ```typescript
 /**
- * @fileoverview Video effects and filters service.
+ * @fileoverview Audio recording and management hook.
  *
- * Manages real-time video effects, filters, and visual enhancements.
- * Provides performance-optimized effect processing.
+ * Manages microphone access, audio recording, synchronization,
+ * and audio processing with video streams.
  */
 
-export class EffectsService {
-  // Real-time effects processing
-  // Filter application
-  // Performance optimization
-  // Effect presets and customization
+export const useAudio = () => {
+  // Microphone access and permissions
+  // Audio stream management
+  // Audio-video synchronization
+  // Audio effects and processing
+  // Level monitoring and visualization
+};
+```
+
+#### useImmersiveUI Hook
+
+```typescript
+/**
+ * @fileoverview Immersive UI state management hook.
+ *
+ * Manages UI layout, control visibility, fullscreen mode,
+ * and user interaction patterns for maximum video focus.
+ */
+
+export const useImmersiveUI = () => {
+  // Control panel visibility states
+  // Fullscreen mode management
+  // Gesture and touch handling
+  // Keyboard shortcut management
+  // Auto-hide timers and triggers
+};
+```
+
+#### Audio Service
+
+```typescript
+/**
+ * @fileoverview Audio recording and processing service.
+ *
+ * Manages microphone access, audio recording, synchronization,
+ * effects, and multiple audio track support.
+ */
+
+export class AudioService {
+  // Microphone access and permissions
+  // Audio stream capture and processing
+  // Audio-video synchronization
+  // Audio effects and noise reduction
+  // Multiple audio track management
+  // Audio quality and format options
+}
+```
+
+#### UI Service
+
+```typescript
+/**
+ * @fileoverview UI state and layout management service.
+ *
+ * Manages immersive UI layout, control visibility,
+ * fullscreen mode, and user interaction patterns.
+ */
+
+export class UIService {
+  // Control panel state management
+  // Fullscreen mode handling
+  // Gesture and touch recognition
+  // Keyboard shortcut processing
+  // Auto-hide and show logic
+  // Layout customization and persistence
 }
 ```
 
@@ -274,6 +410,8 @@ export class EffectsService {
 
 - [ ] Application performance meets production standards
 - [ ] Bundle size is optimized and loads quickly
+- [ ] Audio recording works seamlessly with video synchronization
+- [ ] Immersive UI maximizes video screen real estate effectively
 - [ ] Advanced overlay customization works smoothly
 - [ ] Enhanced recording features function correctly
 - [ ] User experience is polished and professional
@@ -283,6 +421,8 @@ export class EffectsService {
 ## User Experience Requirements
 
 - **Performance**: Smooth operation on all target devices
+- **Audio Quality**: High-quality audio recording with perfect synchronization
+- **Immersive**: Maximum video focus with intuitive control access
 - **Customization**: Extensive overlay and effect options
 - **Professional**: High-quality recording and export capabilities
 - **Accessibility**: Full accessibility compliance
@@ -291,6 +431,8 @@ export class EffectsService {
 ## Technical Requirements
 
 - **Performance**: < 3s initial load time, 60fps tracking
+- **Audio**: High-quality audio recording with < 50ms sync latency
+- **UI**: Responsive design with smooth animations and transitions
 - **Compatibility**: Works across all modern browsers
 - **Security**: Implements security best practices
 - **Scalability**: Handles multiple concurrent users
@@ -303,13 +445,17 @@ export class EffectsService {
 - Analytics and tracking services
 - Cloud storage integration
 - Social media API access
+- Audio processing libraries
+- UI animation and gesture libraries
 
 ## Risks and Mitigation
 
 - **Performance degradation**: Implement comprehensive monitoring and optimization
-- **Complexity increase**: Maintain intuitive user experience through good UX design
+- **Audio synchronization issues**: Robust audio-video sync mechanisms and testing
+- **UI complexity**: Maintain intuitive user experience through good UX design
 - **Browser compatibility**: Extensive testing across different browsers and devices
 - **Security vulnerabilities**: Regular security audits and updates
+- **Audio permissions**: Graceful handling of microphone access denials
 
 ## Production Deployment
 
@@ -328,5 +474,7 @@ This polish phase establishes a solid foundation for future enhancements:
 - Collaborative recording features
 - Mobile application development
 - Enterprise features and integrations
+- Advanced audio processing and AI-powered audio enhancement
+- Virtual reality and augmented reality integration
 
-The polish phase ensures the application is production-ready, performant, and provides an excellent user experience for all users.
+The polish phase ensures the application is production-ready, performant, and provides an excellent user experience for all users with comprehensive audio and video capabilities in an immersive interface.
