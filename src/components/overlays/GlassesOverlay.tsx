@@ -169,8 +169,8 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Clear canvas
-    clearCanvas();
+    // Clear canvas completely
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Check if we have valid tracking data
     if (
@@ -204,6 +204,16 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
     if (!glassesPosition) {
       return;
     }
+
+    // Debug: Log position to check if coordinates are reasonable
+    console.log('Glasses position:', {
+      x: glassesPosition.x,
+      y: glassesPosition.y,
+      width: glassesPosition.width,
+      height: glassesPosition.height,
+      canvasWidth,
+      canvasHeight,
+    });
 
     // Render each glasses overlay
     for (const overlay of glassesOverlays) {
@@ -373,6 +383,11 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
       className={`absolute inset-0 pointer-events-none ${className}`}
       style={{
         zIndex: 25, // Higher than general overlays
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
       }}
     />
   );
