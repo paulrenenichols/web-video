@@ -146,6 +146,17 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
         };
       }
       
+      // If even fallback landmarks fail, use a simple fixed position
+      console.log('🎩 Using fixed position fallback for hat positioning');
+      return {
+        x: 0.4, // 40% from left
+        y: 0.1, // 10% from top
+        width: 0.2, // 20% of screen width
+        height: 0.15, // 15% of screen height
+        rotation: 0,
+        scale: 1.0,
+      };
+      
       return null; // Return null if all landmarks missing
     }
 
