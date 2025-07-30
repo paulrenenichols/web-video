@@ -193,7 +193,7 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
     // Check if video is mirrored
     const isMirrored = video.style.transform?.includes('scaleX(-1)') || false;
 
-    // Calculate glasses position
+    // Calculate glasses position (only if landmarks changed)
     const glassesPosition = calculateGlassesPosition(
       facialLandmarks.landmarks,
       canvasWidth,
@@ -284,24 +284,44 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
     clearCanvas,
     videoRef,
     calculateGlassesPosition,
+    preloadImage,
   ]);
 
   /**
-   * Main render loop
+   * Main render function
    */
   const render = useCallback(async () => {
+    if (
+      !isVisible ||
+      status !== 'detected' ||
+      !facialLandmarks ||
+      !faceDetection
+    ) {
+      // Clear the canvas when overlay is disabled
+      if (canvasRef.current) {
+        const ctx = canvasRef.current.getContext('2d');
+        if (ctx) {
+          ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        }
+      }
+      return;
+    }
+
     // Update canvas size if needed
     if (!updateCanvasSize()) {
-      animationFrameRef.current = requestAnimationFrame(render);
       return;
     }
 
     // Render glasses
     await renderGlasses();
-
-    // Continue animation
-    animationFrameRef.current = requestAnimationFrame(render);
-  }, [updateCanvasSize, renderGlasses]);
+  }, [
+    isVisible,
+    status,
+    facialLandmarks,
+    faceDetection,
+    updateCanvasSize,
+    renderGlasses,
+  ]);
 
   // Handle canvas size updates
   useEffect(() => {
@@ -335,17 +355,13 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = ({
       render();
     } else {
       clearCanvas();
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
     }
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
   }, [isVisible, isEnabled, glassesOverlays.length, render, clearCanvas]);
+
+  // Render on changes
+  useEffect(() => {
+    render();
+  }, [render, activeOverlays, isVisible]);
 
   if (!isVisible || !isEnabled || glassesOverlays.length === 0) {
     return null;
