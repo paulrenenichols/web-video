@@ -74,13 +74,15 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
     console.log('🎩 DebugHatsOverlay - Total landmarks available:', landmarks.length);
     console.log('🎩 DebugHatsOverlay - Sample landmarks 0-10:', landmarks.slice(0, 10).map((lm, i) => `[${i}]: ${lm ? 'exists' : 'missing'}`));
 
-    // Use more reliable landmarks for hat positioning
-    // These landmarks are known to work well in MediaPipe face mesh
+    // Use more distributed landmarks for better hat positioning
+    // These landmarks are spread across the forehead area
     const foreheadLandmarks = [
       landmarks[10],   // Forehead center (nose bridge)
-      landmarks[151],  // Forehead left
-      landmarks[337],  // Forehead right
-      landmarks[9],    // Forehead top
+      landmarks[151],  // Left eyebrow inner
+      landmarks[337],  // Right eyebrow inner
+      landmarks[9],    // Forehead top center
+      landmarks[8],    // Forehead top left
+      landmarks[7],    // Forehead top right
     ];
 
     // Use eye landmarks for width calculation and rotation
@@ -92,7 +94,7 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
     // Check if we have enough landmarks
     const allLandmarks = [...foreheadLandmarks, ...eyeLandmarks];
     if (allLandmarks.some(lm => !lm)) {
-      console.log('🎩 DebugHatsOverlay - Missing landmarks:', allLandmarks.map((lm, i) => lm ? 'exists' : `missing at index ${[10, 338, 297, 332, 159, 386][i]}`));
+      console.log('🎩 DebugHatsOverlay - Missing landmarks:', allLandmarks.map((lm, i) => lm ? 'exists' : `missing at index ${[10, 151, 337, 9, 8, 7, 159, 386][i]}`));
       return null;
     }
 
@@ -143,7 +145,7 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
     if (!hatPosition) return;
 
     // Draw forehead landmarks (red dots)
-    const foreheadLandmarks = [10, 151, 337, 9];
+    const foreheadLandmarks = [10, 151, 337, 9, 8, 7];
     ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
     foreheadLandmarks.forEach(landmarkIndex => {
       const landmark = facialLandmarks.landmarks[landmarkIndex];
