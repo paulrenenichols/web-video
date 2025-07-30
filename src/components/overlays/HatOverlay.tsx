@@ -37,6 +37,29 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     overlay => overlay.config.type === OverlayType.HAT && overlay.enabled
   );
 
+  // TEST: Manually add a hat overlay for debugging if none exist
+  useEffect(() => {
+    if (hatOverlays.length === 0 && isVisible && isEnabled) {
+      console.log('🎩 TEST: No hat overlays found, checking if we should add a test hat');
+      
+      // Manual test: Add a baseball hat overlay directly to the store
+      const { addOverlay } = useOverlayStore.getState();
+      const testHatConfig = {
+        id: 'test-baseball',
+        type: OverlayType.HAT,
+        name: 'Test Baseball',
+        imageUrl: '/assets/hats/baseball.svg',
+        defaultPosition: { x: 0.5, y: 0.2, width: 0.3, height: 0.2, rotation: 0, scale: 1.0, zIndex: 2 },
+        defaultRendering: { opacity: 0.9, blendMode: 'normal' as const, visible: true },
+        anchors: { primary: 10, secondary: [338, 151, 337], offset: { x: 0, y: -0.1 } },
+        scaling: { base: 1.0, widthFactor: 1.0, heightFactor: 1.0 }
+      };
+      
+      console.log('🎩 TEST: Adding test hat overlay manually');
+      addOverlay(testHatConfig);
+    }
+  }, [hatOverlays.length, isVisible, isEnabled]);
+
   // Debug logging
   console.log('🎩 HatOverlay Debug:', {
     isVisible,
