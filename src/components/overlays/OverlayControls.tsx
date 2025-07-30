@@ -184,6 +184,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
    */
   const handleHatSelect = (hatId: string) => {
     console.log('🎩 Hat selection clicked:', hatId);
+    console.log('🎩 Hat overlay system enabled:', hatOverlaySystemEnabled);
     console.log(
       '🎩 Current active overlays:',
       JSON.stringify(
@@ -216,6 +217,12 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
       } else {
         setSelectedHat(hatId); // Select if turning on
         console.log('🎩 Selecting hat:', hatId);
+        
+        // Auto-enable hat overlay system if not already enabled
+        if (!hatOverlaySystemEnabled && onToggleHatOverlaySystem) {
+          console.log('🎩 Auto-enabling hat overlay system');
+          onToggleHatOverlaySystem(true);
+        }
       }
     } else {
       // Clear any existing hats first
@@ -233,6 +240,12 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
       if (hatConfig) {
         console.log('🎩 Adding new hat overlay:', hatConfig);
         addOverlay(hatConfig);
+        
+        // Auto-enable hat overlay system if not already enabled
+        if (!hatOverlaySystemEnabled && onToggleHatOverlaySystem) {
+          console.log('🎩 Auto-enabling hat overlay system');
+          onToggleHatOverlaySystem(true);
+        }
       } else {
         console.error('🎩 Hat config not found for ID:', hatId);
       }
