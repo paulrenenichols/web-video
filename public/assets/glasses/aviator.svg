@@ -1,0 +1,24 @@
+<svg width="200" height="60" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Left lens frame -->
+  <ellipse cx="32.5" cy="30" rx="22" ry="18" fill="none" stroke="#666" stroke-width="2"/>
+  
+  <!-- Right lens frame -->
+  <ellipse cx="167.5" cy="30" rx="22" ry="18" fill="none" stroke="#666" stroke-width="2"/>
+  
+  <!-- Bridge -->
+  <rect x="54.5" y="25" width="91" height="10" fill="none" stroke="#666" stroke-width="2"/>
+  
+  <!-- Left temple -->
+  <line x1="10.5" y1="30" x2="0" y2="30" stroke="#666" stroke-width="2"/>
+  
+  <!-- Right temple -->
+  <line x1="189.5" y1="30" x2="200" y2="30" stroke="#666" stroke-width="2"/>
+  
+  <!-- Lens tint -->
+  <ellipse cx="32.5" cy="30" rx="20" ry="16" fill="rgba(0,0,0,0.3)"/>
+  <ellipse cx="167.5" cy="30" rx="20" ry="16" fill="rgba(0,0,0,0.3)"/>
+  
+  <!-- Lens reflections -->
+  <ellipse cx="32.5" cy="30" rx="8" ry="4" fill="rgba(255,255,255,0.4)"/>
+  <ellipse cx="167.5" cy="30" rx="8" ry="4" fill="rgba(255,255,255,0.4)"/>
+</svg> 

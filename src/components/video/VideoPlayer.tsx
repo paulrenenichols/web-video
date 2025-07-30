@@ -5,7 +5,7 @@
  * This is a foundational component that will be enhanced in later phases.
  */
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 
 interface VideoPlayerProps {
   stream: MediaStream | null;
@@ -13,16 +13,21 @@ interface VideoPlayerProps {
   autoPlay?: boolean;
   muted?: boolean;
   playsInline?: boolean;
+  onVideoProcess?: (videoElement: HTMLVideoElement) => Promise<void>;
 }
 
-export const VideoPlayer: React.FC<VideoPlayerProps> = ({
+export const VideoPlayer = forwardRef<HTMLVideoElement, VideoPlayerProps>(({
   stream,
   className = '',
   autoPlay = true,
   muted = true,
   playsInline = true,
-}) => {
+  onVideoProcess,
+}, ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  
+  // Expose video element to parent
+  useImperativeHandle(ref, () => videoRef.current || null, [videoRef.current]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -37,6 +42,43 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       });
     }
   }, [stream, autoPlay]);
+
+  // Set up MediaPipe processing for Step 1 testing
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !onVideoProcess || !stream) return;
+
+    let animationFrameId: number;
+    let isProcessing = false;
+
+    const processFrame = async () => {
+      if (!isProcessing) {
+        isProcessing = true;
+        try {
+          await onVideoProcess(video);
+        } catch (error) {
+          console.error('Error processing video frame:', error);
+        } finally {
+          isProcessing = false;
+        }
+      }
+      animationFrameId = requestAnimationFrame(processFrame);
+    };
+
+    // Start processing when video is ready
+    const handleCanPlay = () => {
+      processFrame();
+    };
+
+    video.addEventListener('canplay', handleCanPlay);
+
+    return () => {
+      video.removeEventListener('canplay', handleCanPlay);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [stream, onVideoProcess]);
 
   if (!stream) {
     return (
@@ -81,4 +123,4 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       />
     </div>
   );
-};
+});
