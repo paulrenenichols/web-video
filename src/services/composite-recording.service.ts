@@ -96,14 +96,13 @@ export class CompositeRecordingService {
     // Check if video is mirrored
     const isMirrored = this.isVideoMirrored();
 
-    // Apply mirroring transformation if needed
+    // Draw video frame (mirror if needed)
     if (isMirrored) {
       this.compositeCtx.save();
       this.compositeCtx.scale(-1, 1);
       this.compositeCtx.translate(-this.compositeCanvas.width, 0);
     }
 
-    // Draw video frame
     this.compositeCtx.drawImage(
       this.videoElement,
       0,
@@ -112,9 +111,22 @@ export class CompositeRecordingService {
       this.compositeCanvas.height
     );
 
+    if (isMirrored) {
+      this.compositeCtx.restore();
+    }
+
     // Draw overlay canvases on top
+    // Since overlays are already rendered with mirroring applied for display,
+    // we need to draw them without the composite canvas mirroring
     this.overlayCanvasElements.forEach(overlayCanvas => {
       if (overlayCanvas && overlayCanvas.width > 0 && overlayCanvas.height > 0) {
+        // For mirrored video, we need to mirror the overlay canvas to match
+        if (isMirrored) {
+          this.compositeCtx!.save();
+          this.compositeCtx!.scale(-1, 1);
+          this.compositeCtx!.translate(-this.compositeCanvas!.width, 0);
+        }
+        
         this.compositeCtx!.drawImage(
           overlayCanvas,
           0,
@@ -122,13 +134,12 @@ export class CompositeRecordingService {
           this.compositeCanvas!.width,
           this.compositeCanvas!.height
         );
+        
+        if (isMirrored) {
+          this.compositeCtx!.restore();
+        }
       }
     });
-
-    // Restore transformation if mirrored
-    if (isMirrored) {
-      this.compositeCtx.restore();
-    }
   }
 
   /**
