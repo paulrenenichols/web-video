@@ -308,4 +308,57 @@ export class OverlayService {
       zIndex: targetPosition.zIndex, // Don't smooth z-index
     };
   }
+
+  /**
+   * Check if overlays can be combined (no conflicts)
+   */
+  static canCombineOverlays(overlays: ActiveOverlay[]): boolean {
+    // Check for conflicts between overlay types
+    const glassesCount = overlays.filter(o => o.config.type === OverlayType.GLASSES).length;
+    const hatCount = overlays.filter(o => o.config.type === OverlayType.HAT).length;
+    
+    // Only one glasses and one hat allowed
+    return glassesCount <= 1 && hatCount <= 1;
+  }
+
+  /**
+   * Get optimal z-index for overlay type
+   */
+  static getOptimalZIndex(overlayType: OverlayType): number {
+    switch (overlayType) {
+      case OverlayType.GLASSES:
+        return 1; // Glasses behind hats
+      case OverlayType.HAT:
+        return 2; // Hats on top
+      default:
+        return 1;
+    }
+  }
+
+  /**
+   * Validate overlay combination
+   */
+  static validateOverlayCombination(overlays: ActiveOverlay[]): {
+    isValid: boolean;
+    conflicts: string[];
+  } {
+    const conflicts: string[] = [];
+    
+    // Check for multiple glasses
+    const glassesOverlays = overlays.filter(o => o.config.type === OverlayType.GLASSES);
+    if (glassesOverlays.length > 1) {
+      conflicts.push('Multiple glasses selected');
+    }
+    
+    // Check for multiple hats
+    const hatOverlays = overlays.filter(o => o.config.type === OverlayType.HAT);
+    if (hatOverlays.length > 1) {
+      conflicts.push('Multiple hats selected');
+    }
+    
+    return {
+      isValid: conflicts.length === 0,
+      conflicts,
+    };
+  }
 } 

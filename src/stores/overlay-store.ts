@@ -18,6 +18,7 @@ import {
 } from '@/types/overlay';
 import { AVAILABLE_GLASSES, GlassesConfig } from '@/constants/glasses';
 import { AVAILABLE_HATS, HatConfig } from '@/constants/hats';
+import { OverlayService } from '@/services/overlay.service';
 
 /**
  * Convert glasses config to overlay config
@@ -116,7 +117,7 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
       ...initialState,
 
       /**
-       * Add overlay to active list
+       * Add overlay to active list with combination validation
        */
       addOverlay: (config: OverlayConfig) => {
         const state = get();
@@ -144,6 +145,25 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
             lastUpdate: Date.now(),
           }));
         } else {
+          // Check for combination conflicts before adding
+          const potentialOverlays = [...state.activeOverlays];
+          const tempOverlay: ActiveOverlay = {
+            config,
+            position: config.defaultPosition,
+            rendering: config.defaultRendering,
+            enabled: true,
+            lastUpdate: Date.now(),
+          };
+          potentialOverlays.push(tempOverlay);
+
+          // Validate combination
+          const validation = OverlayService.validateOverlayCombination(potentialOverlays);
+          if (!validation.isValid) {
+            console.warn('⚠️ Overlay combination conflict:', validation.conflicts);
+            set({ error: validation.conflicts.join(', '), lastUpdate: Date.now() });
+            return;
+          }
+
           // Check if we have cached rendering settings for this overlay
           const cachedRendering = state.removedOverlaysCache.get(config.id);
           const renderingToUse = cachedRendering 
@@ -154,10 +174,13 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
             console.log('🔄 Store: Using cached rendering settings for overlay:', config.id, cachedRendering);
           }
 
-          // Add new overlay
+          // Add new overlay with optimal z-index
           const newOverlay: ActiveOverlay = {
             config,
-            position: config.defaultPosition,
+            position: {
+              ...config.defaultPosition,
+              zIndex: OverlayService.getOptimalZIndex(config.type),
+            },
             rendering: renderingToUse,
             enabled: true,
             lastUpdate: Date.now(),
@@ -171,6 +194,7 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
             return {
               activeOverlays: [...state.activeOverlays, newOverlay],
               removedOverlaysCache: newCache,
+              error: null, // Clear any previous errors
               lastUpdate: Date.now(),
             };
           });

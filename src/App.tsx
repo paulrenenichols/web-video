@@ -23,6 +23,7 @@ import { DebugGlassesOverlay } from '@/components/overlays/DebugGlassesOverlay';
 import { DebugHatsOverlay } from '@/components/overlays/DebugHatsOverlay';
 import { GlassesOverlay } from '@/components/overlays/GlassesOverlay';
 import { HatOverlay } from '@/components/overlays/HatOverlay';
+import { OverlaySystem } from '@/components/overlays/OverlaySystem';
 import { OverlayControls } from '@/components/overlays/OverlayControls';
 import { useOverlayStore } from '@/stores/overlay-store';
 import { VisualizationControls } from '@/components/controls/VisualizationControls';
@@ -213,13 +214,18 @@ const VideoRecorderApp: React.FC = () => {
                   className="aspect-video w-full"
                 />
 
-                {/* Glasses overlay */}
+                {/* Main overlay system for combination logic */}
+                <OverlaySystem
+                  isVisible={glassesOverlaySystemEnabled || hatOverlaySystemEnabled}
+                  videoRef={videoRef}
+                  className="aspect-video w-full"
+                />
+                {/* Individual overlay components for specific functionality */}
                 <GlassesOverlay
                   isVisible={glassesOverlaySystemEnabled}
                   videoRef={videoRef}
                   className="aspect-video w-full"
                 />
-                {/* Hat overlay */}
                 <HatOverlay
                   isVisible={hatOverlaySystemEnabled}
                   videoRef={videoRef}

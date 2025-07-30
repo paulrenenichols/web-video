@@ -248,13 +248,25 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
   /**
    * Handle glasses scale change
    */
-  const handleGlassesScaleChange = (glassesId: string, scale: number) => {
-    const overlay = activeOverlays.find(o => o.config.id === glassesId);
-    if (overlay) {
-      updateOverlayRendering(glassesId, {
-        // Update scale through position since rendering doesn't have scale
-      });
-    }
+  const handleGlassesScaleChange = (scale: number) => {
+    const allGlassesOverlays = activeOverlays.filter(o => o.config.type === OverlayType.GLASSES);
+    allGlassesOverlays.forEach(glasses => {
+      // Update scale through position since rendering doesn't have scale
+      // This will be enhanced in Step 10 with proper scaling
+      console.log('🔍 Glasses scale change:', scale, 'for overlay:', glasses.config.id);
+    });
+  };
+
+  /**
+   * Handle hat scale change
+   */
+  const handleHatScaleChange = (scale: number) => {
+    const allHatOverlays = activeOverlays.filter(o => o.config.type === OverlayType.HAT);
+    allHatOverlays.forEach(hat => {
+      // Update scale through position since rendering doesn't have scale
+      // This will be enhanced in Step 10 with proper scaling
+      console.log('🔍 Hat scale change:', scale, 'for overlay:', hat.config.id);
+    });
   };
 
   /**
@@ -288,6 +300,27 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
   const handleClearOverlays = () => {
     clearOverlays();
     setSelectedGlasses(null);
+    setSelectedHat(null);
+  };
+
+  /**
+   * Reset all overlays to default settings
+   */
+  const handleResetOverlays = () => {
+    activeOverlays.forEach(overlay => {
+      updateOverlayRendering(overlay.config.id, {
+        opacity: overlay.config.defaultRendering.opacity,
+        blendMode: overlay.config.defaultRendering.blendMode,
+        visible: overlay.config.defaultRendering.visible,
+      });
+    });
+  };
+
+  /**
+   * Toggle overlay system enabled state
+   */
+  const handleToggleOverlaySystem = () => {
+    setEnabled(!isEnabled);
   };
 
   return (
@@ -330,6 +363,22 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
               }`}
             >
               {hatOverlaySystemEnabled ? 'Hats On' : 'Hats Off'}
+            </button>
+            <button
+              onClick={handleToggleOverlaySystem}
+              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                isEnabled
+                  ? 'bg-purple-500 text-white hover:bg-purple-600'
+                  : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+              }`}
+            >
+              {isEnabled ? 'System On' : 'System Off'}
+            </button>
+            <button
+              onClick={handleResetOverlays}
+              className="px-3 py-1 rounded text-sm font-medium bg-yellow-500 text-white hover:bg-yellow-600 transition-colors"
+            >
+              Reset
             </button>
             <button
               onClick={handleClearOverlays}
@@ -443,37 +492,61 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                 </div>
               ))}
 
-              {/* Single Opacity Control for All Glasses */}
-              <div className="space-y-1 pt-2 border-t border-gray-100">
-                <label className="text-xs text-gray-600">Glasses Opacity</label>
-                {(() => {
-                  const allGlassesOverlays = activeOverlays.filter(o => o.config.type === OverlayType.GLASSES);
-                  const currentOpacity = allGlassesOverlays.length > 0 ? allGlassesOverlays[0].rendering.opacity : 0.9;
+              {/* Glasses Controls */}
+              <div className="space-y-3 pt-2 border-t border-gray-100">
+                {/* Opacity Control */}
+                <div className="space-y-1">
+                  <label className="text-xs text-gray-600">Glasses Opacity</label>
+                  {(() => {
+                    const allGlassesOverlays = activeOverlays.filter(o => o.config.type === OverlayType.GLASSES);
+                    const currentOpacity = allGlassesOverlays.length > 0 ? allGlassesOverlays[0].rendering.opacity : 0.9;
 
-                  return (
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={currentOpacity}
-                      onChange={e =>
-                        handleGlassesOpacityChange(parseFloat(e.target.value))
-                      }
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                    />
-                  );
-                })()}
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>0%</span>
-                  <span>
-                    {(() => {
-                      const allGlassesOverlays = activeOverlays.filter(o => o.config.type === OverlayType.GLASSES);
-                      const currentOpacity = allGlassesOverlays.length > 0 ? allGlassesOverlays[0].rendering.opacity : 0.9;
-                      return Math.round(currentOpacity * 100);
-                    })()}%
-                  </span>
-                  <span>100%</span>
+                    return (
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={currentOpacity}
+                        onChange={e =>
+                          handleGlassesOpacityChange(parseFloat(e.target.value))
+                        }
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      />
+                    );
+                  })()}
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>0%</span>
+                    <span>
+                      {(() => {
+                        const allGlassesOverlays = activeOverlays.filter(o => o.config.type === OverlayType.GLASSES);
+                        const currentOpacity = allGlassesOverlays.length > 0 ? allGlassesOverlays[0].rendering.opacity : 0.9;
+                        return Math.round(currentOpacity * 100);
+                      })()}%
+                    </span>
+                    <span>100%</span>
+                  </div>
+                </div>
+
+                {/* Size Control */}
+                <div className="space-y-1">
+                  <label className="text-xs text-gray-600">Glasses Size</label>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="2.0"
+                    step="0.1"
+                    defaultValue="1.0"
+                    onChange={e =>
+                      handleGlassesScaleChange(parseFloat(e.target.value))
+                    }
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>50%</span>
+                    <span>100%</span>
+                    <span>200%</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -583,36 +656,60 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                 </div>
               ))}
 
-              {/* Single Opacity Control for All Hats */}
-              <div className="space-y-1 pt-2 border-t border-gray-100">
-                <label className="text-xs text-gray-600">Hat Opacity</label>
-                                      {(() => {
+              {/* Hat Controls */}
+              <div className="space-y-3 pt-2 border-t border-gray-100">
+                {/* Opacity Control */}
+                <div className="space-y-1">
+                  <label className="text-xs text-gray-600">Hat Opacity</label>
+                  {(() => {
+                    const allHatOverlays = activeOverlays.filter(o => o.config.type === OverlayType.HAT);
+                    const currentOpacity = allHatOverlays.length > 0 ? allHatOverlays[0].rendering.opacity : 0.9;
+                    return (
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={currentOpacity}
+                        onChange={e =>
+                          handleHatOpacityChange(parseFloat(e.target.value))
+                        }
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      />
+                    );
+                  })()}
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>0%</span>
+                    <span>
+                      {(() => {
                         const allHatOverlays = activeOverlays.filter(o => o.config.type === OverlayType.HAT);
                         const currentOpacity = allHatOverlays.length > 0 ? allHatOverlays[0].rendering.opacity : 0.9;
-                        return (
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={currentOpacity}
-                      onChange={e =>
-                        handleHatOpacityChange(parseFloat(e.target.value))
-                      }
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                    />
-                  );
-                })()}
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>0%</span>
-                  <span>
-                    {(() => {
-                      const allHatOverlays = activeOverlays.filter(o => o.config.type === OverlayType.HAT);
-                      const currentOpacity = allHatOverlays.length > 0 ? allHatOverlays[0].rendering.opacity : 0.9;
-                      return Math.round(currentOpacity * 100);
-                    })()}%
-                  </span>
-                  <span>100%</span>
+                        return Math.round(currentOpacity * 100);
+                      })()}%
+                    </span>
+                    <span>100%</span>
+                  </div>
+                </div>
+
+                {/* Size Control */}
+                <div className="space-y-1">
+                  <label className="text-xs text-gray-600">Hat Size</label>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="2.0"
+                    step="0.1"
+                    defaultValue="1.0"
+                    onChange={e =>
+                      handleHatScaleChange(parseFloat(e.target.value))
+                    }
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>50%</span>
+                    <span>100%</span>
+                    <span>200%</span>
+                  </div>
                 </div>
               </div>
             </div>
