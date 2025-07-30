@@ -286,7 +286,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
   /**
    * Main render function
    */
-  const render = useCallback(async () => {
+    const render = useCallback(async () => {
     console.log('🎩 HatOverlay render called:', {
       isVisible,
       status,
@@ -294,7 +294,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
       hasFaceDetection: !!faceDetection,
       hatOverlaysLength: hatOverlays.length
     });
-    
+
     if (
       !isVisible ||
       status !== 'detected' ||
@@ -302,6 +302,13 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
       !faceDetection
     ) {
       console.log('🎩 HatOverlay render early return - conditions not met');
+      // Clear the canvas when overlay is disabled
+      if (canvasRef.current) {
+        const ctx = canvasRef.current.getContext('2d');
+        if (ctx) {
+          ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        }
+      }
       return;
     }
 
