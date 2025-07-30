@@ -75,12 +75,12 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
     console.log('🎩 DebugHatsOverlay - Sample landmarks 0-10:', landmarks.slice(0, 10).map((lm, i) => `[${i}]: ${lm ? 'exists' : 'missing'}`));
 
     // Use exactly 4 landmarks for hat positioning as specified
-    // Center forehead above eyebrows (2 dots), top of forehead, middle of eyes
+    // Center forehead above eyebrows (2 dots), top of forehead, above eyes
     const foreheadLandmarks = [
       landmarks[151],  // Center forehead above eyebrows (left)
       landmarks[337],  // Center forehead above eyebrows (right)
-      landmarks[8],    // Top of forehead
-      landmarks[159],  // Middle of eyes (left eye center)
+      landmarks[9],    // Top of forehead
+      landmarks[10],   // Above eyes (nose bridge)
     ];
 
     // Use eye landmarks for width calculation and rotation
@@ -92,7 +92,7 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
     // Check if we have enough landmarks
     const allLandmarks = [...foreheadLandmarks, ...eyeLandmarks];
     if (allLandmarks.some(lm => !lm)) {
-      console.log('🎩 DebugHatsOverlay - Missing landmarks:', allLandmarks.map((lm, i) => lm ? 'exists' : `missing at index ${[151, 337, 8, 159, 159, 386][i]}`));
+      console.log('🎩 DebugHatsOverlay - Missing landmarks:', allLandmarks.map((lm, i) => lm ? 'exists' : `missing at index ${[151, 337, 9, 10, 159, 386][i]}`));
       return null;
     }
 
@@ -142,8 +142,8 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
     const hatPosition = calculateHatPosition(facialLandmarks);
     if (!hatPosition) return;
 
-    // Draw exactly 4 landmarks as red dots: center forehead above eyebrows (2), top forehead, middle of eyes
-    const foreheadLandmarks = [151, 337, 8, 159];
+    // Draw exactly 4 landmarks as red dots: center forehead above eyebrows (2), top forehead, above eyes
+    const foreheadLandmarks = [151, 337, 9, 10];
     ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
     foreheadLandmarks.forEach(landmarkIndex => {
       const landmark = facialLandmarks.landmarks[landmarkIndex];
@@ -184,7 +184,7 @@ export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({
 
     // Draw center point between the 4 specified landmarks (only if all landmarks exist)
     // Use exactly the same 4 landmarks for center calculation
-    const keyForeheadLandmarks = [151, 337, 8, 159]; // Center forehead above eyebrows (2), top forehead, middle of eyes
+    const keyForeheadLandmarks = [151, 337, 9, 10]; // Center forehead above eyebrows (2), top forehead, above eyes
     const existingKeyLandmarks = keyForeheadLandmarks.filter(index => facialLandmarks.landmarks[index]);
     if (existingKeyLandmarks.length === keyForeheadLandmarks.length) {
       let centerX = existingKeyLandmarks.reduce((sum, index) => sum + facialLandmarks.landmarks[index].x, 0) / existingKeyLandmarks.length;
