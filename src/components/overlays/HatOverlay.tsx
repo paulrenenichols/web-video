@@ -37,7 +37,16 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     overlay => overlay.config.type === OverlayType.HAT && overlay.enabled
   );
 
-  // Remove the test useEffect - no longer needed
+  // Clear canvas when overlays are removed
+  useEffect(() => {
+    if (hatOverlays.length === 0 && isVisible) {
+      const canvas = canvasRef.current;
+      const ctx = canvas?.getContext('2d');
+      if (canvas && ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+  }, [hatOverlays.length, isVisible]);
 
   // Clean component - no debug logging needed
 
@@ -164,23 +173,12 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     const headCenterX = (foreheadLeft.x + foreheadRight.x) / 2;
     const hatX = headCenterX - hatWidth / 2;
 
-    // Calculate rotation angle from forehead landmarks (same as DebugHatsOverlay)
-    const canvas = canvasRef.current;
-    const canvasWidth = canvas?.width || 640; // Default fallback
-    const canvasHeight = canvas?.height || 480; // Default fallback
-    
-    const leftX = foreheadLeft.x * canvasWidth;
-    const rightX = foreheadRight.x * canvasWidth;
-    const deltaX = rightX - leftX;
-    const deltaY = (foreheadRight.y - foreheadLeft.y) * canvasHeight;
-    const rotationAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-
     return {
       x: hatX,
       y: hatY,
       width: hatWidth,
       height: hatHeight,
-      rotation: rotationAngle,
+      rotation: 0, // No rotation for now - match DebugHatsOverlay
       scale: overlay.rendering.scale || 1.0,
     };
   }, [faceDetection]);
@@ -198,9 +196,20 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
       !ctx ||
       !video ||
       !facialLandmarks ||
-      !isVisible ||
-      hatOverlays.length === 0
+      !isVisible
     ) {
+      // Clear canvas when not rendering
+      if (canvas && ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      return;
+    }
+
+    // Always clear canvas at the start of each frame
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // If no hat overlays, we're done (canvas is already cleared)
+    if (hatOverlays.length === 0) {
       return;
     }
 
@@ -233,21 +242,14 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
           drawX = canvas.width - drawX - drawWidth;
         }
         
-        // Apply transformations for rotation
-        ctx.save();
-        ctx.translate(drawX + drawWidth / 2, drawY + drawHeight / 2);
-        ctx.rotate((position.rotation * Math.PI) / 180);
-        ctx.scale(position.scale, position.scale);
-        
+        // Draw hat image (no rotation for now - match DebugHatsOverlay)
         ctx.drawImage(
           img,
-          -drawWidth / 2,
-          -drawHeight / 2,
+          drawX,
+          drawY,
           drawWidth,
           drawHeight
         );
-        
-        ctx.restore();
 
         // Draw label for debugging
         ctx.fillStyle = 'rgba(0, 255, 0, 0.7)';
