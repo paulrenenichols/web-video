@@ -184,6 +184,15 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     const ctx = canvas?.getContext('2d');
     const video = videoRef.current;
 
+    console.log('🎩 renderHats called:', {
+      hasCanvas: !!canvas,
+      hasCtx: !!ctx,
+      hasVideo: !!video,
+      hasFacialLandmarks: !!facialLandmarks,
+      isVisible,
+      hatOverlaysLength: hatOverlays.length
+    });
+
     if (
       !canvas ||
       !ctx ||
@@ -191,6 +200,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
       !facialLandmarks ||
       !isVisible
     ) {
+      console.log('🎩 renderHats early return - missing requirements');
       // Clear canvas when not rendering
       if (canvas && ctx) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -215,14 +225,18 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
 
     for (const overlay of hatOverlays) {
       try {
+        console.log('🎩 Processing hat overlay:', overlay.config.name);
         const position = calculateHatPosition(facialLandmarks.landmarks);
+        console.log('🎩 Position calculation result:', position);
         if (!position) {
           console.log('🎩 Hat position calculation failed for:', overlay.config.name);
           continue;
         }
 
         // Load hat image
+        console.log('🎩 Loading hat image:', overlay.config.imageUrl);
         const img = await preloadImage(overlay.config.imageUrl);
+        console.log('🎩 Hat image loaded successfully:', !!img);
 
         // Apply opacity
         ctx.globalAlpha = overlay.rendering.opacity;
