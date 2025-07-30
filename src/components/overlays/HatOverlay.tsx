@@ -287,15 +287,25 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
    * Main render function
    */
   const render = useCallback(async () => {
+    console.log('🎩 HatOverlay render called:', {
+      isVisible,
+      status,
+      hasFacialLandmarks: !!facialLandmarks,
+      hasFaceDetection: !!faceDetection,
+      hatOverlaysLength: hatOverlays.length
+    });
+    
     if (
       !isVisible ||
       status !== 'detected' ||
       !facialLandmarks ||
       !faceDetection
     ) {
+      console.log('🎩 HatOverlay render early return - conditions not met');
       return;
     }
 
+    console.log('🎩 HatOverlay render calling renderHats');
     await renderHats();
   }, [
     isVisible,
