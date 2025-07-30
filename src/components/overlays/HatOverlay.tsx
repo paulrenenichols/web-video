@@ -194,6 +194,12 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
       const fallbackRight = landmarks[337]; // Right head side
       const fallbackTop = landmarks[10]; // Head top
       
+      debugLog('Fallback landmarks check:', {
+        'landmark 151 (left)': !!fallbackLeft,
+        'landmark 337 (right)': !!fallbackRight,
+        'landmark 10 (top)': !!fallbackTop
+      });
+      
       if (fallbackLeft && fallbackRight && fallbackTop) {
         debugLog('Using fallback landmarks for positioning');
         
@@ -215,7 +221,17 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
         };
       }
       
-      return null;
+      debugLog('All landmarks failed, using fixed position test');
+      
+      // Test: Use a fixed position to verify rendering works
+      return {
+        x: 0.3, // 30% from left
+        y: 0.1, // 10% from top
+        width: 0.4, // 40% of screen width
+        height: 0.3, // 30% of screen height
+        rotation: 0,
+        scale: overlay.rendering.scale || 1.0,
+      };
     }
 
     // Use face detection bounding box for accurate head width (same as DebugHatsOverlay)
@@ -308,7 +324,11 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     for (const overlay of hatOverlays) {
       try {
         const position = calculateHatPosition(facialLandmarks, overlay);
-        if (!position) continue;
+        debugLog('Position calculation result:', position);
+        if (!position) {
+          debugLog('Position calculation failed, skipping overlay');
+          continue;
+        }
 
         // Load hat image
         debugLog('Loading hat image:', overlay.config.imageUrl);
