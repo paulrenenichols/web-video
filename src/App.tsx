@@ -216,7 +216,9 @@ const VideoRecorderApp: React.FC = () => {
 
                 {/* Main overlay system for combination logic */}
                 <OverlaySystem
-                  isVisible={glassesOverlaySystemEnabled || hatOverlaySystemEnabled}
+                  isVisible={
+                    glassesOverlaySystemEnabled || hatOverlaySystemEnabled
+                  }
                   videoRef={videoRef}
                   className="aspect-video w-full"
                 />

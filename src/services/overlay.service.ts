@@ -27,7 +27,8 @@ export class OverlayService {
     context: OverlayPositioningContext
   ): OverlayPositionResult {
     try {
-      const { landmarks, boundingBox, orientation, canvasSize, isMirrored } = context;
+      const { landmarks, boundingBox, orientation, canvasSize, isMirrored } =
+        context;
 
       // Get anchor landmark
       const anchorLandmark = landmarks[config.anchors.primary];
@@ -61,7 +62,15 @@ export class OverlayService {
       const height = config.defaultPosition.height * scale;
 
       // Create initial position
-      const initialPosition = { x: baseX, y: baseY, width, height, rotation, scale, zIndex: config.defaultPosition.zIndex };
+      const initialPosition = {
+        x: baseX,
+        y: baseY,
+        width,
+        height,
+        rotation,
+        scale,
+        zIndex: config.defaultPosition.zIndex,
+      };
 
       // Adjust position for overlay type
       const adjustedPosition = this.adjustPositionForType(
@@ -105,8 +114,8 @@ export class OverlayService {
     const baseScale = config.scaling.base;
     const widthScale = faceWidth * config.scaling.widthFactor;
     const heightScale = faceHeight * config.scaling.heightFactor;
-    
-    return baseScale * (widthScale + heightScale) / 2;
+
+    return (baseScale * (widthScale + heightScale)) / 2;
   }
 
   /**
@@ -121,15 +130,19 @@ export class OverlayService {
       case OverlayType.GLASSES:
         // Glasses follow roll (tilt) and some yaw
         return orientation.roll * 0.5 + orientation.yaw * 0.3;
-      
+
       case OverlayType.HAT:
         // Hats follow roll and pitch
         return orientation.roll * 0.7 + orientation.pitch * 0.3;
-      
+
       case OverlayType.MASK:
         // Masks follow all orientations
-        return orientation.roll * 0.6 + orientation.yaw * 0.2 + orientation.pitch * 0.2;
-      
+        return (
+          orientation.roll * 0.6 +
+          orientation.yaw * 0.2 +
+          orientation.pitch * 0.2
+        );
+
       default:
         // Default to roll only
         return orientation.roll * 0.5;
@@ -149,13 +162,13 @@ export class OverlayService {
     switch (type) {
       case OverlayType.GLASSES:
         return this.adjustGlassesPosition(position, landmarks, boundingBox);
-      
+
       case OverlayType.HAT:
         return this.adjustHatPosition(position, landmarks);
-      
+
       case OverlayType.MASK:
         return this.adjustMaskPosition(position, landmarks);
-      
+
       default:
         return position;
     }
@@ -175,11 +188,21 @@ export class OverlayService {
     const leftEyeOuter = landmarks[33]; // Left eye outer corner
     const rightEyeOuter = landmarks[263]; // Right eye outer corner
 
-    if (leftEye && rightEye && leftEye.visibility > 0.5 && rightEye.visibility > 0.5) {
-      if (leftEyeOuter && rightEyeOuter && leftEyeOuter.visibility > 0.5 && rightEyeOuter.visibility > 0.5) {
+    if (
+      leftEye &&
+      rightEye &&
+      leftEye.visibility > 0.5 &&
+      rightEye.visibility > 0.5
+    ) {
+      if (
+        leftEyeOuter &&
+        rightEyeOuter &&
+        leftEyeOuter.visibility > 0.5 &&
+        rightEyeOuter.visibility > 0.5
+      ) {
         // Calculate eye span (distance between outer edges)
         const eyeSpan = Math.abs(rightEyeOuter.x - leftEyeOuter.x);
-        
+
         // Position at center between eye centers
         const eyeCenterX = (leftEye.x + rightEye.x) / 2;
         const eyeCenterY = (leftEye.y + rightEye.y) / 2;
@@ -251,19 +274,21 @@ export class OverlayService {
   ): number {
     // Check visibility of anchor landmarks
     const anchorVisibility = landmarks[config.anchors.primary]?.visibility || 0;
-    
+
     // Check visibility of secondary anchors if they exist
     let secondaryVisibility = 1;
     if (config.anchors.secondary) {
       const secondaryVisibilities = config.anchors.secondary.map(
         index => landmarks[index]?.visibility || 0
       );
-      secondaryVisibility = secondaryVisibilities.reduce((sum, v) => sum + v, 0) / secondaryVisibilities.length;
+      secondaryVisibility =
+        secondaryVisibilities.reduce((sum, v) => sum + v, 0) /
+        secondaryVisibilities.length;
     }
 
     // Combine visibilities
-    const confidence = (anchorVisibility * 0.7) + (secondaryVisibility * 0.3);
-    
+    const confidence = anchorVisibility * 0.7 + secondaryVisibility * 0.3;
+
     return Math.max(0, Math.min(1, confidence));
   }
 
@@ -276,16 +301,19 @@ export class OverlayService {
   ): boolean {
     // Check if position is within canvas bounds
     const margin = 0.1; // Allow 10% margin outside canvas
-    
+
     const minX = -margin;
     const maxX = 1 + margin;
     const minY = -margin;
     const maxY = 1 + margin;
 
     return (
-      position.x >= minX && position.x <= maxX &&
-      position.y >= minY && position.y <= maxY &&
-      position.width > 0 && position.height > 0 &&
+      position.x >= minX &&
+      position.x <= maxX &&
+      position.y >= minY &&
+      position.y <= maxY &&
+      position.width > 0 &&
+      position.height > 0 &&
       position.scale > 0
     );
   }
@@ -299,12 +327,24 @@ export class OverlayService {
     smoothingFactor: number = 0.3
   ): OverlayPosition {
     return {
-      x: currentPosition.x + (targetPosition.x - currentPosition.x) * smoothingFactor,
-      y: currentPosition.y + (targetPosition.y - currentPosition.y) * smoothingFactor,
-      width: currentPosition.width + (targetPosition.width - currentPosition.width) * smoothingFactor,
-      height: currentPosition.height + (targetPosition.height - currentPosition.height) * smoothingFactor,
-      rotation: currentPosition.rotation + (targetPosition.rotation - currentPosition.rotation) * smoothingFactor,
-      scale: currentPosition.scale + (targetPosition.scale - currentPosition.scale) * smoothingFactor,
+      x:
+        currentPosition.x +
+        (targetPosition.x - currentPosition.x) * smoothingFactor,
+      y:
+        currentPosition.y +
+        (targetPosition.y - currentPosition.y) * smoothingFactor,
+      width:
+        currentPosition.width +
+        (targetPosition.width - currentPosition.width) * smoothingFactor,
+      height:
+        currentPosition.height +
+        (targetPosition.height - currentPosition.height) * smoothingFactor,
+      rotation:
+        currentPosition.rotation +
+        (targetPosition.rotation - currentPosition.rotation) * smoothingFactor,
+      scale:
+        currentPosition.scale +
+        (targetPosition.scale - currentPosition.scale) * smoothingFactor,
       zIndex: targetPosition.zIndex, // Don't smooth z-index
     };
   }
@@ -314,9 +354,13 @@ export class OverlayService {
    */
   static canCombineOverlays(overlays: ActiveOverlay[]): boolean {
     // Check for conflicts between overlay types
-    const glassesCount = overlays.filter(o => o.config.type === OverlayType.GLASSES).length;
-    const hatCount = overlays.filter(o => o.config.type === OverlayType.HAT).length;
-    
+    const glassesCount = overlays.filter(
+      o => o.config.type === OverlayType.GLASSES
+    ).length;
+    const hatCount = overlays.filter(
+      o => o.config.type === OverlayType.HAT
+    ).length;
+
     // Only one glasses and one hat allowed
     return glassesCount <= 1 && hatCount <= 1;
   }
@@ -343,22 +387,24 @@ export class OverlayService {
     conflicts: string[];
   } {
     const conflicts: string[] = [];
-    
+
     // Check for multiple glasses
-    const glassesOverlays = overlays.filter(o => o.config.type === OverlayType.GLASSES);
+    const glassesOverlays = overlays.filter(
+      o => o.config.type === OverlayType.GLASSES
+    );
     if (glassesOverlays.length > 1) {
       conflicts.push('Multiple glasses selected');
     }
-    
+
     // Check for multiple hats
     const hatOverlays = overlays.filter(o => o.config.type === OverlayType.HAT);
     if (hatOverlays.length > 1) {
       conflicts.push('Multiple hats selected');
     }
-    
+
     return {
       isValid: conflicts.length === 0,
       conflicts,
     };
   }
-} 
+}

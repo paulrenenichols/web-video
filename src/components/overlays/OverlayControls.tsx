@@ -50,7 +50,9 @@ const convertGlassesToOverlayConfig = (glasses: any): OverlayConfig => {
 /**
  * Available glasses configurations
  */
-const GLASSES_OPTIONS: OverlayConfig[] = AVAILABLE_GLASSES.map(convertGlassesToOverlayConfig);
+const GLASSES_OPTIONS: OverlayConfig[] = AVAILABLE_GLASSES.map(
+  convertGlassesToOverlayConfig
+);
 
 /**
  * Convert hat config to overlay config
@@ -88,7 +90,9 @@ const convertHatToOverlayConfig = (hat: any): OverlayConfig => {
   };
 };
 
-const HAT_OPTIONS: OverlayConfig[] = AVAILABLE_HATS.map(convertHatToOverlayConfig);
+const HAT_OPTIONS: OverlayConfig[] = AVAILABLE_HATS.map(
+  convertHatToOverlayConfig
+);
 
 interface OverlayControlsProps {
   /** Container className */
@@ -124,8 +128,6 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
     setEnabled,
   } = useOverlayStore();
 
-
-
   // Local state for overlay controls - independent of overlay system visibility
   const [isOverlayControlsEnabled, setIsOverlayControlsEnabled] =
     useState(true);
@@ -151,7 +153,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
     if (existingOverlay) {
       // If overlay exists, just toggle it instead of removing/re-adding
       toggleOverlay(glassesId);
-      
+
       // Update selectedGlasses state based on enabled state
       if (existingOverlay.enabled) {
         setSelectedGlasses(null); // Deselect if turning off
@@ -165,7 +167,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
           removeOverlay(overlay.config.id);
         }
       });
-      
+
       // Select new glasses
       setSelectedGlasses(glassesId);
       const glassesConfig = GLASSES_OPTIONS.find(
@@ -182,17 +184,31 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
    */
   const handleHatSelect = (hatId: string) => {
     console.log('🎩 Hat selection clicked:', hatId);
-    console.log('🎩 Current active overlays:', JSON.stringify(activeOverlays.map(o => ({ id: o.config.id, type: o.config.type, enabled: o.enabled }))));
-    
+    console.log(
+      '🎩 Current active overlays:',
+      JSON.stringify(
+        activeOverlays.map(o => ({
+          id: o.config.id,
+          type: o.config.type,
+          enabled: o.enabled,
+        }))
+      )
+    );
+
     const existingOverlay = activeOverlays.find(
       overlay => overlay.config.id === hatId
     );
 
     if (existingOverlay) {
       // If overlay exists, just toggle it instead of removing/re-adding
-      console.log('🔄 Toggling existing hat overlay:', hatId, 'Current enabled:', existingOverlay.enabled);
+      console.log(
+        '🔄 Toggling existing hat overlay:',
+        hatId,
+        'Current enabled:',
+        existingOverlay.enabled
+      );
       toggleOverlay(hatId);
-      
+
       // Update selectedHat state based on enabled state
       if (existingOverlay.enabled) {
         setSelectedHat(null); // Deselect if turning off
@@ -210,12 +226,10 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
           removeOverlay(overlay.config.id);
         }
       });
-      
+
       // Select new hat
       setSelectedHat(hatId);
-      const hatConfig = HAT_OPTIONS.find(
-        option => option.id === hatId
-      );
+      const hatConfig = HAT_OPTIONS.find(option => option.id === hatId);
       if (hatConfig) {
         console.log('🎩 Adding new hat overlay:', hatConfig);
         addOverlay(hatConfig);
@@ -229,7 +243,9 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
    * Handle glasses opacity change for all glasses overlays
    */
   const handleGlassesOpacityChange = (opacity: number) => {
-    const allGlassesOverlays = activeOverlays.filter(o => o.config.type === OverlayType.GLASSES);
+    const allGlassesOverlays = activeOverlays.filter(
+      o => o.config.type === OverlayType.GLASSES
+    );
     allGlassesOverlays.forEach(glasses => {
       updateOverlayRendering(glasses.config.id, { opacity });
     });
@@ -239,7 +255,9 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
    * Handle hat opacity change for all hat overlays
    */
   const handleHatOpacityChange = (opacity: number) => {
-    const allHatOverlays = activeOverlays.filter(o => o.config.type === OverlayType.HAT);
+    const allHatOverlays = activeOverlays.filter(
+      o => o.config.type === OverlayType.HAT
+    );
     allHatOverlays.forEach(hat => {
       updateOverlayRendering(hat.config.id, { opacity });
     });
@@ -249,11 +267,18 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
    * Handle glasses scale change
    */
   const handleGlassesScaleChange = (scale: number) => {
-    const allGlassesOverlays = activeOverlays.filter(o => o.config.type === OverlayType.GLASSES);
+    const allGlassesOverlays = activeOverlays.filter(
+      o => o.config.type === OverlayType.GLASSES
+    );
     allGlassesOverlays.forEach(glasses => {
       // Update scale through position since rendering doesn't have scale
       // This will be enhanced in Step 10 with proper scaling
-      console.log('🔍 Glasses scale change:', scale, 'for overlay:', glasses.config.id);
+      console.log(
+        '🔍 Glasses scale change:',
+        scale,
+        'for overlay:',
+        glasses.config.id
+      );
     });
   };
 
@@ -261,7 +286,9 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
    * Handle hat scale change
    */
   const handleHatScaleChange = (scale: number) => {
-    const allHatOverlays = activeOverlays.filter(o => o.config.type === OverlayType.HAT);
+    const allHatOverlays = activeOverlays.filter(
+      o => o.config.type === OverlayType.HAT
+    );
     allHatOverlays.forEach(hat => {
       // Update scale through position since rendering doesn't have scale
       // This will be enhanced in Step 10 with proper scaling
@@ -419,8 +446,18 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center">
-                        <span className="text-xs text-gray-600">👓</span>
+                      <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center overflow-hidden">
+                        <img
+                          src={glasses.imageUrl}
+                          alt={glasses.name}
+                          className="w-full h-full object-contain"
+                          onError={(e) => {
+                            // Fallback to emoji if image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.parentElement!.innerHTML = '<span class="text-xs text-gray-600">👓</span>';
+                          }}
+                        />
                       </div>
                       <div>
                         <p className="font-medium text-gray-800">
@@ -466,10 +503,10 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                       {glasses.config.name}
                     </span>
                     <div className="flex items-center space-x-2">
-                                              <button
-                          onClick={() => {
-                            toggleOverlay(glasses.config.id);
-                          }}
+                      <button
+                        onClick={() => {
+                          toggleOverlay(glasses.config.id);
+                        }}
                         className={`text-xs px-2 py-1 rounded ${
                           glasses.enabled
                             ? 'bg-green-100 text-green-700'
@@ -496,10 +533,17 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
               <div className="space-y-3 pt-2 border-t border-gray-100">
                 {/* Opacity Control */}
                 <div className="space-y-1">
-                  <label className="text-xs text-gray-600">Glasses Opacity</label>
+                  <label className="text-xs text-gray-600">
+                    Glasses Opacity
+                  </label>
                   {(() => {
-                    const allGlassesOverlays = activeOverlays.filter(o => o.config.type === OverlayType.GLASSES);
-                    const currentOpacity = allGlassesOverlays.length > 0 ? allGlassesOverlays[0].rendering.opacity : 0.9;
+                    const allGlassesOverlays = activeOverlays.filter(
+                      o => o.config.type === OverlayType.GLASSES
+                    );
+                    const currentOpacity =
+                      allGlassesOverlays.length > 0
+                        ? allGlassesOverlays[0].rendering.opacity
+                        : 0.9;
 
                     return (
                       <input
@@ -519,10 +563,16 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                     <span>0%</span>
                     <span>
                       {(() => {
-                        const allGlassesOverlays = activeOverlays.filter(o => o.config.type === OverlayType.GLASSES);
-                        const currentOpacity = allGlassesOverlays.length > 0 ? allGlassesOverlays[0].rendering.opacity : 0.9;
+                        const allGlassesOverlays = activeOverlays.filter(
+                          o => o.config.type === OverlayType.GLASSES
+                        );
+                        const currentOpacity =
+                          allGlassesOverlays.length > 0
+                            ? allGlassesOverlays[0].rendering.opacity
+                            : 0.9;
                         return Math.round(currentOpacity * 100);
-                      })()}%
+                      })()}
+                      %
                     </span>
                     <span>100%</span>
                   </div>
@@ -583,13 +633,21 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center">
-                        <span className="text-xs text-gray-600">🎩</span>
+                      <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center overflow-hidden">
+                        <img
+                          src={hat.imageUrl}
+                          alt={hat.name}
+                          className="w-full h-full object-contain"
+                          onError={(e) => {
+                            // Fallback to emoji if image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.parentElement!.innerHTML = '<span class="text-xs text-gray-600">🎩</span>';
+                          }}
+                        />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-800">
-                          {hat.name}
-                        </p>
+                        <p className="font-medium text-gray-800">{hat.name}</p>
                         <p className="text-xs text-gray-500">
                           {isActive ? 'Active' : 'Click to add'}
                         </p>
@@ -620,9 +678,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
             <div
               className={`space-y-3 pt-3 border-t border-gray-200 ${!isOverlayControlsEnabled ? 'opacity-50 pointer-events-none' : ''}`}
             >
-              <h5 className="text-sm font-medium text-gray-600">
-                Active Hats
-              </h5>
+              <h5 className="text-sm font-medium text-gray-600">Active Hats</h5>
               {activeHats.map(hat => (
                 <div key={hat.config.id} className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -630,10 +686,10 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                       {hat.config.name}
                     </span>
                     <div className="flex items-center space-x-2">
-                                                <button
-                            onClick={() => {
-                              toggleOverlay(hat.config.id);
-                            }}
+                      <button
+                        onClick={() => {
+                          toggleOverlay(hat.config.id);
+                        }}
                         className={`text-xs px-2 py-1 rounded ${
                           hat.enabled
                             ? 'bg-green-100 text-green-700'
@@ -662,8 +718,13 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                 <div className="space-y-1">
                   <label className="text-xs text-gray-600">Hat Opacity</label>
                   {(() => {
-                    const allHatOverlays = activeOverlays.filter(o => o.config.type === OverlayType.HAT);
-                    const currentOpacity = allHatOverlays.length > 0 ? allHatOverlays[0].rendering.opacity : 0.9;
+                    const allHatOverlays = activeOverlays.filter(
+                      o => o.config.type === OverlayType.HAT
+                    );
+                    const currentOpacity =
+                      allHatOverlays.length > 0
+                        ? allHatOverlays[0].rendering.opacity
+                        : 0.9;
                     return (
                       <input
                         type="range"
@@ -682,10 +743,16 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
                     <span>0%</span>
                     <span>
                       {(() => {
-                        const allHatOverlays = activeOverlays.filter(o => o.config.type === OverlayType.HAT);
-                        const currentOpacity = allHatOverlays.length > 0 ? allHatOverlays[0].rendering.opacity : 0.9;
+                        const allHatOverlays = activeOverlays.filter(
+                          o => o.config.type === OverlayType.HAT
+                        );
+                        const currentOpacity =
+                          allHatOverlays.length > 0
+                            ? allHatOverlays[0].rendering.opacity
+                            : 0.9;
                         return Math.round(currentOpacity * 100);
-                      })()}%
+                      })()}
+                      %
                     </span>
                     <span>100%</span>
                   </div>

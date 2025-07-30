@@ -23,7 +23,9 @@ import { OverlayService } from '@/services/overlay.service';
 /**
  * Convert glasses config to overlay config
  */
-const convertGlassesToOverlayConfig = (glasses: GlassesConfig): OverlayConfig => {
+const convertGlassesToOverlayConfig = (
+  glasses: GlassesConfig
+): OverlayConfig => {
   return {
     id: glasses.id,
     type: OverlayType.GLASSES,
@@ -157,21 +159,32 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
           potentialOverlays.push(tempOverlay);
 
           // Validate combination
-          const validation = OverlayService.validateOverlayCombination(potentialOverlays);
+          const validation =
+            OverlayService.validateOverlayCombination(potentialOverlays);
           if (!validation.isValid) {
-            console.warn('⚠️ Overlay combination conflict:', validation.conflicts);
-            set({ error: validation.conflicts.join(', '), lastUpdate: Date.now() });
+            console.warn(
+              '⚠️ Overlay combination conflict:',
+              validation.conflicts
+            );
+            set({
+              error: validation.conflicts.join(', '),
+              lastUpdate: Date.now(),
+            });
             return;
           }
 
           // Check if we have cached rendering settings for this overlay
           const cachedRendering = state.removedOverlaysCache.get(config.id);
-          const renderingToUse = cachedRendering 
+          const renderingToUse = cachedRendering
             ? { ...config.defaultRendering, ...cachedRendering }
             : config.defaultRendering;
-          
+
           if (cachedRendering) {
-            console.log('🔄 Store: Using cached rendering settings for overlay:', config.id, cachedRendering);
+            console.log(
+              '🔄 Store: Using cached rendering settings for overlay:',
+              config.id,
+              cachedRendering
+            );
           }
 
           // Add new overlay with optimal z-index
@@ -190,7 +203,7 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
             // Remove from cache since we're using it
             const newCache = new Map(state.removedOverlaysCache);
             newCache.delete(config.id);
-            
+
             return {
               activeOverlays: [...state.activeOverlays, newOverlay],
               removedOverlaysCache: newCache,
@@ -209,13 +222,17 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
           const overlayToRemove = state.activeOverlays.find(
             overlay => overlay.config.id === overlayId
           );
-          
+
           // Cache the rendering settings before removing
           if (overlayToRemove) {
             const newCache = new Map(state.removedOverlaysCache);
             newCache.set(overlayId, overlayToRemove.rendering);
-            console.log('🔄 Store: Caching rendering settings for removed overlay:', overlayId, overlayToRemove.rendering);
-            
+            console.log(
+              '🔄 Store: Caching rendering settings for removed overlay:',
+              overlayId,
+              overlayToRemove.rendering
+            );
+
             return {
               activeOverlays: state.activeOverlays.filter(
                 overlay => overlay.config.id !== overlayId
@@ -224,7 +241,7 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
               lastUpdate: Date.now(),
             };
           }
-          
+
           return {
             activeOverlays: state.activeOverlays.filter(
               overlay => overlay.config.id !== overlayId
@@ -237,7 +254,10 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
       /**
        * Update overlay position
        */
-      updateOverlayPosition: (overlayId: string, position: Partial<OverlayPosition>) => {
+      updateOverlayPosition: (
+        overlayId: string,
+        position: Partial<OverlayPosition>
+      ) => {
         set(state => ({
           activeOverlays: state.activeOverlays.map(overlay =>
             overlay.config.id === overlayId
@@ -255,8 +275,16 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
       /**
        * Update overlay rendering
        */
-      updateOverlayRendering: (overlayId: string, rendering: Partial<OverlayRendering>) => {
-        console.log('🔄 Store: Updating rendering for overlay:', overlayId, 'with:', rendering);
+      updateOverlayRendering: (
+        overlayId: string,
+        rendering: Partial<OverlayRendering>
+      ) => {
+        console.log(
+          '🔄 Store: Updating rendering for overlay:',
+          overlayId,
+          'with:',
+          rendering
+        );
         set(state => {
           const updatedOverlays = state.activeOverlays.map(overlay =>
             overlay.config.id === overlayId
@@ -267,7 +295,14 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
                 }
               : overlay
           );
-          console.log('🔄 Store: Updated overlays:', updatedOverlays.map(o => ({ id: o.config.id, opacity: o.rendering.opacity, enabled: o.enabled })));
+          console.log(
+            '🔄 Store: Updated overlays:',
+            updatedOverlays.map(o => ({
+              id: o.config.id,
+              opacity: o.rendering.opacity,
+              enabled: o.enabled,
+            }))
+          );
           return {
             activeOverlays: updatedOverlays,
             lastUpdate: Date.now(),
@@ -279,7 +314,12 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
        * Enable/disable overlay
        */
       toggleOverlay: (overlayId: string, enabled?: boolean) => {
-        console.log('🔄 Store: Toggling overlay:', overlayId, 'enabled:', enabled);
+        console.log(
+          '🔄 Store: Toggling overlay:',
+          overlayId,
+          'enabled:',
+          enabled
+        );
         set(state => {
           const updatedOverlays = state.activeOverlays.map(overlay =>
             overlay.config.id === overlayId
@@ -290,8 +330,19 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
                 }
               : overlay
           );
-          const toggledOverlay = updatedOverlays.find(o => o.config.id === overlayId);
-          console.log('🔄 Store: Toggled overlay:', toggledOverlay ? { id: toggledOverlay.config.id, enabled: toggledOverlay.enabled, opacity: toggledOverlay.rendering.opacity } : 'not found');
+          const toggledOverlay = updatedOverlays.find(
+            o => o.config.id === overlayId
+          );
+          console.log(
+            '🔄 Store: Toggled overlay:',
+            toggledOverlay
+              ? {
+                  id: toggledOverlay.config.id,
+                  enabled: toggledOverlay.enabled,
+                  opacity: toggledOverlay.rendering.opacity,
+                }
+              : 'not found'
+          );
           return {
             activeOverlays: updatedOverlays,
             lastUpdate: Date.now(),
@@ -344,7 +395,11 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
        */
       getOverlay: (overlayId: string) => {
         const state = get();
-        return state.activeOverlays.find(overlay => overlay.config.id === overlayId) || null;
+        return (
+          state.activeOverlays.find(
+            overlay => overlay.config.id === overlayId
+          ) || null
+        );
       },
 
       /**
@@ -352,11 +407,13 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
        */
       getOverlaysByType: (type: OverlayType) => {
         const state = get();
-        return state.activeOverlays.filter(overlay => overlay.config.type === type);
+        return state.activeOverlays.filter(
+          overlay => overlay.config.type === type
+        );
       },
     }),
     {
       name: 'overlay-store',
     }
   )
-); 
+);

@@ -80,7 +80,12 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
     // Create positioning context
     const positioningContext = {
       landmarks: facialLandmarks.landmarks,
-      boundingBox: faceDetection?.boundingBox || { x: 0.5, y: 0.5, width: 0.3, height: 0.4 },
+      boundingBox: faceDetection?.boundingBox || {
+        x: 0.5,
+        y: 0.5,
+        width: 0.3,
+        height: 0.4,
+      },
       orientation: { yaw: 0, pitch: 0, roll: 0 }, // Will be enhanced in Step 10
       canvasSize: { width: canvasWidth, height: canvasHeight },
       isMirrored,
@@ -101,7 +106,10 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
         );
 
         if (!positionResult.isValid) {
-          console.warn(`Overlay ${overlay.config.name} position invalid:`, positionResult.error);
+          console.warn(
+            `Overlay ${overlay.config.name} position invalid:`,
+            positionResult.error
+          );
           return;
         }
 
@@ -127,12 +135,19 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
         ctx.scale(positionResult.position.scale, positionResult.position.scale);
 
         // Draw overlay placeholder (will be replaced with actual images in future steps)
-        ctx.strokeStyle = overlay.config.type === OverlayType.GLASSES ? '#00ff00' : '#ff6600';
+        ctx.strokeStyle =
+          overlay.config.type === OverlayType.GLASSES ? '#00ff00' : '#ff6600';
         ctx.lineWidth = 2;
-        ctx.strokeRect(-canvasWidth_px / 2, -canvasHeight_px / 2, canvasWidth_px, canvasHeight_px);
+        ctx.strokeRect(
+          -canvasWidth_px / 2,
+          -canvasHeight_px / 2,
+          canvasWidth_px,
+          canvasHeight_px
+        );
 
         // Add label for debugging
-        ctx.fillStyle = overlay.config.type === OverlayType.GLASSES ? '#00ff00' : '#ff6600';
+        ctx.fillStyle =
+          overlay.config.type === OverlayType.GLASSES ? '#00ff00' : '#ff6600';
         ctx.font = '12px Arial';
         ctx.textAlign = 'center';
         ctx.fillText(overlay.config.name, 0, -canvasHeight_px / 2 - 5);
@@ -142,19 +157,38 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
         console.error(`Error rendering overlay ${overlay.config.name}:`, error);
       }
     });
-  }, [activeOverlays, isEnabled, facialLandmarks, faceDetection, videoRef, clearCanvas]);
+  }, [
+    activeOverlays,
+    isEnabled,
+    facialLandmarks,
+    faceDetection,
+    videoRef,
+    clearCanvas,
+  ]);
 
   /**
    * Main render function
    */
   const render = useCallback(() => {
-    if (!isVisible || status !== 'detected' || !facialLandmarks || !faceDetection) {
+    if (
+      !isVisible ||
+      status !== 'detected' ||
+      !facialLandmarks ||
+      !faceDetection
+    ) {
       clearCanvas();
       return;
     }
 
     renderOverlays();
-  }, [isVisible, status, facialLandmarks, faceDetection, renderOverlays, clearCanvas]);
+  }, [
+    isVisible,
+    status,
+    facialLandmarks,
+    faceDetection,
+    renderOverlays,
+    clearCanvas,
+  ]);
 
   // Set up video event listeners
   useEffect(() => {
@@ -200,4 +234,4 @@ export const OverlaySystem: React.FC<OverlaySystemProps> = ({
       style={{ zIndex: 20 }}
     />
   );
-}; 
+};
