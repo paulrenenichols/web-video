@@ -242,66 +242,54 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
           drawX = canvas.width - drawX - drawWidth;
         }
         
-        // Draw hat image (no rotation for now - match DebugHatsOverlay)
+        // Calculate rotation angle from forehead landmarks (like DebugHatsOverlay)
+        const foreheadLeft = facialLandmarks.landmarks[108]; // Left forehead
+        const foreheadRight = facialLandmarks.landmarks[337]; // Right forehead
+
+        let rotationAngle = 0;
+        if (
+          foreheadLeft &&
+          foreheadRight &&
+          (foreheadLeft.visibility || 0) > 0.5 &&
+          (foreheadRight.visibility || 0) > 0.5
+        ) {
+          let leftX = foreheadLeft.x * canvas.width;
+          let rightX = foreheadRight.x * canvas.width;
+
+          // Apply mirroring to forehead positions if needed
+          if (isMirrored) {
+            leftX = canvas.width - leftX;
+            rightX = canvas.width - rightX;
+          }
+
+          const deltaX = rightX - leftX;
+          const deltaY = (foreheadRight.y - foreheadLeft.y) * canvas.height;
+          rotationAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+        }
+
+        // Calculate hat center for rotation
+        const hatCenterX = drawX + drawWidth / 2;
+        const hatCenterY = drawY + drawHeight / 2;
+
+        // Draw hat image with rotation (like DebugHatsOverlay)
+        ctx.save();
+        ctx.translate(hatCenterX, hatCenterY);
+        ctx.rotate((rotationAngle * Math.PI) / 180);
+
         ctx.drawImage(
           img,
-          drawX,
-          drawY,
+          -drawWidth / 2,
+          -drawHeight / 2,
           drawWidth,
           drawHeight
         );
 
-        // Draw label for debugging
-        ctx.fillStyle = 'rgba(0, 255, 0, 0.7)';
-        ctx.font = '12px Arial';
-        ctx.fillText(
-          overlay.config.name,
-          position.x * canvas.width,
-          position.y * canvas.height - 5
-        );
-
-        // Draw a visible rectangle to show where the hat should be
-        ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(
-          position.x * canvas.width,
-          position.y * canvas.height,
-          position.width * canvas.width,
-          position.height * canvas.height
-        );
+        ctx.restore();
       } catch (error) {
         console.error('Error rendering hat overlay:', error);
 
-        // Fallback: draw green rectangle
-        const position = calculateHatPosition(facialLandmarks, overlay);
-        if (position) {
-          
-          ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
-          ctx.fillRect(
-            position.x * canvas.width,
-            position.y * canvas.height,
-            position.width * canvas.width,
-            position.height * canvas.height
-          );
-
-          ctx.fillStyle = 'rgba(0, 255, 0, 1)';
-          ctx.font = '14px Arial';
-          ctx.fillText(
-            `HAT: ${overlay.config.name}`,
-            position.x * canvas.width,
-            position.y * canvas.height - 5
-          );
-
-          // Draw border to make it more visible
-          ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
-          ctx.lineWidth = 2;
-          ctx.strokeRect(
-            position.x * canvas.width,
-            position.y * canvas.height,
-            position.width * canvas.width,
-            position.height * canvas.height
-          );
-        }
+        // No fallback visuals - just log the error
+        console.error('Failed to render hat overlay:', overlay.config.name);
       }
     }
 
