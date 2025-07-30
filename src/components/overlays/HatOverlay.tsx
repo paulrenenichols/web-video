@@ -111,49 +111,15 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
   const calculateHatPosition = useCallback((landmarks: any, overlay: any) => {
     if (!landmarks || landmarks.length < 468) return null;
 
-    // Use forehead landmarks for centering (same as DebugHatsOverlay)
+    // Use forehead landmarks for centering (exactly like DebugHatsOverlay)
     const foreheadLandmarks = [108, 337, 9, 10]; // Left forehead, right forehead, top forehead, above eyes
     const foreheadLeft = landmarks[108]; // Left forehead
     const foreheadRight = landmarks[337]; // Right forehead
 
-    // Check if we have enough landmarks
+    // Check if we have enough landmarks (exactly like DebugHatsOverlay)
     const allLandmarks = [...foreheadLandmarks, foreheadLeft, foreheadRight];
-    const hasMissing = allLandmarks.some(lm => !lm);
-    
-    if (hasMissing) {
-      // Fallback: Try using different landmarks
-      const fallbackLeft = landmarks[151]; // Left head side
-      const fallbackRight = landmarks[337]; // Right head side
-      const fallbackTop = landmarks[10]; // Head top
-      
-      if (fallbackLeft && fallbackRight && fallbackTop) {
-        // Simple fallback positioning
-        const headCenterX = (fallbackLeft.x + fallbackRight.x) / 2;
-        const headWidth = Math.abs(fallbackRight.x - fallbackLeft.x);
-        const hatWidth = headWidth * 1.2;
-        const hatHeight = headWidth * 0.8;
-        const hatX = headCenterX - hatWidth / 2;
-        const hatY = fallbackTop.y - hatHeight * 0.5;
-        
-        return {
-          x: hatX,
-          y: hatY,
-          width: hatWidth,
-          height: hatHeight,
-          rotation: 0,
-          scale: overlay.rendering.scale || 1.0,
-        };
-      }
-      
-      // Use a fixed position as last resort
-      return {
-        x: 0.3, // 30% from left
-        y: 0.1, // 10% from top
-        width: 0.4, // 40% of screen width
-        height: 0.3, // 30% of screen height
-        rotation: 0,
-        scale: overlay.rendering.scale || 1.0,
-      };
+    if (allLandmarks.some(lm => !lm)) {
+      return null; // Return null if landmarks missing, just like DebugHatsOverlay
     }
 
     // Use face detection bounding box for accurate head width (same as DebugHatsOverlay)
@@ -275,6 +241,9 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
         ctx.save();
         ctx.translate(hatCenterX, hatCenterY);
         ctx.rotate((rotationAngle * Math.PI) / 180);
+        
+        // Rotate 180 degrees to fix upside down issue
+        ctx.rotate(Math.PI);
 
         ctx.drawImage(
           img,
