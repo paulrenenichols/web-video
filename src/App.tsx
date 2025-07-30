@@ -84,10 +84,7 @@ const VideoRecorderApp: React.FC = () => {
     useOverlayStore.getState().setEnabled(true);
   }, []);
 
-  // Debug hat system state changes
-  React.useEffect(() => {
-    console.log('🎩 App.tsx: hatOverlaySystemEnabled changed to:', hatOverlaySystemEnabled);
-  }, [hatOverlaySystemEnabled]);
+
 
   // Unified visualization logic
   React.useEffect(() => {
