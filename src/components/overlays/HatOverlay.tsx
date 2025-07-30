@@ -247,13 +247,16 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
         const hatCenterX = drawX + drawWidth / 2;
         const hatCenterY = drawY + drawHeight / 2;
 
-        // Draw hat image with rotation (like DebugHatsOverlay)
+        // Draw hat image with rotation and scale (like DebugHatsOverlay)
         ctx.save();
         ctx.translate(hatCenterX, hatCenterY);
         ctx.rotate((rotationAngle * Math.PI) / 180);
         
         // Rotate 180 degrees to fix upside down issue
         ctx.rotate(Math.PI);
+
+        // Apply scale from overlay position
+        ctx.scale(overlay.position.scale, overlay.position.scale);
 
         ctx.drawImage(
           img,

@@ -259,14 +259,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
       o => o.config.type === OverlayType.GLASSES
     );
     allGlassesOverlays.forEach(glasses => {
-      // Update scale through position since rendering doesn't have scale
-      // This will be enhanced in Step 10 with proper scaling
-      console.log(
-        '🔍 Glasses scale change:',
-        scale,
-        'for overlay:',
-        glasses.config.id
-      );
+      updateOverlayPosition(glasses.config.id, { scale });
     });
   };
 
@@ -278,9 +271,7 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
       o => o.config.type === OverlayType.HAT
     );
     allHatOverlays.forEach(hat => {
-      // Update scale through position since rendering doesn't have scale
-      // This will be enhanced in Step 10 with proper scaling
-      console.log('🔍 Hat scale change:', scale, 'for overlay:', hat.config.id);
+      updateOverlayPosition(hat.config.id, { scale });
     });
   };
 
