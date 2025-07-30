@@ -27,19 +27,6 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number>();
   const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
-  const debugLogsRef = useRef<string[]>([]);
-
-  // Debug logging function that also stores logs
-  const debugLog = useCallback((message: string, data?: any) => {
-    const logMessage = `🎩 ${message}${data ? ': ' + JSON.stringify(data, null, 2) : ''}`;
-    console.log(logMessage);
-    
-    // Store last 10 logs for UI display
-    debugLogsRef.current.push(logMessage);
-    if (debugLogsRef.current.length > 10) {
-      debugLogsRef.current.shift();
-    }
-  }, []);
 
   // Get overlay and tracking state
   const { activeOverlays, isEnabled } = useOverlayStore();
@@ -50,69 +37,9 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     overlay => overlay.config.type === OverlayType.HAT && overlay.enabled
   );
 
-  // TEST: Manually add a hat overlay for debugging if none exist
-  useEffect(() => {
-    debugLog('useEffect triggered - hatOverlays.length:', hatOverlays.length, 'isVisible:', isVisible, 'isEnabled:', isEnabled);
-    
-    if (hatOverlays.length === 0 && isVisible) {
-      debugLog('No hat overlays found, checking if we should add a test hat');
-      
-      // Force enable the overlay system if it's not enabled
-      if (!isEnabled) {
-        debugLog('Overlay system not enabled, forcing enable');
-        useOverlayStore.getState().setEnabled(true);
-      }
-      
-      // Manual test: Add a baseball hat overlay directly to the store
-      const { addOverlay } = useOverlayStore.getState();
-      const testHatConfig = {
-        id: 'test-baseball',
-        type: OverlayType.HAT,
-        name: 'Test Baseball',
-        imageUrl: '/assets/hats/baseball.svg',
-        defaultPosition: { x: 0.5, y: 0.2, width: 0.3, height: 0.2, rotation: 0, scale: 1.0, zIndex: 2 },
-        defaultRendering: { opacity: 0.9, blendMode: 'normal' as const, visible: true },
-        anchors: { primary: 10, secondary: [338, 151, 337], offset: { x: 0, y: -0.1 } },
-        scaling: { base: 1.0, widthFactor: 1.0, heightFactor: 1.0 }
-      };
-      
-      debugLog('Adding test hat overlay manually');
-      addOverlay(testHatConfig);
-    }
-  }, [hatOverlays.length, isVisible, isEnabled]);
+  // Remove the test useEffect - no longer needed
 
-  // Debug logging
-  debugLog('HatOverlay Debug:', {
-    isVisible,
-    isEnabled,
-    activeOverlaysCount: activeOverlays.length,
-    hatOverlaysCount: hatOverlays.length,
-    hatOverlays: hatOverlays.map(o => ({ id: o.config.id, enabled: o.enabled, imageUrl: o.config.imageUrl })),
-    status,
-    hasFacialLandmarks: !!facialLandmarks,
-    hasFaceDetection: !!faceDetection
-  });
-
-  // More detailed state logging
-  debugLog('HatOverlay State Details:', {
-    'isVisible (prop)': isVisible,
-    'isEnabled (store)': isEnabled,
-    'status (tracking)': status,
-    'facialLandmarks exists': !!facialLandmarks,
-    'faceDetection exists': !!faceDetection,
-    'canvas exists': !!canvasRef.current,
-    'video exists': !!videoRef.current
-  });
-
-  // Additional debugging for overlay state
-  if (activeOverlays.length > 0) {
-    debugLog('All active overlays:', activeOverlays.map(o => ({
-      id: o.config.id,
-      type: o.config.type,
-      enabled: o.enabled,
-      name: o.config.name
-    })));
-  }
+  // Clean component - no debug logging needed
 
   /**
    * Update canvas size to match video
@@ -182,27 +109,15 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
 
     // Check if we have enough landmarks
     const allLandmarks = [...foreheadLandmarks, foreheadLeft, foreheadRight];
-    const missingLandmarks = allLandmarks.map((lm, i) => ({ index: [108, 337, 9, 10, 108, 337][i], exists: !!lm }));
     const hasMissing = allLandmarks.some(lm => !lm);
     
     if (hasMissing) {
-      debugLog('HatOverlay - Missing landmarks:', missingLandmarks);
-      
       // Fallback: Try using different landmarks
-      debugLog('Trying fallback landmarks...');
       const fallbackLeft = landmarks[151]; // Left head side
       const fallbackRight = landmarks[337]; // Right head side
       const fallbackTop = landmarks[10]; // Head top
       
-      debugLog('Fallback landmarks check:', {
-        'landmark 151 (left)': !!fallbackLeft,
-        'landmark 337 (right)': !!fallbackRight,
-        'landmark 10 (top)': !!fallbackTop
-      });
-      
       if (fallbackLeft && fallbackRight && fallbackTop) {
-        debugLog('Using fallback landmarks for positioning');
-        
         // Simple fallback positioning
         const headCenterX = (fallbackLeft.x + fallbackRight.x) / 2;
         const headWidth = Math.abs(fallbackRight.x - fallbackLeft.x);
@@ -221,9 +136,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
         };
       }
       
-      debugLog('All landmarks failed, using fixed position test');
-      
-      // Test: Use a fixed position to verify rendering works
+      // Use a fixed position as last resort
       return {
         x: 0.3, // 30% from left
         y: 0.1, // 10% from top
@@ -276,15 +189,6 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
    * Render hat overlays on canvas
    */
   const renderHats = useCallback(async () => {
-    debugLog('renderHats called:', {
-      hasCanvas: !!canvasRef.current,
-      hasCtx: !!canvasRef.current?.getContext('2d'),
-      hasVideo: !!videoRef.current,
-      hasFacialLandmarks: !!facialLandmarks,
-      isVisible,
-      hatOverlaysLength: hatOverlays.length
-    });
-
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     const video = videoRef.current;
@@ -297,20 +201,6 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
       !isVisible ||
       hatOverlays.length === 0
     ) {
-      debugLog('renderHats early return - missing requirements');
-      
-      // Test: Draw a simple rectangle to verify canvas is working
-      if (canvas && ctx && isVisible) {
-        debugLog('Drawing test rectangle to verify canvas is working');
-        ctx.save();
-        ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-        ctx.fillRect(10, 10, 100, 50);
-        ctx.fillStyle = 'rgba(255, 0, 0, 1)';
-        ctx.font = '12px Arial';
-        ctx.fillText('Canvas Test', 10, 30);
-        ctx.restore();
-      }
-      
       return;
     }
 
@@ -324,16 +214,10 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     for (const overlay of hatOverlays) {
       try {
         const position = calculateHatPosition(facialLandmarks, overlay);
-        debugLog('Position calculation result:', position);
-        if (!position) {
-          debugLog('Position calculation failed, skipping overlay');
-          continue;
-        }
+        if (!position) continue;
 
         // Load hat image
-        debugLog('Loading hat image:', overlay.config.imageUrl);
         const img = await preloadImage(overlay.config.imageUrl);
-        debugLog('Hat image loaded successfully:', img.width, 'x', img.height);
 
         // Apply opacity
         ctx.globalAlpha = overlay.rendering.opacity;
@@ -348,8 +232,6 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
         if (isMirrored) {
           drawX = canvas.width - drawX - drawWidth;
         }
-        
-        debugLog('Drawing hat at:', { drawX, drawY, drawWidth, drawHeight, isMirrored });
         
         // Apply transformations for rotation
         ctx.save();
@@ -391,7 +273,6 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
         // Fallback: draw green rectangle
         const position = calculateHatPosition(facialLandmarks, overlay);
         if (position) {
-          debugLog('Drawing fallback rectangle for hat:', overlay.config.name);
           
           ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
           ctx.fillRect(
@@ -487,24 +368,10 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
 
   // Return canvas element
   return (
-    <div className="relative">
-      <canvas
-        ref={canvasRef}
-        className={`absolute inset-0 w-full h-full pointer-events-none ${className}`}
-        style={{ zIndex: 10 }}
-      />
-      
-      {/* Debug Panel */}
-      {isVisible && (
-        <div className="absolute top-0 left-0 bg-black/80 text-white p-2 text-xs max-w-md max-h-40 overflow-y-auto z-20">
-          <div className="font-bold mb-1">HatOverlay Debug Logs:</div>
-          {debugLogsRef.current.map((log, index) => (
-            <div key={index} className="mb-1 break-all">
-              {log}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    <canvas
+      ref={canvasRef}
+      className={`absolute inset-0 w-full h-full pointer-events-none ${className}`}
+      style={{ zIndex: 10 }}
+    />
   );
 };
