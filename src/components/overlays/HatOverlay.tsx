@@ -152,9 +152,9 @@ export const HatOverlay: React.FC<HatOverlayProps> = ({
     let headCenterX = (foreheadLeft.x + foreheadRight.x) / 2;
     let hatX = headCenterX - hatWidth / 2;
 
-    // Handle mirroring
+    // Handle mirroring by transforming coordinates
     if (isMirrored) {
-      hatX = canvasWidth - hatX - hatWidth;
+      hatX = 1 - hatX - hatWidth;
     }
 
     return {
