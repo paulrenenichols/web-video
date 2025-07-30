@@ -117,16 +117,16 @@ export class CompositeRecordingService {
 
     // Draw overlay canvases on top
     // Overlays are already rendered with mirroring applied for display,
-    // but we need to unmirror them to match the unmirrored video
-    this.overlayCanvasElements.forEach(overlayCanvas => {
+    // so we draw them directly without additional mirroring
+    console.log('Composite recording - overlay count:', this.overlayCanvasElements.length);
+    this.overlayCanvasElements.forEach((overlayCanvas, index) => {
       if (overlayCanvas && overlayCanvas.width > 0 && overlayCanvas.height > 0) {
-        // Apply mirroring to overlays to unmirror them (since they're already mirrored for display)
-        if (isMirrored) {
-          this.compositeCtx!.save();
-          this.compositeCtx!.scale(-1, 1);
-          this.compositeCtx!.translate(-this.compositeCanvas!.width, 0);
-        }
-        
+        console.log(`Drawing overlay ${index}:`, {
+          width: overlayCanvas.width,
+          height: overlayCanvas.height,
+          compositeWidth: this.compositeCanvas!.width,
+          compositeHeight: this.compositeCanvas!.height,
+        });
         this.compositeCtx!.drawImage(
           overlayCanvas,
           0,
@@ -134,10 +134,12 @@ export class CompositeRecordingService {
           this.compositeCanvas!.width,
           this.compositeCanvas!.height
         );
-        
-        if (isMirrored) {
-          this.compositeCtx!.restore();
-        }
+      } else {
+        console.log(`Overlay ${index} invalid:`, {
+          exists: !!overlayCanvas,
+          width: overlayCanvas?.width,
+          height: overlayCanvas?.height,
+        });
       }
     });
   }
