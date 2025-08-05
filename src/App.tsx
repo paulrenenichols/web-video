@@ -132,6 +132,32 @@ const VideoRecorderApp: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const [recordingState, recordingActions] = useCompositeRecording();
+  
+  // Real-time recording timer
+  const [recordingTimer, setRecordingTimer] = React.useState<number>(0);
+  const timerIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
+  
+  // Start timer when recording starts
+  React.useEffect(() => {
+    if (recordingState.isRecording && !timerIntervalRef.current) {
+      const startTime = Date.now();
+      timerIntervalRef.current = setInterval(() => {
+        setRecordingTimer(Date.now() - startTime);
+      }, 100);
+    } else if (!recordingState.isRecording && timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+      setRecordingTimer(0);
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    };
+  }, [recordingState.isRecording]);
 
   const handleStartCamera = async (): Promise<void> => {
     await startCamera(selectedDeviceId || undefined);
@@ -220,8 +246,25 @@ const VideoRecorderApp: React.FC = () => {
   };
 
   const handleDownloadRecording = async (): Promise<void> => {
-    // TODO: Implement download functionality for composite recording
-    console.log('Download recording - to be implemented');
+    if (recordingState.compositeBlob) {
+      try {
+        // Create download link
+        const url = URL.createObjectURL(recordingState.compositeBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `recording-${Date.now()}.${recordingState.config.format.toLowerCase()}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        console.log('✅ Recording downloaded successfully');
+      } catch (error) {
+        console.error('❌ Failed to download recording:', error);
+      }
+    } else {
+      console.warn('⚠️ No recording available to download');
+    }
   };
 
   const handleClearRecording = (): void => {
@@ -339,7 +382,7 @@ const VideoRecorderApp: React.FC = () => {
                       onClearError={handleClearError}
                       isRecording={recordingState.isRecording}
                       isProcessing={false} // TODO: Add processing state to composite recording
-                      elapsedTime={recordingState.duration / 1000} // Convert ms to seconds
+                      elapsedTime={recordingState.isRecording ? recordingTimer / 1000 : recordingState.duration / 1000} // Use real-time timer or final duration
                       recordingResult={
                         recordingState.compositeBlob
                           ? {
