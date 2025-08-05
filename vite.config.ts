@@ -71,6 +71,5 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'zustand'],
-    exclude: ['@mediapipe/face_detection', '@mediapipe/face_mesh'],
   },
 });

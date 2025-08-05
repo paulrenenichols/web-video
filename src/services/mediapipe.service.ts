@@ -5,9 +5,26 @@
  * Provides real-time facial tracking data for overlay positioning.
  */
 
-import { FaceDetection } from '@mediapipe/face_detection';
-import { FaceMesh } from '@mediapipe/face_mesh';
-import { Camera } from '@mediapipe/camera_utils';
+// Dynamic imports for MediaPipe to avoid Vite issues
+let FaceDetection: any;
+let FaceMesh: any;
+let Camera: any;
+
+// Import MediaPipe modules dynamically
+const loadMediaPipeModules = async () => {
+  if (!FaceDetection) {
+    const faceDetectionModule = await import('@mediapipe/face_detection');
+    FaceDetection = faceDetectionModule.FaceDetection;
+  }
+  if (!FaceMesh) {
+    const faceMeshModule = await import('@mediapipe/face_mesh');
+    FaceMesh = faceMeshModule.FaceMesh;
+  }
+  if (!Camera) {
+    const cameraModule = await import('@mediapipe/camera_utils');
+    Camera = cameraModule.Camera;
+  }
+};
 import {
   MediaPipeOptions,
   MediaPipeState,
@@ -22,9 +39,9 @@ import { calculateLandmarkConfidence } from '@/utils/tracking';
  * MediaPipe service class for facial tracking
  */
 export class MediaPipeService {
-  private faceDetection: FaceDetection | null = null;
-  private faceMesh: FaceMesh | null = null;
-  private camera: Camera | null = null;
+  private faceDetection: any = null;
+  private faceMesh: any = null;
+  private camera: any = null;
   private isInitialized = false;
   private options: Required<MediaPipeOptions>;
   private onDetectionCallback?: (detection: FaceDetectionResult) => void;
@@ -45,6 +62,9 @@ export class MediaPipeService {
   async initialize(): Promise<void> {
     try {
       console.log('Initializing MediaPipe services...');
+
+      // Load MediaPipe modules dynamically
+      await loadMediaPipeModules();
 
       // Initialize face detection
       if (this.options.enableFaceDetection) {
