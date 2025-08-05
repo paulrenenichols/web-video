@@ -28,6 +28,8 @@ import { OverlayControls } from '@/components/overlays/OverlayControls';
 import { useOverlayStore } from '@/stores/overlay-store';
 import { VisualizationControls } from '@/components/controls/VisualizationControls';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { performanceService } from '@/services/performance.service';
+import { PerformanceMonitor } from '@/components/advanced/PerformanceMonitor';
 
 const VideoRecorderApp: React.FC = () => {
   const {
@@ -82,6 +84,15 @@ const VideoRecorderApp: React.FC = () => {
   React.useEffect(() => {
     // Always keep overlay system enabled for management
     useOverlayStore.getState().setEnabled(true);
+  }, []);
+
+  // Initialize performance monitoring
+  React.useEffect(() => {
+    performanceService.initialize();
+    
+    return () => {
+      performanceService.cleanup();
+    };
   }, []);
 
   // Auto-start camera when component mounts
@@ -471,6 +482,9 @@ const VideoRecorderApp: React.FC = () => {
       </Main>
 
       <Footer />
+      
+      {/* Performance Monitor */}
+      <PerformanceMonitor />
     </div>
   );
 };
