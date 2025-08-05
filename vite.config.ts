@@ -49,6 +49,7 @@ export default defineConfig({
           utils: ['zustand'],
           mediapipe: ['@mediapipe/face_detection', '@mediapipe/face_mesh', '@mediapipe/camera_utils', '@mediapipe/drawing_utils'],
           performance: ['web-vitals'],
+          workers: ['src/workers'],
         },
         chunkFileNames: (chunkInfo) => {
           const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
