@@ -96,17 +96,24 @@ const VideoRecorderApp: React.FC = () => {
     };
   }, []);
 
-  // Auto-start camera when component mounts
+  // Auto-start camera and request microphone access when component mounts
   React.useEffect(() => {
-    const autoStartCamera = async () => {
+    const autoStartServices = async () => {
       try {
+        // Start camera
         await handleStartCamera();
+        
+        // Request microphone access
+        console.log('Auto-requesting microphone access...');
+        await audioService.requestMicrophoneAccess();
+        audioService.startMonitoring();
+        console.log('✅ Microphone access granted and monitoring started');
       } catch (error) {
-        console.error('Failed to auto-start camera:', error);
+        console.error('Failed to auto-start services:', error);
       }
     };
 
-    autoStartCamera();
+    autoStartServices();
   }, []); // Empty dependency array means this runs once on mount
 
   // Unified visualization logic
