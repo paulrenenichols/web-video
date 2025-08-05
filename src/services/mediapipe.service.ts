@@ -8,7 +8,6 @@
 import { FaceDetection } from '@mediapipe/face_detection';
 import { FaceMesh } from '@mediapipe/face_mesh';
 import { Camera } from '@mediapipe/camera_utils';
-import { DrawingUtils } from '@mediapipe/drawing_utils';
 import {
   MediaPipeOptions,
   MediaPipeState,
@@ -17,7 +16,7 @@ import {
   FacialLandmarks,
   LandmarkPoint,
 } from '@/types/tracking';
-import { calculateLandmarkConfidence, getLandmarkStats } from '@/utils/tracking';
+import { calculateLandmarkConfidence } from '@/utils/tracking';
 
 /**
  * MediaPipe service class for facial tracking
@@ -57,7 +56,6 @@ export class MediaPipeService {
         });
 
         this.faceDetection.setOptions({
-          modelSelection: 0,
           minDetectionConfidence: this.options.minDetectionConfidence,
         });
 
@@ -208,7 +206,7 @@ export class MediaPipeService {
 
     // Calculate confidence based on landmark quality
     const confidence = calculateLandmarkConfidence(landmarkPoints);
-    const stats = getLandmarkStats(landmarkPoints);
+    // const stats = getLandmarkStats(landmarkPoints); // Unused for now
     
     const facialLandmarks: FacialLandmarks = {
       landmarks: landmarkPoints,

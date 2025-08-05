@@ -7,7 +7,7 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { MediaPipeService } from '@/services/mediapipe.service';
-import { MediaPipeOptions, FaceDetection, FacialLandmarks } from '@/types/tracking';
+import { MediaPipeOptions, FaceDetection, FacialLandmarks, TrackingStatus } from '@/types/tracking';
 import { useTrackingStore } from '@/stores/tracking-store';
 
 /**
@@ -53,13 +53,13 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
       await mediaPipeRef.current.initialize();
       setIsInitialized(true);
       setInitialized(true);
-      setStatus('not_detected');
+      setStatus(TrackingStatus.NOT_DETECTED);
       
       console.log('✅ MediaPipe hook initialized successfully');
     } catch (error) {
       console.error('❌ Failed to initialize MediaPipe hook:', error);
       setError(error instanceof Error ? error.message : 'Unknown error');
-      setStatus('error');
+      setStatus(TrackingStatus.ERROR);
       throw error;
     }
   }, [options, updateFaceDetection, updateFacialLandmarks, setInitialized, setError, setStatus]);
@@ -142,7 +142,7 @@ export const useMediaPipe = (options: MediaPipeOptions = {}) => {
       mediaPipeRef.current = null;
       setIsInitialized(false);
       setInitialized(false);
-      setStatus('not_detected');
+      setStatus(TrackingStatus.NOT_DETECTED);
       console.log('✅ MediaPipe hook disposed');
     }
   }, [setInitialized, setStatus]);
