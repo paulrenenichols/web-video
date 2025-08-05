@@ -39,22 +39,16 @@ export const AUDIO_QUALITY_PRESETS = {
  * Audio format options
  */
 export const AUDIO_FORMATS = {
-  WAV: {
-    mimeType: 'audio/wav',
-    extension: '.wav',
-    description: 'Uncompressed audio format',
+  WEBM: {
+    mimeType: 'audio/webm',
+    extension: '.webm',
+    description: 'WebM audio format - web optimized',
     supported: true,
   },
-  MP3: {
-    mimeType: 'audio/mp3',
-    extension: '.mp3',
-    description: 'Compressed audio format',
-    supported: true,
-  },
-  AAC: {
-    mimeType: 'audio/aac',
-    extension: '.aac',
-    description: 'Advanced audio coding',
+  MP4: {
+    mimeType: 'audio/mp4',
+    extension: '.m4a',
+    description: 'MP4 audio format - universal compatibility',
     supported: true,
   },
   OGG: {
@@ -62,6 +56,12 @@ export const AUDIO_FORMATS = {
     extension: '.ogg',
     description: 'Open source audio format',
     supported: true,
+  },
+  WAV: {
+    mimeType: 'audio/wav',
+    extension: '.wav',
+    description: 'Uncompressed audio format (limited browser support)',
+    supported: false,
   },
 } as const;
 
@@ -172,7 +172,7 @@ export interface AudioConfig {
  */
 export const defaultAudioConfig: AudioConfig = {
   quality: 'MEDIUM',
-  format: 'WAV',
+  format: 'WEBM',
   effects: {
     NOISE_REDUCTION: true,
     ECHO_CANCELLATION: true,
@@ -191,7 +191,7 @@ export const defaultAudioConfig: AudioConfig = {
 export const developmentAudioConfig: AudioConfig = {
   ...defaultAudioConfig,
   quality: 'LOW',
-  format: 'WAV',
+  format: 'WEBM',
   effects: {
     NOISE_REDUCTION: false,
     ECHO_CANCELLATION: false,

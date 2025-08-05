@@ -550,12 +550,20 @@ export class AudioService {
     const supportedFormats = this.state.supportedFormats;
     
     // Try to use the configured format
-    if (supportedFormats.includes(`audio/${format.toLowerCase()}`)) {
-      return `audio/${format.toLowerCase()}`;
+    const formatKey = format.toLowerCase();
+    const mimeType = `audio/${formatKey}`;
+    
+    if (supportedFormats.includes(mimeType)) {
+      return mimeType;
     }
     
     // Fallback to first supported format
-    return supportedFormats[0] || 'audio/wav';
+    if (supportedFormats.length > 0) {
+      return supportedFormats[0];
+    }
+    
+    // Final fallback to webm (most widely supported)
+    return 'audio/webm';
   }
 
   /**

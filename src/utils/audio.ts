@@ -446,7 +446,15 @@ export const validateAudioConstraints = (constraints: MediaTrackConstraints): bo
  * Get supported audio formats
  */
 export const getSupportedAudioFormats = (): string[] => {
-  const formats = ['audio/wav', 'audio/mp3', 'audio/aac', 'audio/ogg'];
+  const formats = [
+    'audio/webm',
+    'audio/webm;codecs=opus',
+    'audio/mp4',
+    'audio/mp4;codecs=aac',
+    'audio/ogg',
+    'audio/ogg;codecs=opus',
+    'audio/wav'
+  ];
   const supported: string[] = [];
   
   formats.forEach(format => {
@@ -454,6 +462,11 @@ export const getSupportedAudioFormats = (): string[] => {
       supported.push(format);
     }
   });
+  
+  // If no formats are supported, return webm as fallback
+  if (supported.length === 0) {
+    supported.push('audio/webm');
+  }
   
   return supported;
 }; 
