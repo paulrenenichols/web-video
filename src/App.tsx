@@ -131,19 +131,7 @@ const VideoRecorderApp: React.FC = () => {
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const {
-    isRecording,
-    isProcessing,
-    elapsedTime,
-    recordingBlob,
-    error: recordingError,
-    recordingFilename,
-    startRecording,
-    stopRecording,
-    downloadRecording,
-    clearError: clearRecordingError,
-    clearRecording,
-  } = useCompositeRecording();
+  const [recordingState, recordingActions] = useCompositeRecording();
 
   const handleStartCamera = async (): Promise<void> => {
     await startCamera(selectedDeviceId || undefined);
@@ -222,27 +210,28 @@ const VideoRecorderApp: React.FC = () => {
       console.log('Total overlay canvases collected:', overlayCanvases.length);
       
       // Start composite recording (video + audio)
-      await startRecording(stream, overlayCanvases);
+      await recordingActions.startRecording(stream, overlayCanvases);
     }
   };
 
   const handleStopRecording = async (): Promise<void> => {
     // Stop composite recording (video + audio)
-    await stopRecording();
+    await recordingActions.stopRecording();
   };
 
   const handleDownloadRecording = async (): Promise<void> => {
-    await downloadRecording();
+    // TODO: Implement download functionality for composite recording
+    console.log('Download recording - to be implemented');
   };
 
   const handleClearRecording = (): void => {
-    clearRecording();
+    recordingActions.cleanup();
   };
 
-  const currentError = error || recordingError;
+  const currentError = error || recordingState.error;
   const handleClearError = (): void => {
     clearError();
-    clearRecordingError();
+    // TODO: Add clear recording error functionality
   };
 
   return (
@@ -348,17 +337,17 @@ const VideoRecorderApp: React.FC = () => {
                       onSwitchCamera={handleSwitchCamera}
                       error={currentError}
                       onClearError={handleClearError}
-                      isRecording={isRecording}
-                      isProcessing={isProcessing}
-                      elapsedTime={elapsedTime}
+                      isRecording={recordingState.isRecording}
+                      isProcessing={false} // TODO: Add processing state to composite recording
+                      elapsedTime={recordingState.duration / 1000} // Convert ms to seconds
                       recordingResult={
-                        recordingBlob
+                        recordingState.compositeBlob
                           ? {
                               success: true,
-                              blob: recordingBlob,
-                              filename: recordingFilename || `recording-${Date.now()}.webm`,
-                              duration: elapsedTime,
-                              size: recordingBlob.size,
+                              blob: recordingState.compositeBlob,
+                              filename: `recording-${Date.now()}.${recordingState.config.format.toLowerCase()}`,
+                              duration: recordingState.duration / 1000,
+                              size: recordingState.compositeBlob.size,
                             }
                           : null
                       }
