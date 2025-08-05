@@ -30,6 +30,7 @@ import { VisualizationControls } from '@/components/controls/VisualizationContro
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { performanceService } from '@/services/performance.service';
 import { PerformanceMonitor } from '@/components/advanced/PerformanceMonitor';
+import { AudioControls } from '@/components/advanced/AudioControls';
 
 const VideoRecorderApp: React.FC = () => {
   const {
@@ -485,6 +486,11 @@ const VideoRecorderApp: React.FC = () => {
       
       {/* Performance Monitor */}
       <PerformanceMonitor />
+      
+      {/* Audio Controls */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <AudioControls showAdvanced={true} />
+      </div>
     </div>
   );
 };
