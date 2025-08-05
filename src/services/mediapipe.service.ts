@@ -49,7 +49,7 @@ export class MediaPipeService {
       // Create tracking worker
       this.workerId = workerService.createWorker(
         'TRACKING',
-        '/src/workers/tracking.worker.ts'
+        new URL('../workers/tracking.worker.ts', import.meta.url).href
       );
 
       // Set up worker result handlers
