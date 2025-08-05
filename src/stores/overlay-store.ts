@@ -122,6 +122,7 @@ export const useOverlayStore = create<OverlayState & OverlayActions>()(
        * Add overlay to active list with combination validation
        */
       addOverlay: (config: OverlayConfig) => {
+        console.log('➕ Adding overlay:', config.id, config.name, config.imageUrl);
         const state = get();
         const existingOverlay = state.activeOverlays.find(
           overlay => overlay.config.id === config.id

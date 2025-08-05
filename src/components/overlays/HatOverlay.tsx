@@ -205,6 +205,7 @@ export const HatOverlay: React.FC<HatOverlayProps> = React.memo(({
         }
 
         // Load hat image
+        console.log('🎩 Loading hat image:', overlay.config.imageUrl);
         const img = await preloadImage(overlay.config.imageUrl);
 
         // Apply opacity

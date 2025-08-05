@@ -239,6 +239,7 @@ export const GlassesOverlay: React.FC<GlassesOverlayProps> = React.memo(({
         ctx.scale(overlay.position.scale, overlay.position.scale);
 
         // Get cached image or load it
+        console.log('🔍 Loading glasses image:', overlay.config.imageUrl);
         const img = await preloadImage(overlay.config.imageUrl);
 
         // Calculate aspect ratio to maintain proportions
