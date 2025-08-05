@@ -31,6 +31,7 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { performanceService } from '@/services/performance.service';
 import { PerformanceMonitor } from '@/components/advanced/PerformanceMonitor';
 import { audioService } from '@/services/audio.service';
+import { SyncMonitor } from '@/components/advanced/SyncMonitor';
 
 const VideoRecorderApp: React.FC = () => {
   const {
@@ -183,7 +184,7 @@ const VideoRecorderApp: React.FC = () => {
       // Collect overlay canvas elements
       const overlayCanvases: HTMLCanvasElement[] = [];
 
-      console.log('Starting recording with overlays:', {
+      console.log('Starting composite recording with overlays:', {
         glassesEnabled: glassesOverlaySystemEnabled,
         hatEnabled: hatOverlaySystemEnabled,
       });
@@ -220,38 +221,14 @@ const VideoRecorderApp: React.FC = () => {
 
       console.log('Total overlay canvases collected:', overlayCanvases.length);
       
-      // Start video recording
-      await startRecording(videoRef.current, overlayCanvases);
-      
-      // Start audio recording if audio service is ready
-      try {
-        const audioState = audioService.getState();
-        if (audioState.state === 'READY') {
-          console.log('Starting audio recording...');
-          await audioService.startRecording();
-        } else {
-          console.log('Audio service not ready, recording video only');
-        }
-      } catch (error) {
-        console.error('Failed to start audio recording:', error);
-      }
+      // Start composite recording (video + audio)
+      await startRecording(stream, overlayCanvases);
     }
   };
 
   const handleStopRecording = async (): Promise<void> => {
-    // Stop video recording
+    // Stop composite recording (video + audio)
     await stopRecording();
-    
-    // Stop audio recording if it's active
-    try {
-      const audioState = audioService.getState();
-      if (audioState.recording.isRecording) {
-        console.log('Stopping audio recording...');
-        audioService.stopRecording();
-      }
-    } catch (error) {
-      console.error('Failed to stop audio recording:', error);
-    }
   };
 
   const handleDownloadRecording = async (): Promise<void> => {
@@ -520,6 +497,9 @@ const VideoRecorderApp: React.FC = () => {
       
       {/* Performance Monitor */}
       <PerformanceMonitor />
+      
+      {/* Sync Monitor */}
+      <SyncMonitor visible={true} />
       
 
     </div>

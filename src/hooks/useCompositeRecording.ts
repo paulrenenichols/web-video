@@ -1,247 +1,222 @@
 /**
- * @fileoverview Composite video recording functionality hook.
+ * @fileoverview Composite recording hook for synchronized video and audio recording.
  *
- * Manages MediaRecorder API with composite video stream that includes
- * both camera feed and overlay rendering for recorded videos.
+ * Manages combined video and audio recording with synchronization,
+ * supports multiple formats (WebM, MP4), and provides quality controls.
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { CompositeRecordingService } from '@/services/composite-recording.service';
-import { FileService } from '@/services/file.service';
-import type {
-  RecordingState,
-  RecordingConfig,
-  RecordingResult,
-} from '@/types/recording';
+import { 
+  compositeRecordingService, 
+  RecordingConfig, 
+  RecordingState, 
+  CompositeRecordingResult,
+  RECORDING_FORMATS,
+  RECORDING_QUALITY_PRESETS
+} from '@/services/composite-recording.service';
 
-export const useCompositeRecording = () => {
-  const [state, setState] = useState<RecordingState>({
+/**
+ * Composite recording hook state
+ */
+export interface CompositeRecordingHookState {
+  // Recording state
+  isRecording: boolean;
+  isPaused: boolean;
+  duration: number;
+  
+  // Recording results
+  videoBlob: Blob | null;
+  audioBlob: Blob | null;
+  compositeBlob: Blob | null;
+  
+  // Synchronization data
+  syncData: {
+    audioTimestamp: number;
+    videoTimestamp: number;
+    drift: number;
+    latency: number;
+    isInSync: boolean;
+  } | null;
+  
+  // Configuration
+  config: RecordingConfig;
+  
+  // Error state
+  error: string | null;
+  
+  // Supported formats
+  supportedFormats: string[];
+}
+
+/**
+ * Composite recording hook actions
+ */
+export interface CompositeRecordingHookActions {
+  // Recording controls
+  startRecording: (videoStream: MediaStream, overlayCanvases?: HTMLCanvasElement[]) => Promise<void>;
+  stopRecording: () => Promise<CompositeRecordingResult>;
+  pauseRecording: () => void;
+  resumeRecording: () => void;
+  
+  // Configuration
+  updateConfig: (config: Partial<RecordingConfig>) => void;
+  
+  // Utilities
+  cleanup: () => void;
+}
+
+/**
+ * Composite recording hook options
+ */
+export interface UseCompositeRecordingOptions {
+  initialConfig?: Partial<RecordingConfig>;
+  onStateChange?: (state: RecordingState) => void;
+  onSyncUpdate?: (syncData: any) => void;
+  onRecordingComplete?: (result: CompositeRecordingResult) => void;
+  onError?: (error: string) => void;
+}
+
+/**
+ * Composite recording hook return type
+ */
+export type UseCompositeRecordingReturn = [CompositeRecordingHookState, CompositeRecordingHookActions];
+
+/**
+ * Composite recording hook
+ */
+export const useCompositeRecording = (options: UseCompositeRecordingOptions = {}): UseCompositeRecordingReturn => {
+  const {
+    initialConfig = {},
+    onStateChange,
+    onSyncUpdate,
+    onRecordingComplete,
+    onError,
+  } = options;
+
+  // State
+  const [state, setState] = useState<CompositeRecordingHookState>(() => ({
     isRecording: false,
-    isProcessing: false,
-    elapsedTime: 0,
-    startTime: null,
-    recordingBlob: null,
-    error: null,
+    isPaused: false,
+    duration: 0,
+    videoBlob: null,
+    audioBlob: null,
+    compositeBlob: null,
+    syncData: null,
     config: {
-      quality: 0.9,
-      format: 'webm',
-      includeAudio: false,
-      width: 1280,
-      height: 720,
-      frameRate: 30,
+      format: 'WEBM',
+      quality: 'MEDIUM',
+      includeAudio: true,
+      syncSettings: {
+        latencyThreshold: 50,
+        syncInterval: 100,
+        maxDrift: 100,
+      },
+      ...initialConfig,
     },
-  });
+    error: null,
+    supportedFormats: compositeRecordingService.getSupportedFormats(),
+  }));
 
-  // Store the filename once when recording is completed
-  const [recordingFilename, setRecordingFilename] = useState<string>('');
-
-  const recordingServiceRef = useRef<CompositeRecordingService | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  /**
-   * Initialize recording service.
-   */
-  const initializeRecording = useCallback(() => {
-    if (!CompositeRecordingService.isSupported()) {
-      setState(prev => ({
-        ...prev,
-        error: 'Recording is not supported in this browser',
-      }));
-      return false;
-    }
-
-    if (!recordingServiceRef.current) {
-      recordingServiceRef.current = new CompositeRecordingService();
-    }
-    return true;
-  }, []);
+  // Refs
+  const stateChangeRef = useRef<((state: RecordingState) => void) | null>(null);
+  const syncUpdateRef = useRef<((syncData: any) => void) | null>(null);
 
   /**
-   * Start recording with composite video stream including overlays.
+   * Handle state changes from the service
    */
-  const startRecording = useCallback(
-    async (
-      videoElement: HTMLVideoElement,
-      overlayCanvases: HTMLCanvasElement[]
-    ): Promise<void> => {
-      if (!initializeRecording()) return;
-
-      setState(prev => ({
-        ...prev,
-        isRecording: true,
-        isProcessing: false,
-        elapsedTime: 0,
-        startTime: Date.now(),
-        recordingBlob: null,
-        error: null,
-      }));
-
-      try {
-        await recordingServiceRef.current!.startRecording(
-          videoElement,
-          overlayCanvases,
-          state.config
-        );
-
-        // Start timer
-        timerRef.current = setInterval(() => {
-          setState(prev => ({
-            ...prev,
-            elapsedTime: prev.startTime
-              ? (Date.now() - prev.startTime) / 1000
-              : 0,
-          }));
-        }, 100);
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : 'Failed to start recording';
-        setState(prev => ({
-          ...prev,
-          isRecording: false,
-          startTime: null,
-          error: errorMessage,
-        }));
-      }
-    },
-    [initializeRecording, state.config]
-  );
-
-  /**
-   * Stop recording and process the result.
-   */
-  const stopRecording = useCallback(async (): Promise<RecordingResult | null> => {
-    if (!recordingServiceRef.current || !state.isRecording) {
-      return null;
-    }
-
+  const handleStateChange = useCallback((serviceState: RecordingState) => {
     setState(prev => ({
       ...prev,
-      isProcessing: true,
+      isRecording: serviceState.isRecording,
+      isPaused: serviceState.isPaused,
+      duration: serviceState.duration,
+      videoBlob: serviceState.videoBlob,
+      audioBlob: serviceState.audioBlob,
+      compositeBlob: serviceState.compositeBlob,
+      syncData: serviceState.syncData,
+      error: serviceState.error,
     }));
 
+    onStateChange?.(serviceState);
+  }, [onStateChange]);
+
+  /**
+   * Handle sync updates from the service
+   */
+  const handleSyncUpdate = useCallback((syncData: any) => {
+    setState(prev => ({
+      ...prev,
+      syncData,
+    }));
+
+    onSyncUpdate?.(syncData);
+  }, [onSyncUpdate]);
+
+  /**
+   * Start recording
+   */
+  const startRecording = useCallback(async (
+    videoStream: MediaStream, 
+    overlayCanvases: HTMLCanvasElement[] = []
+  ): Promise<void> => {
     try {
-      // Stop timer
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-
-      // Stop recording
-      const blob = await recordingServiceRef.current.stopRecording();
-      const duration = state.elapsedTime;
-      const size = blob.size;
-
-      // Generate filename once and store it
-      const filename = FileService.generateDefaultFilename(state.config.format);
-      setRecordingFilename(filename);
-
-      setState(prev => ({
-        ...prev,
-        isRecording: false,
-        isProcessing: false,
-        recordingBlob: blob,
-        startTime: null,
-      }));
-
-      return {
-        success: true,
-        blob,
-        filename,
-        duration,
-        size,
-      };
+      setState(prev => ({ ...prev, error: null }));
+      await compositeRecordingService.startRecording(videoStream, overlayCanvases);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to stop recording';
-      setState(prev => ({
-        ...prev,
-        isRecording: false,
-        isProcessing: false,
-        startTime: null,
-        error: errorMessage,
-      }));
-      return {
-        success: false,
-        blob: null,
-        filename: '',
-        duration: 0,
-        size: 0,
-        error: errorMessage,
-      };
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setState(prev => ({ ...prev, error: errorMessage }));
+      onError?.(errorMessage);
+      throw error;
     }
-  }, [state.isRecording, state.elapsedTime, state.config.format]);
+  }, [onError]);
 
   /**
-   * Download the recorded video.
+   * Stop recording
    */
-  const downloadRecording = useCallback(async (): Promise<void> => {
-    if (!state.recordingBlob) {
-      setState(prev => ({
-        ...prev,
-        error: 'No recording available to download',
-      }));
-      return;
-    }
-
+  const stopRecording = useCallback(async (): Promise<CompositeRecordingResult> => {
     try {
-      // Use the stored filename instead of generating a new one
-      const defaultFilename = recordingFilename || FileService.generateDefaultFilename(
-        state.config.format
-      );
-      const filename = FileService.promptForFilename(defaultFilename);
-
-      if (!filename) {
-        return; // User cancelled
-      }
-
-      FileService.downloadFile(state.recordingBlob, {
-        filename,
-        format: state.config.format,
-        quality: state.config.quality,
-      });
-
-      // Clear the recording blob and filename after successful download
-      setState(prev => ({
-        ...prev,
-        recordingBlob: null,
-      }));
-      setRecordingFilename('');
+      const result = await compositeRecordingService.stopRecording();
+      onRecordingComplete?.(result);
+      return result;
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to download recording';
-      setState(prev => ({
-        ...prev,
-        error: errorMessage,
-      }));
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setState(prev => ({ ...prev, error: errorMessage }));
+      onError?.(errorMessage);
+      throw error;
     }
-  }, [state.recordingBlob, state.config.format, state.config.quality]);
+  }, [onRecordingComplete, onError]);
 
   /**
-   * Clear the current recording.
+   * Pause recording
    */
-  const clearRecording = useCallback((): void => {
-    setState(prev => ({
-      ...prev,
-      recordingBlob: null,
-      error: null,
-    }));
-    setRecordingFilename('');
-  }, []);
+  const pauseRecording = useCallback((): void => {
+    try {
+      compositeRecordingService.pauseRecording();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setState(prev => ({ ...prev, error: errorMessage }));
+      onError?.(errorMessage);
+    }
+  }, [onError]);
 
   /**
-   * Clear any recording errors.
+   * Resume recording
    */
-  const clearError = useCallback((): void => {
-    setState(prev => ({
-      ...prev,
-      error: null,
-    }));
-  }, []);
+  const resumeRecording = useCallback((): void => {
+    try {
+      compositeRecordingService.resumeRecording();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setState(prev => ({ ...prev, error: errorMessage }));
+      onError?.(errorMessage);
+    }
+  }, [onError]);
 
   /**
-   * Update recording configuration.
+   * Update configuration
    */
   const updateConfig = useCallback((config: Partial<RecordingConfig>): void => {
+    compositeRecordingService.updateConfig(config);
     setState(prev => ({
       ...prev,
       config: { ...prev.config, ...config },
@@ -249,57 +224,81 @@ export const useCompositeRecording = () => {
   }, []);
 
   /**
-   * Get current recording state.
+   * Cleanup
    */
-  const getRecordingState = useCallback((): 'inactive' | 'recording' | 'paused' => {
-    return recordingServiceRef.current?.getRecordingState() || 'inactive';
+  const cleanup = useCallback((): void => {
+    compositeRecordingService.cleanup();
   }, []);
 
-  /**
-   * Pause recording (if supported).
-   */
-  const pauseRecording = useCallback((): void => {
-    recordingServiceRef.current?.pauseRecording();
-  }, []);
-
-  /**
-   * Resume recording (if supported).
-   */
-  const resumeRecording = useCallback((): void => {
-    recordingServiceRef.current?.resumeRecording();
-  }, []);
-
-  /**
-   * Clean up resources on unmount.
-   */
+  // Set up service callbacks
   useEffect(() => {
+    // Store refs to avoid stale closures
+    stateChangeRef.current = handleStateChange;
+    syncUpdateRef.current = handleSyncUpdate;
+
+    // Set up service callbacks
+    compositeRecordingService.onStateChangeCallback(handleStateChange);
+    compositeRecordingService.onSyncUpdateCallback(handleSyncUpdate);
+
+    // Cleanup function
     return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      recordingServiceRef.current?.cleanup();
+      compositeRecordingService.onStateChangeCallback(() => {});
+      compositeRecordingService.onSyncUpdateCallback(() => {});
     };
+  }, [handleStateChange, handleSyncUpdate]);
+
+  // Update service config when state config changes
+  useEffect(() => {
+    compositeRecordingService.updateConfig(state.config);
+  }, [state.config]);
+
+  // Actions object
+  const actions: CompositeRecordingHookActions = {
+    startRecording,
+    stopRecording,
+    pauseRecording,
+    resumeRecording,
+    updateConfig,
+    cleanup,
+  };
+
+  return [state, actions];
+};
+
+/**
+ * Hook for recording format utilities
+ */
+export const useRecordingFormats = () => {
+  const [supportedFormats, setSupportedFormats] = useState<string[]>([]);
+
+  useEffect(() => {
+    setSupportedFormats(compositeRecordingService.getSupportedFormats());
   }, []);
 
   return {
-    // State
-    isRecording: state.isRecording,
-    isProcessing: state.isProcessing,
-    elapsedTime: state.elapsedTime,
-    recordingBlob: state.recordingBlob,
-    error: state.error,
-    config: state.config,
-    recordingFilename,
-
-    // Actions
-    startRecording,
-    stopRecording,
-    downloadRecording,
-    clearRecording,
-    clearError,
-    updateConfig,
-    getRecordingState,
-    pauseRecording,
-    resumeRecording,
+    supportedFormats,
+    formats: RECORDING_FORMATS,
+    qualityPresets: RECORDING_QUALITY_PRESETS,
   };
+};
+
+/**
+ * Hook for recording synchronization
+ */
+export const useRecordingSync = () => {
+  const [syncData, setSyncData] = useState<any>(null);
+
+  useEffect(() => {
+    const handleSyncUpdate = (data: any) => {
+      setSyncData(data);
+    };
+
+    compositeRecordingService.onSyncUpdateCallback(handleSyncUpdate);
+
+    return () => {
+      compositeRecordingService.onSyncUpdateCallback(() => {});
+    };
+  }, []);
+
+  return syncData;
 }; 

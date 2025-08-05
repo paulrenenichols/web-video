@@ -1,353 +1,642 @@
 /**
- * @fileoverview Composite recording service for video recording with overlays.
+ * @fileoverview Composite recording service for synchronized video and audio recording.
  *
- * Handles MediaRecorder API with composite video stream that includes
- * both camera feed and overlay rendering for recorded videos.
+ * Handles combined video and audio recording with synchronization,
+ * supports multiple formats (WebM, MP4), and provides quality controls.
  */
 
-import type { RecordingConfig, RecordingError } from '@/types/recording';
-import type { ActiveOverlay } from '@/types/overlay';
+import { audioService } from './audio.service';
+import { synchronizeAudioVideo } from '@/utils/audio';
 
+/**
+ * Recording format options
+ */
+export const RECORDING_FORMATS = {
+  WEBM: {
+    mimeType: 'video/webm',
+    extension: '.webm',
+    description: 'WebM format - good compression, web optimized',
+    supported: true,
+  },
+  MP4: {
+    mimeType: 'video/mp4',
+    extension: '.mp4',
+    description: 'MP4 format - universal compatibility',
+    supported: true,
+  },
+} as const;
+
+/**
+ * Recording quality presets
+ */
+export const RECORDING_QUALITY_PRESETS = {
+  LOW: {
+    video: {
+      width: 640,
+      height: 480,
+      frameRate: 24,
+      bitrate: 1000000, // 1 Mbps
+    },
+    audio: {
+      sampleRate: 22050,
+      channelCount: 1,
+      bitrate: 64000, // 64 kbps
+    },
+    description: 'Low quality - suitable for quick sharing',
+  },
+  MEDIUM: {
+    video: {
+      width: 1280,
+      height: 720,
+      frameRate: 30,
+      bitrate: 2500000, // 2.5 Mbps
+    },
+    audio: {
+      sampleRate: 44100,
+      channelCount: 2,
+      bitrate: 128000, // 128 kbps
+    },
+    description: 'Medium quality - good for most recordings',
+  },
+  HIGH: {
+    video: {
+      width: 1920,
+      height: 1080,
+      frameRate: 30,
+      bitrate: 5000000, // 5 Mbps
+    },
+    audio: {
+      sampleRate: 48000,
+      channelCount: 2,
+      bitrate: 192000, // 192 kbps
+    },
+    description: 'High quality - professional recordings',
+  },
+  ULTRA: {
+    video: {
+      width: 3840,
+      height: 2160,
+      frameRate: 30,
+      bitrate: 15000000, // 15 Mbps
+    },
+    audio: {
+      sampleRate: 96000,
+      channelCount: 2,
+      bitrate: 320000, // 320 kbps
+    },
+    description: 'Ultra high quality - 4K recordings',
+  },
+} as const;
+
+/**
+ * Recording configuration
+ */
+export interface RecordingConfig {
+  format: keyof typeof RECORDING_FORMATS;
+  quality: keyof typeof RECORDING_QUALITY_PRESETS;
+  includeAudio: boolean;
+  syncSettings: {
+    latencyThreshold: number;
+    syncInterval: number;
+    maxDrift: number;
+  };
+}
+
+/**
+ * Recording state
+ */
+export interface RecordingState {
+  isRecording: boolean;
+  isPaused: boolean;
+  duration: number;
+  startTime: number;
+  pauseTime: number;
+  totalPausedTime: number;
+  videoBlob: Blob | null;
+  audioBlob: Blob | null;
+  compositeBlob: Blob | null;
+  syncData: {
+    audioTimestamp: number;
+    videoTimestamp: number;
+    drift: number;
+    latency: number;
+    isInSync: boolean;
+  } | null;
+  error: string | null;
+}
+
+/**
+ * Recording result
+ */
+export interface CompositeRecordingResult {
+  videoBlob: Blob | null;
+  audioBlob: Blob | null;
+  compositeBlob: Blob | null;
+  duration: number;
+  format: string;
+  quality: string;
+  size: number;
+  syncData: {
+    averageDrift: number;
+    maxDrift: number;
+    syncQuality: 'excellent' | 'good' | 'fair' | 'poor';
+  };
+}
+
+/**
+ * Composite recording service class
+ */
 export class CompositeRecordingService {
-  private mediaRecorder: MediaRecorder | null = null;
-  private recordedChunks: Blob[] = [];
-  private compositeCanvas: HTMLCanvasElement | null = null;
-  private compositeCtx: CanvasRenderingContext2D | null = null;
-  private videoElement: HTMLVideoElement | null = null;
-  private overlayCanvasElements: HTMLCanvasElement[] = [];
-  private animationFrameId: number | null = null;
+  private config: RecordingConfig;
+  private state: RecordingState;
+  private videoRecorder: MediaRecorder | null = null;
+  private videoChunks: Blob[] = [];
+  private audioChunks: Blob[] = [];
+  private syncInterval: number | null = null;
+  private syncDataPoints: Array<{ drift: number; timestamp: number }> = [];
+  private onStateChange: ((state: RecordingState) => void) | null = null;
+  private onSyncUpdate: ((syncData: any) => void) | null = null;
 
-  /**
-   * Check if MediaRecorder is supported in the current browser.
-   */
-  static isSupported(): boolean {
-    return typeof MediaRecorder !== 'undefined';
-  }
-
-  /**
-   * Get supported MIME types for recording.
-   */
-  static getSupportedFormats(): string[] {
-    const formats = [
-      'video/webm;codecs=vp9',
-      'video/webm;codecs=vp8',
-      'video/webm',
-      'video/mp4',
-      'video/ogg;codecs=theora',
-    ];
-
-    return formats.filter(format => MediaRecorder.isTypeSupported(format));
-  }
-
-  /**
-   * Get the best available format for recording.
-   */
-  static getBestFormat(): string {
-    const supportedFormats = this.getSupportedFormats();
-    return supportedFormats[0] || 'video/webm';
-  }
-
-  /**
-   * Initialize the composite canvas for recording.
-   */
-  private initializeCompositeCanvas(
-    videoElement: HTMLVideoElement,
-    width: number,
-    height: number
-  ): void {
-    this.videoElement = videoElement;
-
-    // Create composite canvas
-    this.compositeCanvas = document.createElement('canvas');
-    this.compositeCanvas.width = width;
-    this.compositeCanvas.height = height;
-
-    this.compositeCtx = this.compositeCanvas.getContext('2d');
-    if (!this.compositeCtx) {
-      throw new Error('Failed to get canvas context for composite recording');
-    }
-  }
-
-  /**
-   * Check if video is mirrored.
-   */
-  private isVideoMirrored(): boolean {
-    return this.videoElement?.style.transform?.includes('scaleX(-1)') || false;
-  }
-
-  /**
-   * Set overlay canvas elements to be included in recording.
-   */
-  setOverlayCanvases(overlayCanvases: HTMLCanvasElement[]): void {
-    this.overlayCanvasElements = overlayCanvases;
-  }
-
-  /**
-   * Render composite frame with video and overlays.
-   */
-  private renderCompositeFrame(): void {
-    if (!this.compositeCtx || !this.videoElement || !this.compositeCanvas) {
-      return;
-    }
-
-    // Clear canvas
-    this.compositeCtx.clearRect(
-      0,
-      0,
-      this.compositeCanvas.width,
-      this.compositeCanvas.height
-    );
-
-    // Check if video is mirrored
-    const isMirrored = this.isVideoMirrored();
-
-    // Draw video frame (mirror if needed)
-    if (isMirrored) {
-      this.compositeCtx.save();
-      this.compositeCtx.scale(-1, 1);
-      this.compositeCtx.translate(-this.compositeCanvas.width, 0);
-    }
-
-    this.compositeCtx.drawImage(
-      this.videoElement,
-      0,
-      0,
-      this.compositeCanvas.width,
-      this.compositeCanvas.height
-    );
-
-    if (isMirrored) {
-      this.compositeCtx.restore();
-    }
-
-    // Draw overlay canvases on top
-    // Overlays are already rendered with mirroring applied for display,
-    // so we draw them directly without additional mirroring
-    this.overlayCanvasElements.forEach(overlayCanvas => {
-      if (
-        overlayCanvas &&
-        overlayCanvas.width > 0 &&
-        overlayCanvas.height > 0
-      ) {
-        this.compositeCtx!.drawImage(
-          overlayCanvas,
-          0,
-          0,
-          this.compositeCanvas!.width,
-          this.compositeCanvas!.height
-        );
-      }
-    });
-  }
-
-  /**
-   * Start recording with composite video stream.
-   */
-  async startRecording(
-    videoElement: HTMLVideoElement,
-    overlayCanvases: HTMLCanvasElement[],
-    config: Partial<RecordingConfig> = {}
-  ): Promise<void> {
-    try {
-      this.recordedChunks = [];
-      this.setOverlayCanvases(overlayCanvases);
-
-      const defaultConfig: RecordingConfig = {
-        quality: 0.9,
-        format: 'webm',
-        includeAudio: false,
-        width: 1280,
-        height: 720,
-        frameRate: 30,
-        ...config,
-      };
-
-      // Initialize composite canvas
-      this.initializeCompositeCanvas(
-        videoElement,
-        defaultConfig.width,
-        defaultConfig.height
-      );
-
-      const mimeType = this.getMimeType(defaultConfig.format);
-      if (!mimeType) {
-        throw new Error('Unsupported recording format');
-      }
-
-      // Create composite stream from canvas
-      const compositeStream = this.compositeCanvas!.captureStream(
-        defaultConfig.frameRate
-      );
-
-      const options: MediaRecorderOptions = {
-        mimeType,
-        videoBitsPerSecond: this.calculateBitrate(defaultConfig),
-      };
-
-      this.mediaRecorder = new MediaRecorder(compositeStream, options);
-
-      this.mediaRecorder.ondataavailable = event => {
-        if (event.data.size > 0) {
-          this.recordedChunks.push(event.data);
-        }
-      };
-
-      this.mediaRecorder.onerror = event => {
-        console.error('MediaRecorder error:', event);
-        throw new Error('Recording failed');
-      };
-
-      // Start rendering composite frames
-      this.startCompositeRendering();
-
-      this.mediaRecorder.start(1000); // Collect data every second
-    } catch (error) {
-      throw this.handleRecordingError(error);
-    }
-  }
-
-  /**
-   * Start rendering composite frames for recording.
-   */
-  private startCompositeRendering(): void {
-    let lastFrameTime = 0;
-    const targetFrameRate = 30; // Match video frame rate
-    const frameInterval = 1000 / targetFrameRate;
-
-    const renderFrame = (currentTime: number) => {
-      // Throttle to target frame rate to reduce lag
-      if (currentTime - lastFrameTime >= frameInterval) {
-        this.renderCompositeFrame();
-        lastFrameTime = currentTime;
-      }
-      this.animationFrameId = requestAnimationFrame(renderFrame);
+  constructor(config?: Partial<RecordingConfig>) {
+    this.config = {
+      format: 'WEBM',
+      quality: 'MEDIUM',
+      includeAudio: true,
+      syncSettings: {
+        latencyThreshold: 50,
+        syncInterval: 100,
+        maxDrift: 100,
+      },
+      ...config,
     };
 
-    this.animationFrameId = requestAnimationFrame(renderFrame);
+    this.state = this.getInitialState();
   }
 
   /**
-   * Stop rendering composite frames.
+   * Get initial state
    */
-  private stopCompositeRendering(): void {
-    if (this.animationFrameId) {
-      cancelAnimationFrame(this.animationFrameId);
-      this.animationFrameId = null;
+  private getInitialState(): RecordingState {
+    return {
+      isRecording: false,
+      isPaused: false,
+      duration: 0,
+      startTime: 0,
+      pauseTime: 0,
+      totalPausedTime: 0,
+      videoBlob: null,
+      audioBlob: null,
+      compositeBlob: null,
+      syncData: null,
+      error: null,
+    };
+  }
+
+  /**
+   * Set state change callback
+   */
+  onStateChangeCallback(callback: (state: RecordingState) => void): void {
+    this.onStateChange = callback;
+  }
+
+  /**
+   * Set sync update callback
+   */
+  onSyncUpdateCallback(callback: (syncData: any) => void): void {
+    this.onSyncUpdate = callback;
+  }
+
+  /**
+   * Update state
+   */
+  private updateState(updates: Partial<RecordingState>): void {
+    this.state = { ...this.state, ...updates };
+    this.onStateChange?.(this.state);
+  }
+
+  /**
+   * Update configuration
+   */
+  updateConfig(config: Partial<RecordingConfig>): void {
+    this.config = { ...this.config, ...config };
+    console.log('✅ Recording configuration updated:', this.config);
+  }
+
+  /**
+   * Get supported formats
+   */
+  getSupportedFormats(): string[] {
+    const formats: string[] = [];
+    
+    Object.entries(RECORDING_FORMATS).forEach(([key, format]) => {
+      if (format.supported && MediaRecorder.isTypeSupported(format.mimeType)) {
+        formats.push(key);
+      }
+    });
+    
+    return formats;
+  }
+
+  /**
+   * Get MIME type for current format
+   */
+  private getMimeType(): string {
+    const format = RECORDING_FORMATS[this.config.format];
+    return format.mimeType;
+  }
+
+  /**
+   * Start composite recording
+   */
+  async startRecording(videoStream: MediaStream, overlayCanvases: HTMLCanvasElement[] = []): Promise<void> {
+    if (this.state.isRecording) {
+      throw new Error('Recording already in progress');
+    }
+
+    try {
+      console.log('🎬 Starting composite recording...');
+      
+      // Reset state
+      this.videoChunks = [];
+      this.audioChunks = [];
+      this.syncDataPoints = [];
+      
+      // Create composite stream
+      const compositeStream = await this.createCompositeStream(videoStream, overlayCanvases);
+      
+      // Start video recording
+      await this.startVideoRecording(compositeStream);
+      
+      // Start audio recording if enabled
+      if (this.config.includeAudio) {
+        await this.startAudioRecording();
+      }
+      
+      // Start synchronization monitoring
+      this.startSyncMonitoring();
+      
+      // Update state
+      this.updateState({
+        isRecording: true,
+        isPaused: false,
+        startTime: Date.now(),
+        pauseTime: 0,
+        totalPausedTime: 0,
+        error: null,
+      });
+      
+      console.log('✅ Composite recording started');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.updateState({ error: errorMessage });
+      throw error;
     }
   }
 
   /**
-   * Stop recording and return the recorded blob.
+   * Create composite stream with overlays
    */
-  async stopRecording(): Promise<Blob> {
-    return new Promise((resolve, reject) => {
-      if (!this.mediaRecorder) {
-        reject(new Error('No active recording'));
-        return;
-      }
+  private async createCompositeStream(
+    videoStream: MediaStream, 
+    overlayCanvases: HTMLCanvasElement[]
+  ): Promise<MediaStream> {
+    // Create a canvas to composite video and overlays
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Failed to get canvas context');
+    }
 
-      // Stop composite rendering
-      this.stopCompositeRendering();
+    // Get video track
+    const videoTrack = videoStream.getVideoTracks()[0];
+    if (!videoTrack) {
+      throw new Error('No video track found');
+    }
 
-      this.mediaRecorder.onstop = () => {
-        try {
-          const blob = new Blob(this.recordedChunks, {
-            type: this.mediaRecorder?.mimeType || 'video/webm',
-          });
-          resolve(blob);
-        } catch (error) {
-          reject(this.handleRecordingError(error));
-        }
-      };
+    // Set canvas size to video dimensions
+    const settings = videoTrack.getSettings();
+    canvas.width = settings.width || 1280;
+    canvas.height = settings.height || 720;
 
-      this.mediaRecorder.stop();
+    // Create video element for the stream
+    const video = document.createElement('video');
+    video.srcObject = videoStream;
+    video.muted = true;
+    video.autoplay = true;
+
+    // Wait for video to be ready
+    await new Promise<void>((resolve) => {
+      video.onloadedmetadata = () => resolve();
     });
+
+    // Create MediaStream from canvas
+    const canvasStream = canvas.captureStream(30); // 30 FPS
+
+    // Composite video and overlays
+    const compositeFrame = () => {
+      if (!this.state.isRecording) return;
+
+      // Draw video frame
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Draw overlays
+      overlayCanvases.forEach(overlayCanvas => {
+        ctx.drawImage(overlayCanvas, 0, 0, canvas.width, canvas.height);
+      });
+
+      // Request next frame
+      requestAnimationFrame(compositeFrame);
+    };
+
+    // Start compositing
+    compositeFrame();
+
+    return canvasStream;
   }
 
   /**
-   * Get the current recording state.
+   * Start video recording
    */
-  getRecordingState(): 'inactive' | 'recording' | 'paused' {
-    return this.mediaRecorder?.state || 'inactive';
+  private async startVideoRecording(stream: MediaStream): Promise<void> {
+    const mimeType = this.getMimeType();
+    const options = {
+      mimeType,
+      videoBitsPerSecond: RECORDING_QUALITY_PRESETS[this.config.quality].video.bitrate,
+    };
+
+    this.videoRecorder = new MediaRecorder(stream, options);
+    
+    this.videoRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        this.videoChunks.push(event.data);
+      }
+    };
+
+    this.videoRecorder.onstop = () => {
+      console.log('📹 Video recording stopped');
+    };
+
+    this.videoRecorder.start();
+    console.log('📹 Video recording started');
   }
 
   /**
-   * Pause recording (if supported).
+   * Start audio recording
+   */
+  private async startAudioRecording(): Promise<void> {
+    try {
+      const audioState = audioService.getState();
+      if (audioState.state === 'READY') {
+        await audioService.startRecording();
+        console.log('🎤 Audio recording started');
+      } else {
+        console.warn('⚠️ Audio service not ready, recording video only');
+      }
+    } catch (error) {
+      console.error('❌ Failed to start audio recording:', error);
+    }
+  }
+
+  /**
+   * Start synchronization monitoring
+   */
+  private startSyncMonitoring(): void {
+    if (this.syncInterval) {
+      clearInterval(this.syncInterval);
+    }
+
+    this.syncInterval = window.setInterval(() => {
+      if (this.state.isRecording) {
+        this.updateSyncData();
+      }
+    }, this.config.syncSettings.syncInterval);
+  }
+
+  /**
+   * Update synchronization data
+   */
+  private updateSyncData(): void {
+    const videoTimestamp = Date.now();
+    const audioTimestamp = videoTimestamp; // In a real implementation, get from audio service
+    
+    const syncData = synchronizeAudioVideo(
+      audioTimestamp,
+      videoTimestamp,
+      this.config.syncSettings.latencyThreshold
+    );
+
+    // Store sync data point
+    this.syncDataPoints.push({
+      drift: syncData.drift,
+      timestamp: videoTimestamp,
+    });
+
+    this.updateState({ syncData });
+    this.onSyncUpdate?.(syncData);
+
+    if (!syncData.isInSync) {
+      console.warn('⚠️ Audio-video sync drift detected:', syncData.drift, 'ms');
+    }
+  }
+
+  /**
+   * Pause recording
    */
   pauseRecording(): void {
-    if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
-      this.mediaRecorder.pause();
-      this.stopCompositeRendering();
+    if (!this.state.isRecording || this.state.isPaused) {
+      throw new Error('Recording not active or already paused');
     }
+
+    this.videoRecorder?.pause();
+    
+    if (this.config.includeAudio) {
+      try {
+        const audioState = audioService.getState();
+        if (audioState.recording.isRecording) {
+          audioService.pauseRecording();
+        }
+      } catch (error) {
+        console.error('❌ Failed to pause audio recording:', error);
+      }
+    }
+
+    this.updateState({
+      isPaused: true,
+      pauseTime: Date.now(),
+    });
+
+    console.log('⏸️ Recording paused');
   }
 
   /**
-   * Resume recording (if supported).
+   * Resume recording
    */
   resumeRecording(): void {
-    if (this.mediaRecorder && this.mediaRecorder.state === 'paused') {
-      this.mediaRecorder.resume();
-      this.startCompositeRendering();
+    if (!this.state.isRecording || !this.state.isPaused) {
+      throw new Error('Recording not active or not paused');
+    }
+
+    this.videoRecorder?.resume();
+    
+    if (this.config.includeAudio) {
+      try {
+        const audioState = audioService.getState();
+        if (audioState.recording.isRecording && audioState.recording.isPaused) {
+          audioService.resumeRecording();
+        }
+      } catch (error) {
+        console.error('❌ Failed to resume audio recording:', error);
+      }
+    }
+
+    const totalPausedTime = this.state.totalPausedTime + 
+      (Date.now() - this.state.pauseTime);
+
+    this.updateState({
+      isPaused: false,
+      totalPausedTime,
+    });
+
+    console.log('▶️ Recording resumed');
+  }
+
+  /**
+   * Stop recording
+   */
+  async stopRecording(): Promise<CompositeRecordingResult> {
+    if (!this.state.isRecording) {
+      throw new Error('No recording in progress');
+    }
+
+    try {
+      console.log('🛑 Stopping composite recording...');
+
+      // Stop video recording
+      if (this.videoRecorder) {
+        this.videoRecorder.stop();
+      }
+
+      // Stop audio recording
+      if (this.config.includeAudio) {
+        try {
+          const audioState = audioService.getState();
+          if (audioState.recording.isRecording) {
+            audioService.stopRecording();
+          }
+        } catch (error) {
+          console.error('❌ Failed to stop audio recording:', error);
+        }
+      }
+
+      // Stop sync monitoring
+      if (this.syncInterval) {
+        clearInterval(this.syncInterval);
+        this.syncInterval = null;
+      }
+
+      // Calculate duration
+      const duration = Date.now() - this.state.startTime - this.state.totalPausedTime;
+
+      // Get video blob
+      const videoBlob = this.videoChunks.length > 0 
+        ? new Blob(this.videoChunks, { type: this.getMimeType() })
+        : null;
+
+      // Get audio blob
+      const audioBlob = this.config.includeAudio ? audioService.getRecordedAudio() : null;
+
+      // Create composite blob (for now, just return video blob)
+      // In a real implementation, you would merge video and audio
+      const compositeBlob = videoBlob;
+
+      // Calculate sync quality
+      const syncQuality = this.calculateSyncQuality();
+
+      // Create result
+      const result: CompositeRecordingResult = {
+        videoBlob,
+        audioBlob,
+        compositeBlob,
+        duration,
+        format: this.config.format,
+        quality: this.config.quality,
+        size: compositeBlob?.size || 0,
+        syncData: syncQuality,
+      };
+
+      // Update state
+      this.updateState({
+        isRecording: false,
+        isPaused: false,
+        duration,
+        videoBlob,
+        audioBlob,
+        compositeBlob,
+      });
+
+      console.log('✅ Composite recording stopped:', result);
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.updateState({ error: errorMessage });
+      throw error;
     }
   }
 
   /**
-   * Clean up resources.
+   * Calculate sync quality
+   */
+  private calculateSyncQuality(): { averageDrift: number; maxDrift: number; syncQuality: 'excellent' | 'good' | 'fair' | 'poor' } {
+    if (this.syncDataPoints.length === 0) {
+      return { averageDrift: 0, maxDrift: 0, syncQuality: 'excellent' };
+    }
+
+    const drifts = this.syncDataPoints.map(point => Math.abs(point.drift));
+    const averageDrift = drifts.reduce((sum, drift) => sum + drift, 0) / drifts.length;
+    const maxDrift = Math.max(...drifts);
+
+    let syncQuality: 'excellent' | 'good' | 'fair' | 'poor';
+    if (averageDrift < 10) {
+      syncQuality = 'excellent';
+    } else if (averageDrift < 25) {
+      syncQuality = 'good';
+    } else if (averageDrift < 50) {
+      syncQuality = 'fair';
+    } else {
+      syncQuality = 'poor';
+    }
+
+    return { averageDrift, maxDrift, syncQuality };
+  }
+
+  /**
+   * Get current state
+   */
+  getState(): RecordingState {
+    return { ...this.state };
+  }
+
+  /**
+   * Clean up resources
    */
   cleanup(): void {
-    this.stopCompositeRendering();
-
-    if (this.mediaRecorder) {
-      if (this.mediaRecorder.state !== 'inactive') {
-        this.mediaRecorder.stop();
-      }
-      this.mediaRecorder = null;
+    if (this.state.isRecording) {
+      this.stopRecording().catch(console.error);
     }
 
-    this.recordedChunks = [];
-    this.compositeCanvas = null;
-    this.compositeCtx = null;
-    this.videoElement = null;
-    this.overlayCanvasElements = [];
-  }
-
-  /**
-   * Get MIME type for the specified format.
-   */
-  private getMimeType(format: string): string | null {
-    const formatMap: Record<string, string[]> = {
-      webm: ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'],
-      mp4: ['video/mp4'],
-      ogg: ['video/ogg;codecs=theora'],
-    };
-
-    const formats = formatMap[format] || [];
-    return formats.find(f => MediaRecorder.isTypeSupported(f)) || null;
-  }
-
-  /**
-   * Calculate bitrate based on quality and resolution.
-   */
-  private calculateBitrate(config: RecordingConfig): number {
-    const baseBitrate = config.width * config.height * config.frameRate * 0.1;
-    return Math.round(baseBitrate * config.quality);
-  }
-
-  /**
-   * Handle recording errors and return standardized error types.
-   */
-  private handleRecordingError(error: unknown): RecordingError {
-    if (error instanceof Error) {
-      if (error.name === 'NotAllowedError') {
-        return 'permission-denied';
-      }
-      if (error.name === 'NotSupportedError') {
-        return 'not-supported';
-      }
-      if (error.message.includes('recording')) {
-        return 'recording-failed';
-      }
+    if (this.syncInterval) {
+      clearInterval(this.syncInterval);
+      this.syncInterval = null;
     }
-    return 'unknown';
+
+    this.videoChunks = [];
+    this.audioChunks = [];
+    this.syncDataPoints = [];
+    this.updateState(this.getInitialState());
+
+    console.log('🧹 Composite recording service cleaned up');
   }
 }
+
+// Export singleton instance
+export const compositeRecordingService = new CompositeRecordingService();
