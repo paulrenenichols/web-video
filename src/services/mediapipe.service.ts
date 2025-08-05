@@ -2,11 +2,29 @@
  * @fileoverview MediaPipe service for facial tracking and landmark detection.
  *
  * Handles MediaPipe initialization, face detection, and landmark tracking.
- * Uses Web Workers for background processing to keep UI responsive.
  * Provides real-time facial tracking data for overlay positioning.
  */
 
-import { workerService, WORKER_RESULT_TYPES } from '@/services/worker.service';
+// Dynamic imports for MediaPipe to avoid Vite issues
+let FaceDetection: any;
+let FaceMesh: any;
+let Camera: any;
+
+// Import MediaPipe modules dynamically
+const loadMediaPipeModules = async () => {
+  if (!FaceDetection) {
+    const faceDetectionModule = await import('@mediapipe/face_detection');
+    FaceDetection = faceDetectionModule.FaceDetection;
+  }
+  if (!FaceMesh) {
+    const faceMeshModule = await import('@mediapipe/face_mesh');
+    FaceMesh = faceMeshModule.FaceMesh;
+  }
+  if (!Camera) {
+    const cameraModule = await import('@mediapipe/camera_utils');
+    Camera = cameraModule.Camera;
+  }
+};
 import {
   MediaPipeOptions,
   MediaPipeState,
@@ -21,7 +39,9 @@ import { calculateLandmarkConfidence } from '@/utils/tracking';
  * MediaPipe service class for facial tracking
  */
 export class MediaPipeService {
-  private workerId: string | null = null;
+  private faceDetection: any = null;
+  private faceMesh: any = null;
+  private camera: any = null;
   private isInitialized = false;
   private options: Required<MediaPipeOptions>;
   private onDetectionCallback?: (detection: FaceDetectionResult) => void;
@@ -37,36 +57,56 @@ export class MediaPipeService {
   }
 
   /**
-   * Initialize MediaPipe services using Web Worker
+   * Initialize MediaPipe services
    */
   async initialize(): Promise<void> {
     try {
-      console.log('🔄 Initializing MediaPipe services with Web Worker...');
+      console.log('🔄 Initializing MediaPipe services...');
 
-      // Initialize worker service if not already done
-      workerService.initialize();
+      // Load MediaPipe modules dynamically
+      await loadMediaPipeModules();
 
-      // Create tracking worker
-      this.workerId = workerService.createWorker(
-        'TRACKING',
-        new URL('../workers/tracking.worker.ts', import.meta.url).href
-      );
+      // Initialize face detection
+      if (this.options.enableFaceDetection) {
+        this.faceDetection = new FaceDetection({
+          locateFile: (file) => {
+            console.log('🔍 Loading MediaPipe file:', file);
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`;
+          },
+        });
 
-      // Set up worker result handlers
-      workerService.onResult(this.workerId, (result) => {
-        this.handleWorkerResult(result);
-      });
+        this.faceDetection.setOptions({
+          minDetectionConfidence: this.options.minDetectionConfidence,
+        });
 
-      // Set up worker error handler
-      workerService.onError(this.workerId, (error) => {
-        console.error('❌ MediaPipe worker error:', error);
-      });
+        this.faceDetection.onResults((results) => {
+          this.handleFaceDetectionResults(results);
+        });
+      }
 
-      // Initialize the worker
-      await workerService.initializeTrackingWorker(this.workerId, this.options);
+      // Initialize face mesh for landmarks
+      if (this.options.enableFaceMesh) {
+        this.faceMesh = new FaceMesh({
+          locateFile: (file) => {
+            console.log('🎭 Loading MediaPipe file:', file);
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+          },
+        });
+
+        this.faceMesh.setOptions({
+          maxNumFaces: 1,
+          refineLandmarks: true,
+          minDetectionConfidence: this.options.minDetectionConfidence,
+          minTrackingConfidence: this.options.minTrackingConfidence,
+        });
+
+        this.faceMesh.onResults((results) => {
+          this.handleFaceMeshResults(results);
+        });
+      }
 
       this.isInitialized = true;
-      console.log('✅ MediaPipe services initialized successfully with Web Worker');
+      console.log('✅ MediaPipe services initialized successfully');
     } catch (error) {
       console.error('❌ Failed to initialize MediaPipe services:', error);
       throw error;
@@ -74,16 +114,26 @@ export class MediaPipeService {
   }
 
   /**
-   * Start processing video stream using Web Worker
+   * Start processing video stream
    */
   async startProcessing(videoElement: HTMLVideoElement): Promise<void> {
-    if (!this.isInitialized || !this.workerId) {
+    if (!this.isInitialized) {
       throw new Error('MediaPipe services not initialized');
     }
 
     try {
-      console.log('🔄 Starting MediaPipe processing with Web Worker...');
-      await workerService.startProcessing(this.workerId, videoElement);
+      console.log('🔄 Starting MediaPipe processing...');
+
+      // Start face detection processing
+      if (this.faceDetection) {
+        await this.faceDetection.send({ image: videoElement });
+      }
+
+      // Start face mesh processing
+      if (this.faceMesh) {
+        await this.faceMesh.send({ image: videoElement });
+      }
+
       console.log('✅ MediaPipe processing started');
     } catch (error) {
       console.error('❌ Failed to start MediaPipe processing:', error);
@@ -92,50 +142,30 @@ export class MediaPipeService {
   }
 
   /**
-   * Process a single frame using Web Worker
+   * Process a single frame
    */
   async processFrame(videoElement: HTMLVideoElement): Promise<void> {
-    if (!this.isInitialized || !this.workerId) {
+    if (!this.isInitialized) {
       console.warn('MediaPipe not initialized, skipping frame processing');
       return;
     }
 
     try {
-      // Create canvas to get image data
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        throw new Error('Failed to get canvas context');
+      // Process with face detection
+      if (this.faceDetection) {
+        await this.faceDetection.send({ image: videoElement });
       }
 
-      canvas.width = videoElement.videoWidth;
-      canvas.height = videoElement.videoHeight;
-      ctx.drawImage(videoElement, 0, 0);
-
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-      // Send frame to worker for processing
-      workerService.processFrame(this.workerId, imageData);
+      // Process with face mesh
+      if (this.faceMesh) {
+        await this.faceMesh.send({ image: videoElement });
+      }
     } catch (error) {
       console.error('❌ Error processing frame:', error);
     }
   }
 
-  /**
-   * Handle worker results
-   */
-  private handleWorkerResult(result: any): void {
-    switch (result.type) {
-      case WORKER_RESULT_TYPES.FACE_DETECTION:
-        this.handleFaceDetectionResults(result.data);
-        break;
-      case WORKER_RESULT_TYPES.FACE_MESH:
-        this.handleFaceMeshResults(result.data);
-        break;
-      default:
-        console.log('📊 Worker result:', result);
-    }
-  }
+
 
   /**
    * Handle face detection results
@@ -331,9 +361,17 @@ export class MediaPipeService {
     console.log('🧹 Disposing MediaPipe services...');
     
     try {
-      if (this.workerId) {
-        await workerService.disposeWorker(this.workerId);
-        this.workerId = null;
+      if (this.faceDetection) {
+        this.faceDetection.close();
+        this.faceDetection = null;
+      }
+      if (this.faceMesh) {
+        this.faceMesh.close();
+        this.faceMesh = null;
+      }
+      if (this.camera) {
+        this.camera.stop();
+        this.camera = null;
       }
       this.isInitialized = false;
       console.log('✅ MediaPipe services disposed');

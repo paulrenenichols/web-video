@@ -30,13 +30,18 @@ const MESSAGE_TYPES = {
  * Load MediaPipe modules dynamically
  */
 const loadMediaPipeModules = async () => {
-  if (!FaceDetection) {
-    const faceDetectionModule = await import('@mediapipe/face_detection');
-    FaceDetection = faceDetectionModule.FaceDetection;
-  }
-  if (!FaceMesh) {
-    const faceMeshModule = await import('@mediapipe/face_mesh');
-    FaceMesh = faceMeshModule.FaceMesh;
+  try {
+    if (!FaceDetection) {
+      const faceDetectionModule = await import('@mediapipe/face_detection');
+      FaceDetection = faceDetectionModule.FaceDetection;
+    }
+    if (!FaceMesh) {
+      const faceMeshModule = await import('@mediapipe/face_mesh');
+      FaceMesh = faceMeshModule.FaceMesh;
+    }
+  } catch (error) {
+    console.error('❌ Worker: Error loading MediaPipe modules:', error);
+    throw error;
   }
 };
 
