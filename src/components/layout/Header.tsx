@@ -21,7 +21,7 @@ export const Header: React.FC = () => {
 
               <div className="flex items-center space-x-4">
                 <div className="text-sm text-gray-500 dark:text-gray-400">
-                  Phase 3: Enhancement
+                  Phase 4: Polish
                 </div>
               </div>
             </div>
