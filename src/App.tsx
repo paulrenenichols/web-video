@@ -6,32 +6,28 @@
  */
 
 import React, { Suspense, useRef } from 'react';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Header } from '@/components/layout/Header';
 import { Main } from '@/components/layout/Main';
 import { Footer } from '@/components/layout/Footer';
 import { VideoPlayer } from '@/components/video/VideoPlayer';
-import { ControlPanel } from '@/components/controls/ControlPanel';
-import { useCamera } from '@/hooks/useCamera';
-import { useCompositeRecording } from '@/hooks/useCompositeRecording';
-import { useMediaPipe } from '@/hooks/useMediaPipe';
-import { useTrackingStore } from '@/stores/tracking-store';
-import { TrackingToggle } from '@/components/tracking/TrackingToggle';
-import { TrackingStatusIndicator } from '@/components/tracking/TrackingStatus';
 import { FaceTracking } from '@/components/tracking/FaceTracking';
 import { TrackingVisualization } from '@/components/tracking/TrackingVisualization';
+import { ControlPanel } from '@/components/controls/ControlPanel';
+import { VisualizationControls } from '@/components/controls/VisualizationControls';
+import { PerformanceMonitor } from '@/components/advanced/PerformanceMonitor';
+import { SyncMonitor } from '@/components/advanced/SyncMonitor';
 import { DebugGlassesOverlay } from '@/components/overlays/DebugGlassesOverlay';
 import { DebugHatsOverlay } from '@/components/overlays/DebugHatsOverlay';
 import { GlassesOverlay } from '@/components/overlays/GlassesOverlay';
 import { HatOverlay } from '@/components/overlays/HatOverlay';
-import { OverlaySystem } from '@/components/overlays/OverlaySystem';
-import { OverlayControls } from '@/components/overlays/OverlayControls';
+import { useCamera } from '@/hooks/useCamera';
+import { useMediaPipe } from '@/hooks/useMediaPipe';
+import { useCompositeRecording } from '@/hooks/useCompositeRecording';
+import { useTrackingStore } from '@/stores/tracking-store';
 import { useOverlayStore } from '@/stores/overlay-store';
-import { VisualizationControls } from '@/components/controls/VisualizationControls';
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { performanceService } from '@/services/performance.service';
-import { PerformanceMonitor } from '@/components/advanced/PerformanceMonitor';
 import { audioService } from '@/services/audio.service';
-import { SyncMonitor } from '@/components/advanced/SyncMonitor';
+import { performanceService } from '@/services/performance.service';
 
 const VideoRecorderApp: React.FC = () => {
   const {
@@ -486,7 +482,7 @@ const VideoRecorderApp: React.FC = () => {
 
                 {showOverlayControls && (
                   <div className="mt-4">
-                    <OverlayControls
+                    {/* OverlayControls
                       className="w-full"
                       glassesOverlaySystemEnabled={glassesOverlaySystemEnabled}
                       onToggleGlassesOverlaySystem={
@@ -494,7 +490,7 @@ const VideoRecorderApp: React.FC = () => {
                       }
                       hatOverlaySystemEnabled={hatOverlaySystemEnabled}
                       onToggleHatOverlaySystem={setHatOverlaySystemEnabled}
-                    />
+                    /> */}
                   </div>
                 )}
               </div>
