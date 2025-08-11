@@ -345,74 +345,106 @@ export class CompositeRecordingService {
   ): Promise<MediaStream> {
     console.log('🎬 Creating composite stream with overlays:', overlayCanvases.length);
     
-    // For now, let's use the original video stream directly
-    // The overlay compositing can be implemented later
-    // This will fix the black video issue
-    
+    // If no overlays, return the original stream
     if (overlayCanvases.length === 0) {
       console.log('📹 No overlays, using original video stream');
       return videoStream;
     }
     
-    console.log('📹 Overlays detected, but using original stream for now to fix black video');
-    return videoStream;
+    console.log('📹 Creating composite stream with overlays');
     
-    // TODO: Implement proper overlay compositing
-    // The current implementation has issues with canvas stream capture
-    /*
-    // Create a canvas to composite video and overlays
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      throw new Error('Failed to get canvas context');
-    }
+    try {
+      // Create a canvas to composite video and overlays
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        throw new Error('Failed to get canvas context');
+      }
 
-    // Get video track
-    const videoTrack = videoStream.getVideoTracks()[0];
-    if (!videoTrack) {
-      throw new Error('No video track found');
-    }
+      // Get video track
+      const videoTrack = videoStream.getVideoTracks()[0];
+      if (!videoTrack) {
+        throw new Error('No video track found');
+      }
 
-    // Set canvas size to video dimensions
-    const settings = videoTrack.getSettings();
-    canvas.width = settings.width || 1280;
-    canvas.height = settings.height || 720;
+      // Set canvas size to video dimensions
+      const settings = videoTrack.getSettings();
+      const width = settings.width || 1280;
+      const height = settings.height || 720;
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      console.log('📹 Canvas dimensions:', width, 'x', height);
 
-    // Create video element for the stream
-    const video = document.createElement('video');
-    video.srcObject = videoStream;
-    video.muted = true;
-    video.autoplay = true;
+      // Create video element for the stream
+      const video = document.createElement('video');
+      video.srcObject = videoStream;
+      video.muted = true;
+      video.autoplay = true;
+      video.playsInline = true;
 
-    // Wait for video to be ready
-    await new Promise<void>(resolve => {
-      video.onloadedmetadata = () => resolve();
-    });
-
-    // Create MediaStream from canvas
-    const canvasStream = canvas.captureStream(30); // 30 FPS
-
-    // Composite video and overlays
-    const compositeFrame = () => {
-      if (!this.state.isRecording) return;
-
-      // Draw video frame
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      // Draw overlays
-      overlayCanvases.forEach(overlayCanvas => {
-        ctx.drawImage(overlayCanvas, 0, 0, canvas.width, canvas.height);
+      // Wait for video to be ready
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Video ready timeout')), 5000);
+        video.onloadedmetadata = () => {
+          clearTimeout(timeout);
+          resolve();
+        };
+        video.onerror = () => {
+          clearTimeout(timeout);
+          reject(new Error('Video load error'));
+        };
       });
 
-      // Request next frame
-      requestAnimationFrame(compositeFrame);
-    };
+      console.log('📹 Video element ready, dimensions:', video.videoWidth, 'x', video.videoHeight);
 
-    // Start compositing
-    compositeFrame();
+      // Create MediaStream from canvas
+      const canvasStream = canvas.captureStream(30); // 30 FPS
+      
+      // Get the video track from the canvas stream
+      const canvasVideoTrack = canvasStream.getVideoTracks()[0];
+      if (!canvasVideoTrack) {
+        throw new Error('Failed to get canvas video track');
+      }
 
-    return canvasStream;
-    */
+      // Composite video and overlays
+      const compositeFrame = () => {
+        if (!this.state.isRecording) return;
+
+        try {
+          // Clear canvas
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          // Draw video frame
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          // Draw overlays on top
+          overlayCanvases.forEach((overlayCanvas, index) => {
+            if (overlayCanvas && overlayCanvas.width > 0 && overlayCanvas.height > 0) {
+              console.log(`📹 Drawing overlay ${index}:`, overlayCanvas.width, 'x', overlayCanvas.height);
+              ctx.drawImage(overlayCanvas, 0, 0, canvas.width, canvas.height);
+            }
+          });
+
+          // Request next frame
+          requestAnimationFrame(compositeFrame);
+        } catch (error) {
+          console.error('❌ Error in composite frame:', error);
+        }
+      };
+
+      // Start compositing
+      compositeFrame();
+      
+      console.log('✅ Composite stream created successfully');
+      return canvasStream;
+      
+    } catch (error) {
+      console.error('❌ Failed to create composite stream:', error);
+      console.log('📹 Falling back to original video stream');
+      return videoStream;
+    }
   }
 
   /**
@@ -435,6 +467,12 @@ export class CompositeRecordingService {
     };
 
     console.log('🎬 MediaRecorder options:', options);
+    console.log('🎬 Stream tracks:', stream.getTracks().map(track => ({
+      kind: track.kind,
+      enabled: track.enabled,
+      readyState: track.readyState,
+      settings: track.getSettings()
+    })));
 
     // Clear any existing chunks
     this.videoChunks = [];
@@ -462,8 +500,13 @@ export class CompositeRecordingService {
       this.updateState({ error: 'MediaRecorder error occurred' });
     };
 
+    this.videoRecorder.onstart = () => {
+      console.log('📹 MediaRecorder started successfully');
+    };
+
     // Start recording with a reasonable timeslice to ensure data is available
-    this.videoRecorder.start(1000); // Collect data every second
+    // Use a smaller timeslice for better overlay capture
+    this.videoRecorder.start(500); // Collect data every 500ms for smoother overlay capture
     console.log('📹 Video recording started successfully');
   }
 

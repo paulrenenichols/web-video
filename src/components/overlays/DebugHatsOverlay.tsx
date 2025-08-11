@@ -9,12 +9,14 @@ import React, { useRef, useCallback, useEffect } from 'react';
 import { useTrackingStore } from '@/stores/tracking-store';
 
 interface DebugHatsOverlayProps {
-  /** Whether debug hat overlay is visible */
+  /** Whether debug hats overlay is visible */
   isVisible: boolean;
   /** Video element reference */
   videoRef: React.RefObject<HTMLVideoElement | null>;
   /** Container className */
   className?: string;
+  /** Data attribute for overlay type */
+  'data-overlay'?: string;
 }
 
 export const DebugHatsOverlay: React.FC<DebugHatsOverlayProps> = ({

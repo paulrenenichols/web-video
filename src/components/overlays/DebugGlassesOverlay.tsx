@@ -18,6 +18,8 @@ interface DebugGlassesOverlayProps {
   videoRef: React.RefObject<HTMLVideoElement | null>;
   /** Container className */
   className?: string;
+  /** Data attribute for overlay type */
+  'data-overlay'?: string;
 }
 
 export const DebugGlassesOverlay: React.FC<DebugGlassesOverlayProps> = ({

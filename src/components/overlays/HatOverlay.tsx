@@ -14,7 +14,7 @@ interface HatOverlayProps {
   /** Whether hat overlay is visible */
   isVisible: boolean;
   /** Video element reference */
-  videoRef: React.RefObject<HTMLVideoElement>;
+  videoRef: React.RefObject<HTMLVideoElement | null>;
   /** Container className */
   className?: string;
   /** Data attribute for overlay type */

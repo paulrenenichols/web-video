@@ -219,9 +219,11 @@ const VideoRecorderApp: React.FC = () => {
           exists: !!glassesCanvas,
           width: glassesCanvas?.width,
           height: glassesCanvas?.height,
+          visible: glassesCanvas?.style.display !== 'none',
         });
-        if (glassesCanvas) {
+        if (glassesCanvas && glassesCanvas.width > 0 && glassesCanvas.height > 0) {
           overlayCanvases.push(glassesCanvas);
+          console.log('✅ Added glasses canvas to recording');
         }
       }
 
@@ -234,13 +236,22 @@ const VideoRecorderApp: React.FC = () => {
           exists: !!hatCanvas,
           width: hatCanvas?.width,
           height: hatCanvas?.height,
+          visible: hatCanvas?.style.display !== 'none',
         });
-        if (hatCanvas) {
+        if (hatCanvas && hatCanvas.width > 0 && hatCanvas.height > 0) {
           overlayCanvases.push(hatCanvas);
+          console.log('✅ Added hat canvas to recording');
         }
       }
 
       console.log('Total overlay canvases collected:', overlayCanvases.length);
+      overlayCanvases.forEach((canvas, index) => {
+        console.log(`Canvas ${index}:`, {
+          width: canvas.width,
+          height: canvas.height,
+          dataOverlay: canvas.getAttribute('data-overlay'),
+        });
+      });
 
       // Start composite recording (video + audio)
       console.log('🎬 Calling recordingActions.startRecording...');
