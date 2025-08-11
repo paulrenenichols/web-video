@@ -352,6 +352,7 @@ export class CompositeRecordingService {
     }
     
     console.log('📹 Creating composite stream with overlays');
+    console.log('📹 Note: Overlays will be horizontally flipped during recording to match non-mirrored video');
     
     // Declare variables outside try block for cleanup access
     let video: HTMLVideoElement | null = null;
@@ -474,10 +475,23 @@ export class CompositeRecordingService {
 
           // Draw overlays on top
           overlayCanvases.forEach((overlayCanvas, index) => {
-            if (overlayCanvas && overlayCanvas.width > 0 && overlayCanvas.height > 0) {
+            if (overlayCanvas && overlayCanvas.width > 0 && overlayCanvas.height > 0 && canvas) {
               try {
+                // Save the current canvas context state
+                ctx.save();
+                
+                // Flip the overlay horizontally to match the non-mirrored video
+                // This compensates for the UI showing mirrored video
+                ctx.scale(-1, 1);
+                ctx.translate(-canvas.width, 0);
+                
+                // Draw the flipped overlay
                 ctx.drawImage(overlayCanvas, 0, 0, canvas.width, canvas.height);
-                console.log(`📹 Overlay ${index} drawn:`, overlayCanvas.width, 'x', overlayCanvas.height);
+                
+                // Restore the canvas context state
+                ctx.restore();
+                
+                console.log(`📹 Overlay ${index} drawn (flipped):`, overlayCanvas.width, 'x', overlayCanvas.height);
               } catch (overlayError) {
                 console.error(`❌ Failed to draw overlay ${index}:`, overlayError);
               }
