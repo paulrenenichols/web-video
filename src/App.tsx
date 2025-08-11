@@ -85,6 +85,46 @@ const VideoRecorderApp: React.FC = () => {
     useOverlayStore.getState().setEnabled(true);
   }, []);
 
+  // Add/remove glasses overlays when glasses system is toggled
+  React.useEffect(() => {
+    const overlayStore = useOverlayStore.getState();
+    const availableGlasses = overlayStore.availableOverlays.filter(
+      overlay => overlay.type === 'glasses'
+    );
+
+    if (glassesOverlaySystemEnabled && availableGlasses.length > 0) {
+      // Add the first available glasses overlay
+      overlayStore.addOverlay(availableGlasses[0]);
+      console.log('✅ Added glasses overlay to store');
+    } else {
+      // Remove all glasses overlays
+      availableGlasses.forEach(glasses => {
+        overlayStore.removeOverlay(glasses.id);
+      });
+      console.log('❌ Removed glasses overlays from store');
+    }
+  }, [glassesOverlaySystemEnabled]);
+
+  // Add/remove hat overlays when hat system is toggled
+  React.useEffect(() => {
+    const overlayStore = useOverlayStore.getState();
+    const availableHats = overlayStore.availableOverlays.filter(
+      overlay => overlay.type === 'hat'
+    );
+
+    if (hatOverlaySystemEnabled && availableHats.length > 0) {
+      // Add the first available hat overlay
+      overlayStore.addOverlay(availableHats[0]);
+      console.log('✅ Added hat overlay to store');
+    } else {
+      // Remove all hat overlays
+      availableHats.forEach(hat => {
+        overlayStore.removeOverlay(hat.id);
+      });
+      console.log('❌ Removed hat overlays from store');
+    }
+  }, [hatOverlaySystemEnabled]);
+
   // Initialize performance monitoring
   React.useEffect(() => {
     performanceService.initialize();
