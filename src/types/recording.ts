@@ -1,10 +1,11 @@
 /**
  * @fileoverview Type definitions for video recording functionality.
  *
- * Defines interfaces and types for recording state, configuration,
- * and file handling in the MVP phase.
+ * Updated to use the new composite recording system while maintaining
+ * backward compatibility for existing components.
  */
 
+// Legacy types for backward compatibility (deprecated - use CompositeRecordingResult instead)
 export interface RecordingConfig {
   quality: number; // 0.1 to 1.0
   format: RecordingFormat;
@@ -26,6 +27,7 @@ export interface RecordingState {
   config: RecordingConfig;
 }
 
+// Updated RecordingResult to be compatible with CompositeRecordingResult
 export interface RecordingResult {
   success: boolean;
   blob: Blob | null;
