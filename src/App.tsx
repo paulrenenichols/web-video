@@ -15,6 +15,7 @@ import { FaceTracking } from '@/components/tracking/FaceTracking';
 import { TrackingVisualization } from '@/components/tracking/TrackingVisualization';
 import { ControlPanel } from '@/components/controls/ControlPanel';
 import { VisualizationControls } from '@/components/controls/VisualizationControls';
+import { OverlayControls } from '@/components/overlays/OverlayControls';
 import { PerformanceMonitor } from '@/components/advanced/PerformanceMonitor';
 import { SyncMonitor } from '@/components/advanced/SyncMonitor';
 import { DebugGlassesOverlay } from '@/components/overlays/DebugGlassesOverlay';
@@ -482,7 +483,7 @@ const VideoRecorderApp: React.FC = () => {
 
                 {showOverlayControls && (
                   <div className="mt-4">
-                    {/* OverlayControls
+                    <OverlayControls
                       className="w-full"
                       glassesOverlaySystemEnabled={glassesOverlaySystemEnabled}
                       onToggleGlassesOverlaySystem={
@@ -490,7 +491,7 @@ const VideoRecorderApp: React.FC = () => {
                       }
                       hatOverlaySystemEnabled={hatOverlaySystemEnabled}
                       onToggleHatOverlaySystem={setHatOverlaySystemEnabled}
-                    /> */}
+                    />
                   </div>
                 )}
               </div>
