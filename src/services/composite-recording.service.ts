@@ -343,6 +343,23 @@ export class CompositeRecordingService {
     videoStream: MediaStream,
     overlayCanvases: HTMLCanvasElement[]
   ): Promise<MediaStream> {
+    console.log('🎬 Creating composite stream with overlays:', overlayCanvases.length);
+    
+    // For now, let's use the original video stream directly
+    // The overlay compositing can be implemented later
+    // This will fix the black video issue
+    
+    if (overlayCanvases.length === 0) {
+      console.log('📹 No overlays, using original video stream');
+      return videoStream;
+    }
+    
+    console.log('📹 Overlays detected, but using original stream for now to fix black video');
+    return videoStream;
+    
+    // TODO: Implement proper overlay compositing
+    // The current implementation has issues with canvas stream capture
+    /*
     // Create a canvas to composite video and overlays
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -395,6 +412,7 @@ export class CompositeRecordingService {
     compositeFrame();
 
     return canvasStream;
+    */
   }
 
   /**

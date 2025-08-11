@@ -136,6 +136,9 @@ const VideoRecorderApp: React.FC = () => {
   // Real-time recording timer
   const [recordingTimer, setRecordingTimer] = React.useState<number>(0);
   const timerIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
+  
+  // Stable filename for recording results
+  const [recordingFilename, setRecordingFilename] = React.useState<string>('');
 
   // Start timer when recording starts
   React.useEffect(() => {
@@ -256,6 +259,12 @@ const VideoRecorderApp: React.FC = () => {
     });
 
     try {
+      // Generate stable filename when stopping
+      const timestamp = Date.now();
+      const format = recordingState.config.format.toLowerCase();
+      const filename = `recording-${timestamp}.${format}`;
+      setRecordingFilename(filename);
+      
       // Stop composite recording (video + audio)
       await recordingActions.stopRecording();
 
@@ -265,6 +274,7 @@ const VideoRecorderApp: React.FC = () => {
         compositeBlob: recordingState.compositeBlob
           ? `${recordingState.compositeBlob.size} bytes`
           : 'null',
+        filename: filename,
       });
     } catch (error) {
       console.error('❌ Failed to stop recording:', error);
@@ -398,19 +408,19 @@ const VideoRecorderApp: React.FC = () => {
                 {showCameraControls && (
                   <div className="mt-4">
                     {/* Debug recording state */}
-                    {console.log('🔍 Current recording state:', {
+                    {/* Current recording state: {JSON.stringify({
                       isRecording: recordingState.isRecording,
                       compositeBlob: recordingState.compositeBlob
                         ? `${recordingState.compositeBlob.size} bytes`
                         : 'null',
                       duration: recordingState.duration,
                       error: recordingState.error,
-                    })}
+                    })} */}
                     {/* Debug audio state */}
-                    {console.log('🔍 Current state:', {
+                    {/* Current state: {JSON.stringify({
                       isActive: isActive,
                       recordingState: recordingState.isRecording,
-                    })}
+                    })} */}
                     <ControlPanel
                       isActive={isActive}
                       isLoading={isLoading}
@@ -433,7 +443,7 @@ const VideoRecorderApp: React.FC = () => {
                           ? {
                               success: true,
                               blob: recordingState.compositeBlob,
-                              filename: `recording-${Date.now()}.${recordingState.config.format.toLowerCase()}`,
+                              filename: recordingFilename || `recording-${Date.now()}.${recordingState.config.format.toLowerCase()}`,
                               duration: recordingState.duration / 1000,
                               size: recordingState.compositeBlob.size,
                             }
@@ -559,9 +569,9 @@ const VideoRecorderApp: React.FC = () => {
                       trackingStatus={trackingState.status}
                       trackingConfidence={trackingState.confidence}
                       faceCount={trackingState.faceCount}
-                      trackingError={trackingState.error}
+                      {...(trackingState.error && { trackingError: trackingState.error })}
                       activeOverlaysCount={overlayState.activeOverlays.length}
-                      overlayError={overlayState.error}
+                      {...(overlayState.error && { overlayError: overlayState.error })}
                     />
                   </div>
                 )}
