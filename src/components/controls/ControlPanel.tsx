@@ -30,6 +30,7 @@ interface ControlPanelProps {
   isProcessing: boolean;
   elapsedTime: number;
   recordingResult: RecordingResult | null;
+  recordingError: string | null;
   onStartRecording: () => void;
   onStopRecording: () => void;
   onDownloadRecording: () => void;
@@ -53,6 +54,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   isProcessing,
   elapsedTime,
   recordingResult,
+  recordingError,
   onStartRecording,
   onStopRecording,
   onDownloadRecording,
@@ -63,7 +65,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     autoRequestAccess: false,
     autoStartMonitoring: false,
   });
-  
+
   const audioLevels = useAudioLevels();
   return (
     <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-6 shadow-lg animate-fade-in">
@@ -102,14 +104,18 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
             {/* Microphone Control */}
             <button
-              onClick={audioState.state.state === 'READY' ? audioActions.cleanup : audioActions.requestMicrophoneAccess}
+              onClick={
+                audioState.state.state === 'READY'
+                  ? audioActions.cleanup
+                  : audioActions.requestMicrophoneAccess
+              }
               disabled={audioState.state.state === 'INITIALIZING'}
               className={`btn transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl ${
-                audioState.state.state === 'READY' 
-                  ? 'btn-secondary' 
+                audioState.state.state === 'READY'
+                  ? 'btn-secondary'
                   : audioState.state.state === 'INITIALIZING'
-                  ? 'btn-disabled'
-                  : 'btn-primary'
+                    ? 'btn-disabled'
+                    : 'btn-primary'
               }`}
             >
               {audioState.state.state === 'INITIALIZING' ? (
@@ -135,7 +141,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           {audioLevels && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Audio Level</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Audio Level
+                </span>
                 <span className="text-sm text-gray-500 dark:text-gray-400">
                   {Math.round(audioLevels.current * 100)}%
                 </span>
@@ -143,23 +151,27 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div
                   className={`h-2 rounded-full transition-all duration-100 ${
-                    audioLevels.isClipping 
-                      ? 'bg-red-500' 
-                      : audioLevels.current > 0.9 
-                      ? 'bg-yellow-500' 
-                      : audioLevels.current > 0.6 
-                      ? 'bg-green-500' 
-                      : audioLevels.current > 0.3 
-                      ? 'bg-blue-500' 
-                      : audioLevels.current > 0.1 
-                      ? 'bg-gray-500' 
-                      : 'bg-gray-300'
+                    audioLevels.isClipping
+                      ? 'bg-red-500'
+                      : audioLevels.current > 0.9
+                        ? 'bg-yellow-500'
+                        : audioLevels.current > 0.6
+                          ? 'bg-green-500'
+                          : audioLevels.current > 0.3
+                            ? 'bg-blue-500'
+                            : audioLevels.current > 0.1
+                              ? 'bg-gray-500'
+                              : 'bg-gray-300'
                   }`}
-                  style={{ width: `${Math.min(audioLevels.current * 100, 100)}%` }}
+                  style={{
+                    width: `${Math.min(audioLevels.current * 100, 100)}%`,
+                  }}
                 />
               </div>
               {audioLevels.isClipping && (
-                <p className="text-xs text-red-600 dark:text-red-400">⚠️ Audio clipping detected</p>
+                <p className="text-xs text-red-600 dark:text-red-400">
+                  ⚠️ Audio clipping detected
+                </p>
               )}
             </div>
           )}
@@ -169,11 +181,21 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
               <div className="flex items-start space-x-2">
                 <div className="flex-shrink-0">
-                  <svg className="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  <svg
+                    className="w-4 h-4 text-red-400"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
-                <p className="text-sm text-red-800 dark:text-red-200">{audioState.error}</p>
+                <p className="text-sm text-red-800 dark:text-red-200">
+                  {audioState.error}
+                </p>
               </div>
             </div>
           )}
@@ -208,19 +230,50 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           </div>
         )}
 
+        {/* Recording Error Display */}
+        {recordingError && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+            <div className="flex items-start space-x-2">
+              <div className="flex-shrink-0">
+                <svg
+                  className="w-4 h-4 text-red-400"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <p className="text-sm text-red-800 dark:text-red-200">
+                Recording Error: {recordingError}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Recording Not Ready Message */}
         {isActive && audioState.state.state !== 'READY' && (
           <div className="space-y-4 animate-slide-up">
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
               <div className="flex items-center space-x-2">
-                <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                <svg
+                  className="w-5 h-5 text-yellow-400"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  {audioState.state.state === 'INITIALIZING' 
-                    ? 'Requesting microphone access...' 
-                    : 'Microphone access required for audio recording'
-                  }
+                  {audioState.state.state === 'INITIALIZING'
+                    ? 'Requesting microphone access...'
+                    : 'Microphone access required for audio recording'}
                 </p>
               </div>
             </div>

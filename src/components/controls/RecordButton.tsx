@@ -61,11 +61,22 @@ export const RecordButton: React.FC<RecordButtonProps> = ({
   }, [isRecording, isProcessing, disabled, onStartRecording, onStopRecording]);
 
   const handleClick = (): void => {
-    if (disabled || isProcessing) return;
+    console.log('🔘 RecordButton clicked!', {
+      disabled,
+      isProcessing,
+      isRecording,
+    });
+
+    if (disabled || isProcessing) {
+      console.log('❌ Button click blocked:', { disabled, isProcessing });
+      return;
+    }
 
     if (isRecording) {
+      console.log('🛑 Calling onStopRecording');
       onStopRecording();
     } else {
+      console.log('🎬 Calling onStartRecording');
       onStartRecording();
     }
   };

@@ -170,6 +170,23 @@ export class CompositeRecordingService {
       ...config,
     };
 
+    console.log(
+      '🎬 CompositeRecordingService initialized with config:',
+      this.config
+    );
+
+    // Check supported formats
+    const supportedFormats = this.getSupportedFormats();
+    if (supportedFormats.length === 0) {
+      console.error('❌ No supported recording formats found!');
+    } else if (!supportedFormats.includes(this.config.format)) {
+      console.warn(
+        `⚠️ Configured format ${this.config.format} not supported, falling back to ${supportedFormats[0]}`
+      );
+      this.config.format =
+        supportedFormats[0] as keyof typeof RECORDING_FORMATS;
+    }
+
     this.state = this.getInitialState();
   }
 
@@ -227,13 +244,19 @@ export class CompositeRecordingService {
    */
   getSupportedFormats(): string[] {
     const formats: string[] = [];
-    
+
+    console.log('🔍 Checking supported recording formats...');
     Object.entries(RECORDING_FORMATS).forEach(([key, format]) => {
-      if (format.supported && MediaRecorder.isTypeSupported(format.mimeType)) {
+      const isSupported = MediaRecorder.isTypeSupported(format.mimeType);
+      console.log(
+        `🔍 ${key}: ${format.mimeType} - ${isSupported ? '✅ Supported' : '❌ Not Supported'}`
+      );
+      if (format.supported && isSupported) {
         formats.push(key);
       }
     });
-    
+
+    console.log('✅ Supported formats:', formats);
     return formats;
   }
 
@@ -248,34 +271,27 @@ export class CompositeRecordingService {
   /**
    * Start composite recording
    */
-  async startRecording(videoStream: MediaStream, overlayCanvases: HTMLCanvasElement[] = []): Promise<void> {
+  async startRecording(
+    videoStream: MediaStream,
+    overlayCanvases: HTMLCanvasElement[] = []
+  ): Promise<void> {
+    console.log('🎬 startRecording called, current state:', this.state);
+
     if (this.state.isRecording) {
-      throw new Error('Recording already in progress');
+      console.log('⚠️ Recording already in progress, resetting state...');
+      // Reset the state to allow starting a new recording
+      this.state = this.getInitialState();
     }
 
     try {
       console.log('🎬 Starting composite recording...');
-      
-      // Reset state
+
+      // Reset state and chunks
       this.videoChunks = [];
       this.audioChunks = [];
       this.syncDataPoints = [];
-      
-      // Create composite stream
-      const compositeStream = await this.createCompositeStream(videoStream, overlayCanvases);
-      
-      // Start video recording
-      await this.startVideoRecording(compositeStream);
-      
-      // Start audio recording if enabled
-      if (this.config.includeAudio) {
-        await this.startAudioRecording();
-      }
-      
-      // Start synchronization monitoring
-      this.startSyncMonitoring();
-      
-      // Update state
+
+      // Update state to indicate recording is starting
       this.updateState({
         isRecording: true,
         isPaused: false,
@@ -283,12 +299,39 @@ export class CompositeRecordingService {
         pauseTime: 0,
         totalPausedTime: 0,
         error: null,
+        videoBlob: null,
+        audioBlob: null,
+        compositeBlob: null,
       });
-      
+
+      // Create composite stream
+      const compositeStream = await this.createCompositeStream(
+        videoStream,
+        overlayCanvases
+      );
+
+      // Start video recording
+      await this.startVideoRecording(compositeStream);
+
+      // Start audio recording if enabled
+      if (this.config.includeAudio) {
+        await this.startAudioRecording();
+      }
+
+      // Start synchronization monitoring
+      this.startSyncMonitoring();
+
       console.log('✅ Composite recording started');
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.updateState({ error: errorMessage });
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.error('❌ Failed to start recording:', errorMessage);
+      // Reset state on error
+      this.updateState({
+        isRecording: false,
+        isPaused: false,
+        error: errorMessage,
+      });
       throw error;
     }
   }
@@ -297,7 +340,7 @@ export class CompositeRecordingService {
    * Create composite stream with overlays
    */
   private async createCompositeStream(
-    videoStream: MediaStream, 
+    videoStream: MediaStream,
     overlayCanvases: HTMLCanvasElement[]
   ): Promise<MediaStream> {
     // Create a canvas to composite video and overlays
@@ -325,7 +368,7 @@ export class CompositeRecordingService {
     video.autoplay = true;
 
     // Wait for video to be ready
-    await new Promise<void>((resolve) => {
+    await new Promise<void>(resolve => {
       video.onloadedmetadata = () => resolve();
     });
 
@@ -359,25 +402,51 @@ export class CompositeRecordingService {
    */
   private async startVideoRecording(stream: MediaStream): Promise<void> {
     const mimeType = this.getMimeType();
+    console.log('🎬 Starting video recording with MIME type:', mimeType);
+
+    // Check if MIME type is supported
+    if (!MediaRecorder.isTypeSupported(mimeType)) {
+      console.error('❌ MIME type not supported:', mimeType);
+      throw new Error(`MIME type ${mimeType} is not supported`);
+    }
+
     const options = {
       mimeType,
-      videoBitsPerSecond: RECORDING_QUALITY_PRESETS[this.config.quality].video.bitrate,
+      videoBitsPerSecond:
+        RECORDING_QUALITY_PRESETS[this.config.quality].video.bitrate,
     };
 
+    console.log('🎬 MediaRecorder options:', options);
+
+    // Clear any existing chunks
+    this.videoChunks = [];
+
     this.videoRecorder = new MediaRecorder(stream, options);
-    
-    this.videoRecorder.ondataavailable = (event) => {
+
+    this.videoRecorder.ondataavailable = event => {
+      console.log('📹 Data available:', event.data.size, 'bytes');
       if (event.data.size > 0) {
         this.videoChunks.push(event.data);
+        console.log('📹 Total chunks:', this.videoChunks.length);
       }
     };
 
     this.videoRecorder.onstop = () => {
-      console.log('📹 Video recording stopped');
+      console.log(
+        '📹 Video recording stopped, total chunks:',
+        this.videoChunks.length
+      );
     };
 
-    this.videoRecorder.start();
-    console.log('📹 Video recording started');
+    this.videoRecorder.onerror = event => {
+      console.error('❌ MediaRecorder error:', event);
+      // Update state to reflect error
+      this.updateState({ error: 'MediaRecorder error occurred' });
+    };
+
+    // Start recording with a reasonable timeslice to ensure data is available
+    this.videoRecorder.start(1000); // Collect data every second
+    console.log('📹 Video recording started successfully');
   }
 
   /**
@@ -418,7 +487,7 @@ export class CompositeRecordingService {
   private updateSyncData(): void {
     const videoTimestamp = Date.now();
     const audioTimestamp = videoTimestamp; // In a real implementation, get from audio service
-    
+
     const syncData = synchronizeAudioVideo(
       audioTimestamp,
       videoTimestamp,
@@ -448,7 +517,7 @@ export class CompositeRecordingService {
     }
 
     this.videoRecorder?.pause();
-    
+
     if (this.config.includeAudio) {
       try {
         const audioState = audioService.getState();
@@ -477,7 +546,7 @@ export class CompositeRecordingService {
     }
 
     this.videoRecorder?.resume();
-    
+
     if (this.config.includeAudio) {
       try {
         const audioState = audioService.getState();
@@ -489,8 +558,8 @@ export class CompositeRecordingService {
       }
     }
 
-    const totalPausedTime = this.state.totalPausedTime + 
-      (Date.now() - this.state.pauseTime);
+    const totalPausedTime =
+      this.state.totalPausedTime + (Date.now() - this.state.pauseTime);
 
     this.updateState({
       isPaused: false,
@@ -504,16 +573,37 @@ export class CompositeRecordingService {
    * Stop recording
    */
   async stopRecording(): Promise<CompositeRecordingResult> {
+    console.log('🛑 stopRecording called, current state:', {
+      isRecording: this.state.isRecording,
+      videoChunks: this.videoChunks.length,
+      videoRecorder: !!this.videoRecorder,
+    });
+
     if (!this.state.isRecording) {
-      throw new Error('No recording in progress');
+      console.warn('⚠️ No recording in progress, but attempting to stop anyway');
+      // Don't throw error, just return empty result
+      return {
+        videoBlob: null,
+        audioBlob: null,
+        compositeBlob: null,
+        duration: 0,
+        format: this.config.format,
+        quality: this.config.quality,
+        size: 0,
+        syncData: { averageDrift: 0, maxDrift: 0, syncQuality: 'excellent' },
+      };
     }
 
     try {
       console.log('🛑 Stopping composite recording...');
 
       // Stop video recording
-      if (this.videoRecorder) {
+      if (this.videoRecorder && this.videoRecorder.state !== 'inactive') {
+        console.log('📹 Stopping video recorder...');
         this.videoRecorder.stop();
+        
+        // Wait a bit for the ondataavailable event to fire
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
 
       // Stop audio recording
@@ -535,19 +625,45 @@ export class CompositeRecordingService {
       }
 
       // Calculate duration
-      const duration = Date.now() - this.state.startTime - this.state.totalPausedTime;
+      const duration =
+        Date.now() - this.state.startTime - this.state.totalPausedTime;
 
       // Get video blob
-      const videoBlob = this.videoChunks.length > 0 
-        ? new Blob(this.videoChunks, { type: this.getMimeType() })
-        : null;
+      console.log(
+        '📹 Creating video blob from',
+        this.videoChunks.length,
+        'chunks'
+      );
+      
+      let videoBlob: Blob | null = null;
+      if (this.videoChunks.length > 0) {
+        try {
+          videoBlob = new Blob(this.videoChunks, { type: this.getMimeType() });
+          console.log('📹 Video blob created successfully:', `${videoBlob.size} bytes`);
+        } catch (error) {
+          console.error('❌ Failed to create video blob:', error);
+          videoBlob = null;
+        }
+      } else {
+        console.warn('⚠️ No video chunks available to create blob');
+      }
 
       // Get audio blob
-      const audioBlob = this.config.includeAudio ? audioService.getRecordedAudio() : null;
+      const audioBlob = this.config.includeAudio
+        ? audioService.getRecordedAudio()
+        : null;
+      console.log(
+        '🎤 Audio blob:',
+        audioBlob ? `${audioBlob.size} bytes` : 'null'
+      );
 
       // Create composite blob (for now, just return video blob)
       // In a real implementation, you would merge video and audio
       const compositeBlob = videoBlob;
+      console.log(
+        '🎬 Composite blob:',
+        compositeBlob ? `${compositeBlob.size} bytes` : 'null'
+      );
 
       // Calculate sync quality
       const syncQuality = this.calculateSyncQuality();
@@ -565,20 +681,38 @@ export class CompositeRecordingService {
       };
 
       // Update state
-      this.updateState({
+      const stateUpdate = {
         isRecording: false,
         isPaused: false,
         duration,
         videoBlob,
         audioBlob,
         compositeBlob,
+      };
+
+      console.log('🔄 Updating recording state:', {
+        isRecording: stateUpdate.isRecording,
+        duration: stateUpdate.duration,
+        videoBlobSize: stateUpdate.videoBlob?.size || 0,
+        audioBlobSize: stateUpdate.audioBlob?.size || 0,
+        compositeBlobSize: stateUpdate.compositeBlob?.size || 0,
       });
+
+      this.updateState(stateUpdate);
 
       console.log('✅ Composite recording stopped:', result);
       return result;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.updateState({ error: errorMessage });
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.error('❌ Error stopping recording:', errorMessage);
+      
+      // Update state with error
+      this.updateState({ 
+        isRecording: false,
+        error: errorMessage 
+      });
+      
       throw error;
     }
   }
@@ -586,13 +720,18 @@ export class CompositeRecordingService {
   /**
    * Calculate sync quality
    */
-  private calculateSyncQuality(): { averageDrift: number; maxDrift: number; syncQuality: 'excellent' | 'good' | 'fair' | 'poor' } {
+  private calculateSyncQuality(): {
+    averageDrift: number;
+    maxDrift: number;
+    syncQuality: 'excellent' | 'good' | 'fair' | 'poor';
+  } {
     if (this.syncDataPoints.length === 0) {
       return { averageDrift: 0, maxDrift: 0, syncQuality: 'excellent' };
     }
 
     const drifts = this.syncDataPoints.map(point => Math.abs(point.drift));
-    const averageDrift = drifts.reduce((sum, drift) => sum + drift, 0) / drifts.length;
+    const averageDrift =
+      drifts.reduce((sum, drift) => sum + drift, 0) / drifts.length;
     const maxDrift = Math.max(...drifts);
 
     let syncQuality: 'excellent' | 'good' | 'fair' | 'poor';
@@ -620,8 +759,13 @@ export class CompositeRecordingService {
    * Clean up resources
    */
   cleanup(): void {
+    console.log('🧹 Cleaning up composite recording service...');
+    
     if (this.state.isRecording) {
-      this.stopRecording().catch(console.error);
+      console.log('⚠️ Recording in progress, stopping before cleanup...');
+      this.stopRecording().catch(error => {
+        console.error('❌ Error stopping recording during cleanup:', error);
+      });
     }
 
     if (this.syncInterval) {
@@ -629,10 +773,26 @@ export class CompositeRecordingService {
       this.syncInterval = null;
     }
 
+    // Clear chunks
     this.videoChunks = [];
     this.audioChunks = [];
     this.syncDataPoints = [];
-    this.updateState(this.getInitialState());
+    
+    // Reset video recorder
+    if (this.videoRecorder) {
+      if (this.videoRecorder.state !== 'inactive') {
+        try {
+          this.videoRecorder.stop();
+        } catch (error) {
+          console.error('❌ Error stopping video recorder during cleanup:', error);
+        }
+      }
+      this.videoRecorder = null;
+    }
+
+    // Reset to initial state
+    const initialState = this.getInitialState();
+    this.updateState(initialState);
 
     console.log('🧹 Composite recording service cleaned up');
   }

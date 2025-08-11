@@ -175,12 +175,36 @@ export const useCompositeRecording = (options: UseCompositeRecordingOptions = {}
    */
   const stopRecording = useCallback(async (): Promise<CompositeRecordingResult> => {
     try {
+      console.log('🛑 Hook: Stopping recording...');
       const result = await compositeRecordingService.stopRecording();
+      console.log('✅ Hook: Recording stopped successfully:', result);
+      
+      // Update local state with the result
+      setState(prev => ({
+        ...prev,
+        isRecording: false,
+        isPaused: false,
+        duration: result.duration,
+        videoBlob: result.videoBlob,
+        audioBlob: result.audioBlob,
+        compositeBlob: result.compositeBlob,
+        error: null,
+      }));
+      
       onRecordingComplete?.(result);
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      setState(prev => ({ ...prev, error: errorMessage }));
+      console.error('❌ Hook: Failed to stop recording:', errorMessage);
+      
+      // Update state with error
+      setState(prev => ({
+        ...prev,
+        isRecording: false,
+        isPaused: false,
+        error: errorMessage,
+      }));
+      
       onError?.(errorMessage);
       throw error;
     }
@@ -239,6 +263,22 @@ export const useCompositeRecording = (options: UseCompositeRecordingOptions = {}
     // Set up service callbacks
     compositeRecordingService.onStateChangeCallback(handleStateChange);
     compositeRecordingService.onSyncUpdateCallback(handleSyncUpdate);
+
+    // Initialize state from service
+    const serviceState = compositeRecordingService.getState();
+    if (serviceState) {
+      setState(prev => ({
+        ...prev,
+        isRecording: serviceState.isRecording,
+        isPaused: serviceState.isPaused,
+        duration: serviceState.duration,
+        videoBlob: serviceState.videoBlob,
+        audioBlob: serviceState.audioBlob,
+        compositeBlob: serviceState.compositeBlob,
+        syncData: serviceState.syncData,
+        error: serviceState.error,
+      }));
+    }
 
     // Cleanup function
     return () => {

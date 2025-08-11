@@ -91,7 +91,7 @@ const VideoRecorderApp: React.FC = () => {
   // Initialize performance monitoring
   React.useEffect(() => {
     performanceService.initialize();
-    
+
     return () => {
       performanceService.cleanup();
     };
@@ -103,7 +103,7 @@ const VideoRecorderApp: React.FC = () => {
       try {
         // Start camera
         await handleStartCamera();
-        
+
         // Request microphone access
         console.log('Auto-requesting microphone access...');
         await audioService.requestMicrophoneAccess();
@@ -132,11 +132,11 @@ const VideoRecorderApp: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const [recordingState, recordingActions] = useCompositeRecording();
-  
+
   // Real-time recording timer
   const [recordingTimer, setRecordingTimer] = React.useState<number>(0);
   const timerIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
-  
+
   // Start timer when recording starts
   React.useEffect(() => {
     if (recordingState.isRecording && !timerIntervalRef.current) {
@@ -149,7 +149,7 @@ const VideoRecorderApp: React.FC = () => {
       timerIntervalRef.current = null;
       setRecordingTimer(0);
     }
-    
+
     // Cleanup on unmount
     return () => {
       if (timerIntervalRef.current) {
@@ -194,6 +194,10 @@ const VideoRecorderApp: React.FC = () => {
   };
 
   const handleStartRecording = async (): Promise<void> => {
+    console.log('🎬 Start recording button clicked');
+    console.log('🔍 Stream available:', !!stream);
+    console.log('🔍 Video ref available:', !!videoRef.current);
+
     if (stream && videoRef.current) {
       // Collect overlay canvas elements
       const overlayCanvases: HTMLCanvasElement[] = [];
@@ -234,15 +238,38 @@ const VideoRecorderApp: React.FC = () => {
       }
 
       console.log('Total overlay canvases collected:', overlayCanvases.length);
-      
+
       // Start composite recording (video + audio)
+      console.log('🎬 Calling recordingActions.startRecording...');
       await recordingActions.startRecording(stream, overlayCanvases);
+      console.log('✅ recordingActions.startRecording completed');
     }
   };
 
   const handleStopRecording = async (): Promise<void> => {
-    // Stop composite recording (video + audio)
-    await recordingActions.stopRecording();
+    console.log('🛑 Stopping recording...');
+    console.log('🔄 Recording state before stop:', {
+      isRecording: recordingState.isRecording,
+      compositeBlob: recordingState.compositeBlob
+        ? `${recordingState.compositeBlob.size} bytes`
+        : 'null',
+    });
+
+    try {
+      // Stop composite recording (video + audio)
+      await recordingActions.stopRecording();
+
+      console.log('✅ Recording stopped');
+      console.log('🔄 Recording state after stop:', {
+        isRecording: recordingState.isRecording,
+        compositeBlob: recordingState.compositeBlob
+          ? `${recordingState.compositeBlob.size} bytes`
+          : 'null',
+      });
+    } catch (error) {
+      console.error('❌ Failed to stop recording:', error);
+      // The error will be handled by the hook and displayed in the UI
+    }
   };
 
   const handleDownloadRecording = async (): Promise<void> => {
@@ -257,7 +284,7 @@ const VideoRecorderApp: React.FC = () => {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        
+
         console.log('✅ Recording downloaded successfully');
       } catch (error) {
         console.error('❌ Failed to download recording:', error);
@@ -370,6 +397,20 @@ const VideoRecorderApp: React.FC = () => {
 
                 {showCameraControls && (
                   <div className="mt-4">
+                    {/* Debug recording state */}
+                    {console.log('🔍 Current recording state:', {
+                      isRecording: recordingState.isRecording,
+                      compositeBlob: recordingState.compositeBlob
+                        ? `${recordingState.compositeBlob.size} bytes`
+                        : 'null',
+                      duration: recordingState.duration,
+                      error: recordingState.error,
+                    })}
+                    {/* Debug audio state */}
+                    {console.log('🔍 Current state:', {
+                      isActive: isActive,
+                      recordingState: recordingState.isRecording,
+                    })}
                     <ControlPanel
                       isActive={isActive}
                       isLoading={isLoading}
@@ -382,7 +423,11 @@ const VideoRecorderApp: React.FC = () => {
                       onClearError={handleClearError}
                       isRecording={recordingState.isRecording}
                       isProcessing={false} // TODO: Add processing state to composite recording
-                      elapsedTime={recordingState.isRecording ? recordingTimer / 1000 : recordingState.duration / 1000} // Use real-time timer or final duration
+                      elapsedTime={
+                        recordingState.isRecording
+                          ? recordingTimer / 1000
+                          : recordingState.duration / 1000
+                      } // Use real-time timer or final duration
                       recordingResult={
                         recordingState.compositeBlob
                           ? {
@@ -394,6 +439,7 @@ const VideoRecorderApp: React.FC = () => {
                             }
                           : null
                       }
+                      recordingError={recordingState.error}
                       onStartRecording={handleStartRecording}
                       onStopRecording={handleStopRecording}
                       onDownloadRecording={handleDownloadRecording}
@@ -526,14 +572,12 @@ const VideoRecorderApp: React.FC = () => {
       </Main>
 
       <Footer />
-      
+
       {/* Performance Monitor */}
       <PerformanceMonitor />
-      
+
       {/* Sync Monitor */}
       <SyncMonitor visible={true} />
-      
-
     </div>
   );
 };
