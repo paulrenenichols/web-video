@@ -353,9 +353,13 @@ export class CompositeRecordingService {
     
     console.log('📹 Creating composite stream with overlays');
     
+    // Declare variables outside try block for cleanup access
+    let video: HTMLVideoElement | null = null;
+    let canvas: HTMLCanvasElement | null = null;
+    
     try {
       // Create a canvas to composite video and overlays
-      const canvas = document.createElement('canvas');
+      canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       if (!ctx) {
         throw new Error('Failed to get canvas context');
@@ -378,14 +382,19 @@ export class CompositeRecordingService {
       console.log('📹 Canvas dimensions:', width, 'x', height);
 
       // Create video element for the stream
-      const video = document.createElement('video');
+      video = document.createElement('video');
       video.srcObject = videoStream;
       video.muted = true;
       video.autoplay = true;
       video.playsInline = true;
+      video.loop = false;
 
       // Wait for video to be ready
       await new Promise<void>((resolve, reject) => {
+        if (!video) {
+          reject(new Error('Video element not created'));
+          return;
+        }
         const timeout = setTimeout(() => reject(new Error('Video ready timeout')), 5000);
         video.onloadedmetadata = () => {
           clearTimeout(timeout);
@@ -399,7 +408,32 @@ export class CompositeRecordingService {
 
       console.log('📹 Video element ready, dimensions:', video.videoWidth, 'x', video.videoHeight);
 
+      // Start playing the video (required for drawImage to work)
+      try {
+        if (!video) {
+          throw new Error('Video element not available');
+        }
+        await video.play();
+        console.log('📹 Video element started playing');
+      } catch (playError) {
+        console.warn('⚠️ Could not autoplay video:', playError);
+        // Try to start playing again
+        try {
+          if (!video) {
+            throw new Error('Video element not available');
+          }
+          await video.play();
+          console.log('📹 Video element started playing on retry');
+        } catch (retryError) {
+          console.error('❌ Failed to start video playback:', retryError);
+          throw new Error('Video playback failed');
+        }
+      }
+
       // Create MediaStream from canvas
+      if (!canvas) {
+        throw new Error('Canvas not created');
+      }
       const canvasStream = canvas.captureStream(30); // 30 FPS
       
       // Get the video track from the canvas stream
@@ -411,19 +445,42 @@ export class CompositeRecordingService {
       // Composite video and overlays
       const compositeFrame = () => {
         if (!this.state.isRecording) return;
+        if (!canvas || !video) return;
 
         try {
           // Clear canvas
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           
+          // Check if video is ready and has valid dimensions
+          if (video.videoWidth === 0 || video.videoHeight === 0) {
+            console.warn('⚠️ Video not ready yet, skipping frame');
+            requestAnimationFrame(compositeFrame);
+            return;
+          }
+          
           // Draw video frame
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          
+          // Debug: Check if video frame was drawn
+          if (canvas) {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const hasVideoContent = imageData.data.some(pixel => pixel !== 0);
+            if (!hasVideoContent) {
+              console.warn('⚠️ Video frame appears to be black/empty');
+            } else {
+              console.log('✅ Video frame drawn successfully');
+            }
+          }
 
           // Draw overlays on top
           overlayCanvases.forEach((overlayCanvas, index) => {
             if (overlayCanvas && overlayCanvas.width > 0 && overlayCanvas.height > 0) {
-              console.log(`📹 Drawing overlay ${index}:`, overlayCanvas.width, 'x', overlayCanvas.height);
-              ctx.drawImage(overlayCanvas, 0, 0, canvas.width, canvas.height);
+              try {
+                ctx.drawImage(overlayCanvas, 0, 0, canvas.width, canvas.height);
+                console.log(`📹 Overlay ${index} drawn:`, overlayCanvas.width, 'x', overlayCanvas.height);
+              } catch (overlayError) {
+                console.error(`❌ Failed to draw overlay ${index}:`, overlayError);
+              }
             }
           });
 
@@ -431,6 +488,8 @@ export class CompositeRecordingService {
           requestAnimationFrame(compositeFrame);
         } catch (error) {
           console.error('❌ Error in composite frame:', error);
+          // Continue with next frame even if this one failed
+          requestAnimationFrame(compositeFrame);
         }
       };
 
@@ -443,6 +502,16 @@ export class CompositeRecordingService {
     } catch (error) {
       console.error('❌ Failed to create composite stream:', error);
       console.log('📹 Falling back to original video stream');
+      
+      // Clean up any resources that might have been created
+      try {
+        if (video && video.srcObject) {
+          video.srcObject = null;
+        }
+      } catch (cleanupError) {
+        console.warn('⚠️ Error during cleanup:', cleanupError);
+      }
+      
       return videoStream;
     }
   }
